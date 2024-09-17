@@ -37,9 +37,7 @@ import org.testcontainers.utility.DockerLoggerFactory;
 
 import com.google.common.collect.Lists;
 
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -180,11 +178,9 @@ public class JdbcSqlServerIT extends AbstractJdbcIT {
                 .configFile(CONFIG_FILE)
                 .insertSql(insertSql)
                 .testData(testDataSet)
+                .tablePathFullName(TablePath.DEFAULT.getFullName())
                 .build();
     }
-
-    @Override
-    void compareResult(String executeKey) throws SQLException, IOException {}
 
     @Override
     String driverUrl() {
