@@ -35,3 +35,11 @@ seatunnel:
         enable-http: true
         port: 8080
         enable-dynamic-port: false
+    telemetry:
+          metric:
+             enabled: false
+          logs:
+             scheduled-deletion-enable: true
+             cron: "* * * * *"
+             keep-time: 30000
+             prefix: job
