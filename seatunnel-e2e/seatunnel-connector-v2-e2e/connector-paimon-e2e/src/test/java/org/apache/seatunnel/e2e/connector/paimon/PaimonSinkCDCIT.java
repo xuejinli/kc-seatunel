@@ -636,7 +636,7 @@ public class PaimonSinkCDCIT extends TestSuiteBase implements TestResource {
                         .collect(Collectors.toList());
         log.info("paimon records: {}", actual2);
         Assertions.assertEquals(2, actual2.size());
-        Assertions.assertEquals(Arrays.asList("[+U, 1, Aa, 200]", "[+I, 2, Bb, 90]"), actual2);
+        Assertions.assertEquals(Arrays.asList("[+I, 1, Aa, 200]", "[+I, 2, Bb, 90]"), actual2);
         changeLogEnabled = false;
         futures.forEach(future -> future.cancel(true));
     }
