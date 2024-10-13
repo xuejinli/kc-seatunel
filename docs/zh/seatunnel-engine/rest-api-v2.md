@@ -396,7 +396,7 @@ seatunnel:
     "source": [
         {
             "plugin_name": "FakeSource",
-            "result_table_name": "fake",
+            "plugin_output": "fake",
             "row.num": 100,
             "schema": {
                 "fields": {
@@ -412,7 +412,7 @@ seatunnel:
     "sink": [
         {
             "plugin_name": "Console",
-            "source_table_name": ["fake"]
+            "plugin_input": ["fake"]
         }
     ]
 }
@@ -462,7 +462,7 @@ seatunnel:
     "source": [
       {
         "plugin_name": "FakeSource",
-        "result_table_name": "fake",
+        "plugin_output": "fake",
         "row.num": 1000,
         "schema": {
           "fields": {
@@ -478,7 +478,7 @@ seatunnel:
     "sink": [
       {
         "plugin_name": "Console",
-        "source_table_name": ["fake"]
+        "plugin_input": ["fake"]
       }
     ]
   },
@@ -493,7 +493,7 @@ seatunnel:
     "source": [
       {
         "plugin_name": "FakeSource",
-        "result_table_name": "fake",
+        "plugin_output": "fake",
         "row.num": 1000,
         "schema": {
           "fields": {
@@ -509,7 +509,7 @@ seatunnel:
     "sink": [
       {
         "plugin_name": "Console",
-        "source_table_name": ["fake"]
+        "plugin_input": ["fake"]
       }
     ]
   }
@@ -621,7 +621,7 @@ seatunnel:
                     "age": "int"
                 }
             },
-            "result_table_name": "fake",
+            "plugin_output": "fake",
             "parallelism": 1,
             "hostname": "127.0.0.1",
             "username": "seatunnel",
@@ -661,7 +661,7 @@ seatunnel:
                     "age": "int"
                 }
             },
-            "result_table_name": "fake",
+            "plugin_output": "fake",
             "parallelism": 1,
             "hostname": "127.0.0.1",
             "username": "c2VhdHVubmVs",

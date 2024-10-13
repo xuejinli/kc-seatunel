@@ -272,7 +272,7 @@ source {
     password = pass
     path = "tmp/seatunnel/read/json"
     file_format_type = "json"
-    result_table_name = "sftp"
+    plugin_output = "sftp"
     schema = {
       fields {
         c_map = "map<string, string>"
@@ -374,7 +374,7 @@ source {
     password = pass
     path = "tmp/seatunnel/read/json"
     file_format_type = "json"
-    result_table_name = "sftp"
+    plugin_output = "sftp"
     // file example abcD2024.csv
     file_filter_pattern = "abc[DX]*.*"
   }

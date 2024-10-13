@@ -8,8 +8,8 @@ sidebar_position: 1
 
 |       Name        |  Type  | Required | Default |                                                                                                                                                                                                                                                              Description                                                                                                                                                                                                                                                              |
 |-------------------|--------|----------|---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| result_table_name | String | No       | -       | When `source_table_name` is not specified, the current plugin processes the data set `(dataset)` output by the previous plugin in the configuration file; <br/>When `source_table_name` is specified, the current plugin is processing the data set corresponding to this parameter.                                                                                                                                                                                                                                                  |
-| source_table_name | String | No       | -       | When `result_table_name` is not specified, the data processed by this plugin will not be registered as a data set that can be directly accessed by other plugins, or called a temporary table `(table)`; <br/>When `result_table_name` is specified, the data processed by this plugin will be registered as a data set `(dataset)` that can be directly accessed by other plugins, or called a temporary table `(table)` . The dataset registered here can be directly accessed by other plugins by specifying `source_table_name` . |
+| plugin_output | String | No       | -       | When `plugin_input` is not specified, the current plugin processes the data set `(dataset)` output by the previous plugin in the configuration file; <br/>When `plugin_input` is specified, the current plugin is processing the data set corresponding to this parameter.                                                                                                                                                                                                                                                  |
+| plugin_input | String | No       | -       | When `plugin_output` is not specified, the data processed by this plugin will not be registered as a data set that can be directly accessed by other plugins, or called a temporary table `(table)`; <br/>When `plugin_output` is specified, the data processed by this plugin will be registered as a data set `(dataset)` that can be directly accessed by other plugins, or called a temporary table `(table)` . The dataset registered here can be directly accessed by other plugins by specifying `plugin_input` . |
 
 ## Task Example
 
@@ -24,7 +24,7 @@ env {
 
 source {
   FakeSource {
-    result_table_name = "fake"
+    plugin_output = "fake"
     row.num = 100
     schema = {
       fields {
@@ -48,9 +48,9 @@ source {
 
 transform {
   Sql {
-    source_table_name = "fake"
-    result_table_name = "fake1"
-    # the query table name must same as field 'source_table_name'
+    plugin_input = "fake"
+    plugin_output = "fake1"
+    # the query table name must same as field 'plugin_input'
     query = "select id, regexp_replace(name, '.+', 'b') as name, age+1 as age, pi() as pi, c_timestamp, c_date, c_map, c_array, c_decimal, c_row from fake"
   }
   # The SQL transform support base function and criteria operation
@@ -59,10 +59,10 @@ transform {
 
 sink {
   Console {
-    source_table_name = "fake1"
+    plugin_input = "fake1"
   }
    Console {
-    source_table_name = "fake"
+    plugin_input = "fake"
   }
 }
 ```
