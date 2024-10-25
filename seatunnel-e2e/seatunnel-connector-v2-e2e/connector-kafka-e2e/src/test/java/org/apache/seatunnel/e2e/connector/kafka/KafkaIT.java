@@ -37,6 +37,7 @@ import org.apache.seatunnel.api.table.type.PrimitiveByteArrayType;
 import org.apache.seatunnel.api.table.type.SeaTunnelDataType;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
+import org.apache.seatunnel.common.utils.JsonUtils;
 import org.apache.seatunnel.connectors.seatunnel.kafka.config.MessageFormat;
 import org.apache.seatunnel.connectors.seatunnel.kafka.serialize.DefaultSeaTunnelRowSerializer;
 import org.apache.seatunnel.e2e.common.TestResource;
@@ -647,7 +648,7 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
     public void testKafkaProtobufToAssert(TestContainer container)
             throws IOException, InterruptedException, URISyntaxException {
 
-        String confFile = "/protobuf/kafka_protobuf_to_assert.conf";
+        String confFile = "/protobuf/kafka_protobuf_transform_to_assert.conf";
         String path = getTestConfigFile(confFile);
         Config config = ConfigFactory.parseFile(new File(path));
         Config sinkConfig = config.getConfigList("source").get(0);
@@ -767,6 +768,110 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
                                     Assertions.assertArrayEquals(
                                             expectedPhoneNumbers, (String[]) row.getField(9)));
                 });
+    }
+
+    @TestTemplate
+    public void testKafkaProtobufForTransformToAssert(TestContainer container)
+            throws IOException, InterruptedException, URISyntaxException {
+
+        String confFile = "/protobuf/kafka_protobuf_transform_to_assert.conf";
+        String path = getTestConfigFile(confFile);
+        Config config = ConfigFactory.parseFile(new File(path));
+        Config sinkConfig = config.getConfigList("source").get(0);
+        ReadonlyConfig readonlyConfig = ReadonlyConfig.fromConfig(sinkConfig);
+        SeaTunnelRowType seaTunnelRowType = buildSeaTunnelRowType();
+
+        // Prepare schema properties
+        Map<String, String> schemaProperties = new HashMap<>();
+        schemaProperties.put(
+                "protobuf_message_name", sinkConfig.getString("protobuf_message_name"));
+        schemaProperties.put("protobuf_schema", sinkConfig.getString("protobuf_schema"));
+
+        // Build the table schema
+        TableSchema schema =
+                TableSchema.builder()
+                        .columns(
+                                Arrays.asList(
+                                        IntStream.range(0, seaTunnelRowType.getTotalFields())
+                                                .mapToObj(
+                                                        i ->
+                                                                PhysicalColumn.of(
+                                                                        seaTunnelRowType
+                                                                                .getFieldName(i),
+                                                                        seaTunnelRowType
+                                                                                .getFieldType(i),
+                                                                        0,
+                                                                        true,
+                                                                        null,
+                                                                        null))
+                                                .toArray(PhysicalColumn[]::new)))
+                        .build();
+
+        // Create catalog table
+        CatalogTable catalogTable =
+                CatalogTable.of(
+                        TableIdentifier.of("", "", "", "test"),
+                        schema,
+                        schemaProperties,
+                        Collections.emptyList(),
+                        "It is converted from RowType and only has column information.");
+
+        // Initialize the Protobuf deserialization schema
+        ProtobufDeserializationSchema deserializationSchema =
+                new ProtobufDeserializationSchema(catalogTable);
+
+        // Create serializer
+        DefaultSeaTunnelRowSerializer serializer =
+                DefaultSeaTunnelRowSerializer.create(
+                        "test_protobuf_topic_transform_fake_source",
+                        seaTunnelRowType,
+                        MessageFormat.PROTOBUF,
+                        DEFAULT_FIELD_DELIMITER,
+                        readonlyConfig);
+
+        // Produce records to Kafka
+        IntStream.range(0, 20)
+                .forEach(
+                        i -> {
+                            try {
+                                SeaTunnelRow originalRow = buildSeaTunnelRow();
+                                ProducerRecord<byte[], byte[]> producerRecord =
+                                        serializer.serializeRow(originalRow);
+                                producer.send(producerRecord).get();
+                            } catch (InterruptedException | ExecutionException e) {
+                                throw new RuntimeException("Error sending Kafka message", e);
+                            }
+                        });
+
+        producer.flush();
+
+        // Execute the job and validate
+        Container.ExecResult execResult = container.executeJob(confFile);
+        Assertions.assertEquals(0, execResult.getExitCode(), execResult.getStderr());
+
+        try (KafkaConsumer<byte[], byte[]> consumer =
+                new KafkaConsumer<>(kafkaByteConsumerConfig())) {
+            consumer.subscribe(Arrays.asList("verify_protobuf_transform"));
+            Map<TopicPartition, Long> offsets =
+                    consumer.endOffsets(
+                            Arrays.asList(new TopicPartition("verify_protobuf_transform", 0)));
+            Long endOffset = offsets.entrySet().iterator().next().getValue();
+            Long lastProcessedOffset = -1L;
+
+            do {
+                ConsumerRecords<byte[], byte[]> records = consumer.poll(Duration.ofMillis(100));
+                for (ConsumerRecord<byte[], byte[]> record : records) {
+                    if (lastProcessedOffset < record.offset()) {
+                        String data = new String(record.value(), "UTF-8");
+                        ObjectNode jsonNodes = JsonUtils.parseObject(data);
+                        Assertions.assertEquals(jsonNodes.size(), 2);
+                        Assertions.assertEquals(jsonNodes.get("city").asText(), "city_value");
+                        Assertions.assertEquals(jsonNodes.get("c_string").asText(), "test data");
+                    }
+                    lastProcessedOffset = record.offset();
+                }
+            } while (lastProcessedOffset < endOffset - 1);
+        }
     }
 
     public static String getTestConfigFile(String configFile)
