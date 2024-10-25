@@ -17,6 +17,8 @@
 
 package org.apache.seatunnel.connectors.seatunnel.clickhouse.source;
 
+import lombok.extern.slf4j.Slf4j;
+import org.apache.seatunnel.api.source.Boundedness;
 import org.apache.seatunnel.api.source.Collector;
 import org.apache.seatunnel.api.source.SourceReader;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
@@ -34,7 +36,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-
+@Slf4j
 public class ClickhouseSourceReader implements SourceReader<SeaTunnelRow, ClickhouseSourceSplit> {
 
     private final List<ClickHouseNode> servers;
@@ -43,6 +45,7 @@ public class ClickhouseSourceReader implements SourceReader<SeaTunnelRow, Clickh
     private final SourceReader.Context readerContext;
     private ClickHouseRequest<?> request;
     private final String sql;
+    private volatile boolean noMoreSplit;
 
     private final List<ClickhouseSourceSplit> splits;
 
@@ -97,6 +100,12 @@ public class ClickhouseSourceReader implements SourceReader<SeaTunnelRow, Clickh
             }
             this.readerContext.signalNoMoreElement();
             this.splits.clear();
+        } else if (noMoreSplit
+                && splits.isEmpty()
+                && Boundedness.BOUNDED.equals(readerContext.getBoundedness())) {
+            log.info("Closed the bounded ClickHouse source");
+            this.readerContext.signalNoMoreElement();
+            this.splits.clear();
         }
     }
 
@@ -111,7 +120,7 @@ public class ClickhouseSourceReader implements SourceReader<SeaTunnelRow, Clickh
     }
 
     @Override
-    public void handleNoMoreSplits() {}
+    public void handleNoMoreSplits() {noMoreSplit = true;}
 
     @Override
     public void notifyCheckpointComplete(long checkpointId) throws Exception {}
