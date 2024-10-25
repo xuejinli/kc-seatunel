@@ -65,6 +65,7 @@ import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -694,30 +695,11 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
         ProtobufDeserializationSchema deserializationSchema =
                 new ProtobufDeserializationSchema(catalogTable);
 
-        // Create serializer
         DefaultSeaTunnelRowSerializer serializer =
-                DefaultSeaTunnelRowSerializer.create(
-                        "test_protobuf_topic_fake_source",
-                        seaTunnelRowType,
-                        MessageFormat.PROTOBUF,
-                        DEFAULT_FIELD_DELIMITER,
-                        readonlyConfig);
+                getDefaultSeaTunnelRowSerializer(
+                        "test_protobuf_topic_fake_source", seaTunnelRowType, readonlyConfig);
 
-        // Produce records to Kafka
-        IntStream.range(0, 20)
-                .forEach(
-                        i -> {
-                            try {
-                                SeaTunnelRow originalRow = buildSeaTunnelRow();
-                                ProducerRecord<byte[], byte[]> producerRecord =
-                                        serializer.serializeRow(originalRow);
-                                producer.send(producerRecord).get();
-                            } catch (InterruptedException | ExecutionException e) {
-                                throw new RuntimeException("Error sending Kafka message", e);
-                            }
-                        });
-
-        producer.flush();
+        sendData(serializer);
 
         // Execute the job and validate
         Container.ExecResult execResult = container.executeJob(confFile);
@@ -770,65 +752,20 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
                 });
     }
 
-    @TestTemplate
-    public void testKafkaProtobufForTransformToAssert(TestContainer container)
-            throws IOException, InterruptedException, URISyntaxException {
-
-        String confFile = "/protobuf/kafka_protobuf_transform_to_assert.conf";
-        String path = getTestConfigFile(confFile);
-        Config config = ConfigFactory.parseFile(new File(path));
-        Config sinkConfig = config.getConfigList("source").get(0);
-        ReadonlyConfig readonlyConfig = ReadonlyConfig.fromConfig(sinkConfig);
-        SeaTunnelRowType seaTunnelRowType = buildSeaTunnelRowType();
-
-        // Prepare schema properties
-        Map<String, String> schemaProperties = new HashMap<>();
-        schemaProperties.put(
-                "protobuf_message_name", sinkConfig.getString("protobuf_message_name"));
-        schemaProperties.put("protobuf_schema", sinkConfig.getString("protobuf_schema"));
-
-        // Build the table schema
-        TableSchema schema =
-                TableSchema.builder()
-                        .columns(
-                                Arrays.asList(
-                                        IntStream.range(0, seaTunnelRowType.getTotalFields())
-                                                .mapToObj(
-                                                        i ->
-                                                                PhysicalColumn.of(
-                                                                        seaTunnelRowType
-                                                                                .getFieldName(i),
-                                                                        seaTunnelRowType
-                                                                                .getFieldType(i),
-                                                                        0,
-                                                                        true,
-                                                                        null,
-                                                                        null))
-                                                .toArray(PhysicalColumn[]::new)))
-                        .build();
-
-        // Create catalog table
-        CatalogTable catalogTable =
-                CatalogTable.of(
-                        TableIdentifier.of("", "", "", "test"),
-                        schema,
-                        schemaProperties,
-                        Collections.emptyList(),
-                        "It is converted from RowType and only has column information.");
-
-        // Initialize the Protobuf deserialization schema
-        ProtobufDeserializationSchema deserializationSchema =
-                new ProtobufDeserializationSchema(catalogTable);
-
+    private @NotNull DefaultSeaTunnelRowSerializer getDefaultSeaTunnelRowSerializer(
+            String topic, SeaTunnelRowType seaTunnelRowType, ReadonlyConfig readonlyConfig) {
         // Create serializer
         DefaultSeaTunnelRowSerializer serializer =
                 DefaultSeaTunnelRowSerializer.create(
-                        "test_protobuf_topic_transform_fake_source",
+                        topic,
                         seaTunnelRowType,
                         MessageFormat.PROTOBUF,
                         DEFAULT_FIELD_DELIMITER,
                         readonlyConfig);
+        return serializer;
+    }
 
+    private void sendData(DefaultSeaTunnelRowSerializer serializer) {
         // Produce records to Kafka
         IntStream.range(0, 20)
                 .forEach(
@@ -844,6 +781,28 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
                         });
 
         producer.flush();
+    }
+
+    @TestTemplate
+    public void testKafkaProtobufForTransformToAssert(TestContainer container)
+            throws IOException, InterruptedException, URISyntaxException {
+
+        String confFile = "/protobuf/kafka_protobuf_transform_to_assert.conf";
+        String path = getTestConfigFile(confFile);
+        Config config = ConfigFactory.parseFile(new File(path));
+        Config sinkConfig = config.getConfigList("source").get(0);
+        ReadonlyConfig readonlyConfig = ReadonlyConfig.fromConfig(sinkConfig);
+        SeaTunnelRowType seaTunnelRowType = buildSeaTunnelRowType();
+
+        // Create serializer
+        DefaultSeaTunnelRowSerializer serializer =
+                getDefaultSeaTunnelRowSerializer(
+                        "test_protobuf_topic_transform_fake_source",
+                        seaTunnelRowType,
+                        readonlyConfig);
+
+        // Produce records to Kafka
+        sendData(serializer);
 
         // Execute the job and validate
         Container.ExecResult execResult = container.executeJob(confFile);
