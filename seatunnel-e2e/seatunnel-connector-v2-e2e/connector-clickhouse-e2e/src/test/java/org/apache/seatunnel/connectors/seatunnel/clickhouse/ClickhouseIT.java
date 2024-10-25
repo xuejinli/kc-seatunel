@@ -101,6 +101,13 @@ public class ClickhouseIT extends TestSuiteBase implements TestResource {
         clearSinkTable();
     }
 
+    @TestTemplate
+    public void testSourceParallelism(TestContainer container) throws Exception {
+        System.out.println("=========多并行度测试===========");
+        Container.ExecResult execResult = container.executeJob("/clickhouse_to_console.conf");
+        System.out.println(execResult.getExitCode());
+    }
+
     @BeforeAll
     @Override
     public void startUp() throws Exception {

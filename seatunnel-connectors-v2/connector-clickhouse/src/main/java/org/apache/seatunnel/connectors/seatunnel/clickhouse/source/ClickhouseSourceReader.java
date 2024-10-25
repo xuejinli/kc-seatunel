@@ -17,7 +17,6 @@
 
 package org.apache.seatunnel.connectors.seatunnel.clickhouse.source;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.seatunnel.api.source.Boundedness;
 import org.apache.seatunnel.api.source.Collector;
 import org.apache.seatunnel.api.source.SourceReader;
@@ -30,12 +29,14 @@ import com.clickhouse.client.ClickHouseFormat;
 import com.clickhouse.client.ClickHouseNode;
 import com.clickhouse.client.ClickHouseRequest;
 import com.clickhouse.client.ClickHouseResponse;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+
 @Slf4j
 public class ClickhouseSourceReader implements SourceReader<SeaTunnelRow, ClickhouseSourceSplit> {
 
@@ -120,7 +121,9 @@ public class ClickhouseSourceReader implements SourceReader<SeaTunnelRow, Clickh
     }
 
     @Override
-    public void handleNoMoreSplits() {noMoreSplit = true;}
+    public void handleNoMoreSplits() {
+        noMoreSplit = true;
+    }
 
     @Override
     public void notifyCheckpointComplete(long checkpointId) throws Exception {}
