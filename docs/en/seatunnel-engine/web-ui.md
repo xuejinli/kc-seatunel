@@ -15,8 +15,6 @@ seatunnel:
 
 Then visit `http://ip:8080/#/overview`
 
-```
-
 ## Overview
 
 The Web UI of Apache SeaTunnel offers a user-friendly interface for monitoring and managing SeaTunnel jobs. Through the Web UI, users can view real-time information on currently running jobs, finished jobs, and the status of worker and master nodes within the cluster. The main functional modules include Jobs, Workers, and Master, each providing detailed status information and operational options to help users efficiently manage and optimize their data processing workflows.
@@ -48,4 +46,3 @@ The "Workers" section displays detailed information about all worker nodes in th
 
 The "Master" section provides the status and configuration information of the master node in the SeaTunnel cluster. Users can view the master's address, running status, job scheduling responsibilities, and overall resource allocation within the cluster. This module helps users gain a comprehensive understanding of the cluster's core management components, facilitating cluster configuration optimization and troubleshooting.
 ![master.png](../../images/ui/master.png)
-```
