@@ -370,6 +370,10 @@ public class YamlSeaTunnelDomConfigProcessor extends AbstractDomConfigProcessor 
                 httpConfig.setEnabled(getBooleanValue(getTextContent(node)));
             } else if (ServerConfigOptions.ENABLE_DYNAMIC_PORT.key().equals(name)) {
                 httpConfig.setEnableDynamicPort(getBooleanValue(getTextContent(node)));
+            } else if (ServerConfigOptions.PORT_RANGE.key().equals(name)) {
+                httpConfig.setPortRange(
+                        getIntegerValue(
+                                ServerConfigOptions.PORT_RANGE.key(), getTextContent(node)));
             } else {
                 LOGGER.warning("Unrecognized element: " + name);
             }

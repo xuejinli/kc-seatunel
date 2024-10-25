@@ -9,7 +9,9 @@ SeaTunnel有一个用于监控的API，可用于查询运行作业的状态和�
 ## 概述
 
 v2版本的api使用jetty支持，与v1版本的接口规范相同 ,可以通过修改`seatunnel.yaml`中的配置项来指定端口和context-path，
-同时可以配置 `enable-dynamic-port` 开启动态端口(默认端口从8080开始累加)，默认为关闭。
+同时可以配置 `enable-dynamic-port` 开启动态端口(默认从 `port` 开始累加)，默认为关闭，
+如果`enable-dynamic-port`为`true`，我们将使用`port`和`port`+`port-range`范围内未使用的端口，默认范围是100。
+
 ```yaml
 
 seatunnel:
@@ -18,6 +20,7 @@ seatunnel:
       enable-http: true
       port: 8080
       enable-dynamic-port: false
+      port-range: 100
 ```
 
 同时也可以配置context-path,配置如下：
@@ -49,21 +52,24 @@ seatunnel:
 
 ```json
 {
-    "projectVersion":"2.3.5-SNAPSHOT",
-    "gitCommitAbbrev":"DeadD0d0",
-    "totalSlot":"0",
-    "unassignedSlot":"0",
-    "works":"1",
-    "runningJobs":"0",
-    "finishedJobs":"0",
-    "failedJobs":"0",
-    "cancelledJobs":"0"
+  "projectVersion": "2.3.5-SNAPSHOT",
+  "gitCommitAbbrev": "DeadD0d0",
+  "totalSlot": "0",
+  "unassignedSlot": "0",
+  "works": "1",
+  "runningJobs": "0",
+  "finishedJobs": "0",
+  "failedJobs": "0",
+  "cancelledJobs": "0"
 }
 ```
 
 **注意:**
-- 当你使用`dynamic-slot`时, 返回结果中的`totalSlot`和`unassignedSlot`将始终为0. 设置为固定的slot值后, 将正确返回集群中总共的slot数量以及未分配的slot数量.
-- 当添加标签过滤后, `works`, `totalSlot`, `unassignedSlot`将返回满足条件的节点的相关指标. 注意`runningJobs`等job相关指标为集群级别结果, 无法根据标签进行过滤.
+
+- 当你使用`dynamic-slot`时, 返回结果中的`totalSlot`和`unassignedSlot`将始终为0. 设置为固定的slot值后,
+  将正确返回集群中总共的slot数量以及未分配的slot数量.
+- 当添加标签过滤后, `works`, `totalSlot`, `unassignedSlot`将返回满足条件的节点的相关指标. 注意`runningJobs`
+  等job相关指标为集群级别结果, 无法根据标签进行过滤.
 
 </details>
 
@@ -185,7 +191,7 @@ seatunnel:
 
 ```json
 {
-  "jobId" : ""
+  "jobId": ""
 }
 ```
 
@@ -251,7 +257,7 @@ seatunnel:
 
 ```json
 {
-  "jobId" : ""
+  "jobId": ""
 }
 ```
 
@@ -317,51 +323,51 @@ seatunnel:
 ```json
 [
   {
-    "processors":"8",
-    "physical.memory.total":"16.0G",
-    "physical.memory.free":"16.3M",
-    "swap.space.total":"0",
-    "swap.space.free":"0",
-    "heap.memory.used":"135.7M",
-    "heap.memory.free":"440.8M",
-    "heap.memory.total":"576.5M",
-    "heap.memory.max":"3.6G",
-    "heap.memory.used/total":"23.54%",
-    "heap.memory.used/max":"3.73%",
-    "minor.gc.count":"6",
-    "minor.gc.time":"110ms",
-    "major.gc.count":"2",
-    "major.gc.time":"73ms",
-    "load.process":"24.78%",
-    "load.system":"60.00%",
-    "load.systemAverage":"2.07",
-    "thread.count":"117",
-    "thread.peakCount":"118",
-    "cluster.timeDiff":"0",
-    "event.q.size":"0",
-    "executor.q.async.size":"0",
-    "executor.q.client.size":"0",
-    "executor.q.client.query.size":"0",
-    "executor.q.client.blocking.size":"0",
-    "executor.q.query.size":"0",
-    "executor.q.scheduled.size":"0",
-    "executor.q.io.size":"0",
-    "executor.q.system.size":"0",
-    "executor.q.operations.size":"0",
-    "executor.q.priorityOperation.size":"0",
-    "operations.completed.count":"10",
-    "executor.q.mapLoad.size":"0",
-    "executor.q.mapLoadAllKeys.size":"0",
-    "executor.q.cluster.size":"0",
-    "executor.q.response.size":"0",
-    "operations.running.count":"0",
-    "operations.pending.invocations.percentage":"0.00%",
-    "operations.pending.invocations.count":"0",
-    "proxy.count":"8",
-    "clientEndpoint.count":"0",
-    "connection.active.count":"2",
-    "client.connection.count":"0",
-    "connection.count":"0"
+    "processors": "8",
+    "physical.memory.total": "16.0G",
+    "physical.memory.free": "16.3M",
+    "swap.space.total": "0",
+    "swap.space.free": "0",
+    "heap.memory.used": "135.7M",
+    "heap.memory.free": "440.8M",
+    "heap.memory.total": "576.5M",
+    "heap.memory.max": "3.6G",
+    "heap.memory.used/total": "23.54%",
+    "heap.memory.used/max": "3.73%",
+    "minor.gc.count": "6",
+    "minor.gc.time": "110ms",
+    "major.gc.count": "2",
+    "major.gc.time": "73ms",
+    "load.process": "24.78%",
+    "load.system": "60.00%",
+    "load.systemAverage": "2.07",
+    "thread.count": "117",
+    "thread.peakCount": "118",
+    "cluster.timeDiff": "0",
+    "event.q.size": "0",
+    "executor.q.async.size": "0",
+    "executor.q.client.size": "0",
+    "executor.q.client.query.size": "0",
+    "executor.q.client.blocking.size": "0",
+    "executor.q.query.size": "0",
+    "executor.q.scheduled.size": "0",
+    "executor.q.io.size": "0",
+    "executor.q.system.size": "0",
+    "executor.q.operations.size": "0",
+    "executor.q.priorityOperation.size": "0",
+    "operations.completed.count": "10",
+    "executor.q.mapLoad.size": "0",
+    "executor.q.mapLoadAllKeys.size": "0",
+    "executor.q.cluster.size": "0",
+    "executor.q.response.size": "0",
+    "operations.running.count": "0",
+    "operations.pending.invocations.percentage": "0.00%",
+    "operations.pending.invocations.count": "0",
+    "proxy.count": "8",
+    "clientEndpoint.count": "0",
+    "connection.active.count": "2",
+    "client.connection.count": "0",
+    "connection.count": "0"
   }
 ]
 ```
@@ -387,31 +393,33 @@ seatunnel:
 
 ```json
 {
-    "env": {
-        "job.mode": "batch"
-    },
-    "source": [
-        {
-            "plugin_name": "FakeSource",
-            "result_table_name": "fake",
-            "row.num": 100,
-            "schema": {
-                "fields": {
-                    "name": "string",
-                    "age": "int",
-                    "card": "int"
-                }
-            }
+  "env": {
+    "job.mode": "batch"
+  },
+  "source": [
+    {
+      "plugin_name": "FakeSource",
+      "result_table_name": "fake",
+      "row.num": 100,
+      "schema": {
+        "fields": {
+          "name": "string",
+          "age": "int",
+          "card": "int"
         }
-    ],
-    "transform": [
-    ],
-    "sink": [
-        {
-            "plugin_name": "Console",
-            "source_table_name": ["fake"]
-        }
-    ]
+      }
+    }
+  ],
+  "transform": [
+  ],
+  "sink": [
+    {
+      "plugin_name": "Console",
+      "source_table_name": [
+        "fake"
+      ]
+    }
+  ]
 }
 ```
 
@@ -419,15 +427,14 @@ seatunnel:
 
 ```json
 {
-    "jobId": 733584788375666689,
-    "jobName": "rest_api_test"
+  "jobId": 733584788375666689,
+  "jobName": "rest_api_test"
 }
 ```
 
 </details>
 
 ------------------------------------------------------------------------------------------
-
 
 ### 批量提交作业
 
@@ -442,16 +449,14 @@ seatunnel:
 > | jobName              | optional | string | job name                          |
 > | isStartWithSavePoint | optional | string | if job is started with save point |
 
-
-
 #### 请求体
 
 ```json
 [
   {
-    "params":{
-      "jobId":"123456",
-      "jobName":"SeaTunnel-01"
+    "params": {
+      "jobId": "123456",
+      "jobName": "SeaTunnel-01"
     },
     "env": {
       "job.mode": "batch"
@@ -475,14 +480,16 @@ seatunnel:
     "sink": [
       {
         "plugin_name": "Console",
-        "source_table_name": ["fake"]
+        "source_table_name": [
+          "fake"
+        ]
       }
     ]
   },
   {
-    "params":{
-      "jobId":"1234567",
-      "jobName":"SeaTunnel-02"
+    "params": {
+      "jobId": "1234567",
+      "jobName": "SeaTunnel-02"
     },
     "env": {
       "job.mode": "batch"
@@ -506,7 +513,9 @@ seatunnel:
     "sink": [
       {
         "plugin_name": "Console",
-        "source_table_name": ["fake"]
+        "source_table_name": [
+          "fake"
+        ]
       }
     ]
   }
@@ -520,7 +529,8 @@ seatunnel:
   {
     "jobId": "123456",
     "jobName": "SeaTunnel-01"
-  },{
+  },
+  {
     "jobId": "1234567",
     "jobName": "SeaTunnel-02"
   }
@@ -540,8 +550,16 @@ seatunnel:
 
 ```json
 {
-    "jobId": 733584788375666689,
-    "isStopWithSavePoint": false # if job is stopped with save point
+  "jobId": 733584788375666689,
+  "isStopWithSavePoint": false
+  #
+  if
+  job
+  is
+  stopped
+  with
+  save
+  point
 }
 ```
 
@@ -549,7 +567,7 @@ seatunnel:
 
 ```json
 {
-"jobId": 733584788375666689
+  "jobId": 733584788375666689
 }
 ```
 
@@ -605,39 +623,39 @@ seatunnel:
 
 ```json
 {
-    "env": {
-        "parallelism": 1,
-        "shade.identifier":"base64"
-    },
-    "source": [
-        {
-            "plugin_name": "MySQL-CDC",
-            "schema" : {
-                "fields": {
-                    "name": "string",
-                    "age": "int"
-                }
-            },
-            "result_table_name": "fake",
-            "parallelism": 1,
-            "hostname": "127.0.0.1",
-            "username": "seatunnel",
-            "password": "seatunnel_password",
-            "table-name": "inventory_vwyw0n"
+  "env": {
+    "parallelism": 1,
+    "shade.identifier": "base64"
+  },
+  "source": [
+    {
+      "plugin_name": "MySQL-CDC",
+      "schema": {
+        "fields": {
+          "name": "string",
+          "age": "int"
         }
-    ],
-    "transform": [
-    ],
-    "sink": [
-        {
-            "plugin_name": "Clickhouse",
-            "host": "localhost:8123",
-            "database": "default",
-            "table": "fake_all",
-            "username": "seatunnel",
-            "password": "seatunnel_password"
-        }
-    ]
+      },
+      "result_table_name": "fake",
+      "parallelism": 1,
+      "hostname": "127.0.0.1",
+      "username": "seatunnel",
+      "password": "seatunnel_password",
+      "table-name": "inventory_vwyw0n"
+    }
+  ],
+  "transform": [
+  ],
+  "sink": [
+    {
+      "plugin_name": "Clickhouse",
+      "host": "localhost:8123",
+      "database": "default",
+      "table": "fake_all",
+      "username": "seatunnel",
+      "password": "seatunnel_password"
+    }
+  ]
 }
 ```
 
@@ -645,38 +663,38 @@ seatunnel:
 
 ```json
 {
-    "env": {
-        "parallelism": 1,
-        "shade.identifier": "base64"
-    },
-    "source": [
-        {
-            "plugin_name": "MySQL-CDC",
-            "schema": {
-                "fields": {
-                    "name": "string",
-                    "age": "int"
-                }
-            },
-            "result_table_name": "fake",
-            "parallelism": 1,
-            "hostname": "127.0.0.1",
-            "username": "c2VhdHVubmVs",
-            "password": "c2VhdHVubmVsX3Bhc3N3b3Jk",
-            "table-name": "inventory_vwyw0n"
+  "env": {
+    "parallelism": 1,
+    "shade.identifier": "base64"
+  },
+  "source": [
+    {
+      "plugin_name": "MySQL-CDC",
+      "schema": {
+        "fields": {
+          "name": "string",
+          "age": "int"
         }
-    ],
-    "transform": [],
-    "sink": [
-        {
-            "plugin_name": "Clickhouse",
-            "host": "localhost:8123",
-            "database": "default",
-            "table": "fake_all",
-            "username": "c2VhdHVubmVs",
-            "password": "c2VhdHVubmVsX3Bhc3N3b3Jk"
-        }
-    ]
+      },
+      "result_table_name": "fake",
+      "parallelism": 1,
+      "hostname": "127.0.0.1",
+      "username": "c2VhdHVubmVs",
+      "password": "c2VhdHVubmVsX3Bhc3N3b3Jk",
+      "table-name": "inventory_vwyw0n"
+    }
+  ],
+  "transform": [],
+  "sink": [
+    {
+      "plugin_name": "Clickhouse",
+      "host": "localhost:8123",
+      "database": "default",
+      "table": "fake_all",
+      "username": "c2VhdHVubmVs",
+      "password": "c2VhdHVubmVsX3Bhc3N3b3Jk"
+    }
+  ]
 }
 ```
 
@@ -689,16 +707,19 @@ seatunnel:
 <details>
 <summary><code>POST</code><code><b>/update-tags</b></code><code>因为更新只能针对于某个节点，因此需要用当前节点ip:port用于更新</code><code>(如果更新成功，则返回"success"信息)</code></summary>
 
-
 #### 更新节点tags
+
 ##### 请求体
+
 如果请求参数是`Map`对象，表示要更新当前节点的tags
+
 ```json
 {
   "tag1": "dev_1",
   "tag2": "dev_2"
 }
 ```
+
 ##### 响应
 
 ```json
@@ -707,14 +728,21 @@ seatunnel:
   "message": "update node tags done."
 }
 ```
+
 #### 移除节点tags
+
 ##### 请求体
+
 如果参数为空`Map`对象，表示要清除当前节点的tags
+
 ```json
 {}
 ```
+
 ##### 响应
+
 响应体将为：
+
 ```json
 {
   "status": "success",
@@ -723,17 +751,20 @@ seatunnel:
 ```
 
 #### 请求参数异常
+
 - 如果请求参数为空
 
 ##### 响应
 
 ```json
 {
-    "status": "fail",
-    "message": "Request body is empty."
+  "status": "fail",
+  "message": "Request body is empty."
 }
 ```
+
 - 如果参数不是`Map`对象
+
 ##### 响应
 
 ```json
@@ -742,6 +773,7 @@ seatunnel:
   "message": "Invalid JSON format in request body."
 }
 ```
+
 </details>
 
 
@@ -787,7 +819,6 @@ seatunnel:
 
 当前支持的格式有`json`和`html`，默认为`html`。
 
-
 #### 例子
 
 获取所有节点jobId为`733584788375666689`的日志信息：`http://localhost:8080/logs/733584788375666689`
@@ -797,7 +828,6 @@ seatunnel:
 
 
 </details>
-
 
 ### 获取单节点日志内容
 

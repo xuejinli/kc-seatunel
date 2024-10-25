@@ -75,6 +75,7 @@ public class YamlSeaTunnelConfigParserTest {
         Assertions.assertTrue(config.getEngineConfig().getHttpConfig().isEnabled());
         Assertions.assertTrue(config.getEngineConfig().getHttpConfig().isEnableDynamicPort());
         Assertions.assertEquals(8080, config.getEngineConfig().getHttpConfig().getPort());
+        Assertions.assertEquals(200, config.getEngineConfig().getHttpConfig().getPortRange());
     }
 
     @Test
