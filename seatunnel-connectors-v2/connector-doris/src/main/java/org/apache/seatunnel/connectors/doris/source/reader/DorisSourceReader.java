@@ -23,6 +23,8 @@ import org.apache.seatunnel.api.source.SourceReader;
 import org.apache.seatunnel.api.table.catalog.TablePath;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.connectors.doris.config.DorisSourceConfig;
+import org.apache.seatunnel.connectors.doris.exception.DorisConnectorErrorCode;
+import org.apache.seatunnel.connectors.doris.exception.DorisConnectorException;
 import org.apache.seatunnel.connectors.doris.rest.PartitionDefinition;
 import org.apache.seatunnel.connectors.doris.source.DorisSourceTable;
 import org.apache.seatunnel.connectors.doris.source.split.DorisSourceSplit;
@@ -78,7 +80,11 @@ public class DorisSourceReader implements SourceReader<SeaTunnelRow, DorisSource
                 DorisSourceTable dorisSourceTable =
                         tables.get(TablePath.of(partition.getDatabase(), partition.getTable()));
                 if (dorisSourceTable == null) {
-                    return;
+                    throw new DorisConnectorException(
+                            DorisConnectorErrorCode.SHOULD_NEVER_HAPPEN,
+                            String.format(
+                                    "the table '%s.%s' cannot be found in table_list of job configuration.",
+                                    partition.getDatabase(), partition.getTable()));
                 }
                 valueReader = new DorisValueReader(partition, dorisSourceConfig, dorisSourceTable);
                 while (valueReader.hasNext()) {
