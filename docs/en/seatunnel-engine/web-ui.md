@@ -3,13 +3,18 @@
 ## Access
 
 Before accessing the web ui we need to enable the http rest api. first you need to configure it in the `seatunnel.yaml` configuration file
-``
-http.
-enable-http: true
-port: 8080
 
 ```
-Then visit http://ip:8080/#/overview
+seatunnel:
+  engine:
+    http:
+      enable-http: true
+      port: 8080
+
+```
+
+Then visit `http://ip:8080/#/overview`
+
 ```
 
 ## Overview
@@ -43,3 +48,4 @@ The "Workers" section displays detailed information about all worker nodes in th
 
 The "Master" section provides the status and configuration information of the master node in the SeaTunnel cluster. Users can view the master's address, running status, job scheduling responsibilities, and overall resource allocation within the cluster. This module helps users gain a comprehensive understanding of the cluster's core management components, facilitating cluster configuration optimization and troubleshooting.
 ![master.png](../../images/ui/master.png)
+```

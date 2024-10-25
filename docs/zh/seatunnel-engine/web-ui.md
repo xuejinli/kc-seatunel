@@ -5,12 +5,14 @@
 在访问 web ui 之前我们需要开启 http rest api。首先需要在`seatunnel.yaml`配置文件中配置
 
 ```
-http:
-  enable-http: true
-  port: 8080
+seatunnel:
+  engine:
+    http:
+      enable-http: true
+      port: 8080
 ```
 
-然后访问 http://ip:8080/#/overview
+然后访问 `http://ip:8080/#/overview`
 
 ## 概述
 
