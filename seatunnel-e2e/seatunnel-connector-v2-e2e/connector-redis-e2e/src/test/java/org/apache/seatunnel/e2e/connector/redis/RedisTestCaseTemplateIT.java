@@ -357,5 +357,42 @@ public abstract class RedisTestCaseTemplateIT extends TestSuiteBase implements T
         jedis.select(0);
     }
 
+    @TestTemplate
+    public void testCustomKeyWriteRedis(TestContainer container)
+            throws IOException, InterruptedException {
+        String s = jedis.get("aaa");
+        Container.ExecResult execResult = container.executeJob("/redis-to-redis-custom-key.conf");
+        Assertions.assertEquals(0, execResult.getExitCode());
+        int count = 0;
+        for (int i = 0; i < 100; i++) {
+            String data = jedis.get("custom-key-check:" + i);
+            if (data != null) {
+                count++;
+            }
+        }
+        Assertions.assertEquals(100, count);
+        for (int i = 0; i < 100; i++) {
+            jedis.del("custom-key-check:" + i);
+        }
+    }
+
+    @TestTemplate
+    public void testCustomValueWriteRedis(TestContainer container)
+            throws IOException, InterruptedException {
+        Container.ExecResult execResult = container.executeJob("/redis-to-redis-custom-value.conf");
+        Assertions.assertEquals(0, execResult.getExitCode());
+        Assertions.assertEquals("string", jedis.get("custom-value-check"));
+        jedis.del("custom-value-check");
+    }
+
+    @TestTemplate
+    public void testCustomHashDataWriteRedis(TestContainer container)
+            throws IOException, InterruptedException {
+        Container.ExecResult execResult = container.executeJob("/redis-to-redis-custom-hash.conf");
+        Assertions.assertEquals(0, execResult.getExitCode());
+        Assertions.assertEquals("string", jedis.hget("custom-hash-check", "1"));
+        jedis.del("custom-hash-check");
+    }
+
     public abstract RedisContainerInfo getRedisContainerInfo();
 }
