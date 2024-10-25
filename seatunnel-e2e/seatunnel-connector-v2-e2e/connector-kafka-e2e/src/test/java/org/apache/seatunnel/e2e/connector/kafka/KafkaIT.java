@@ -649,7 +649,7 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
     public void testKafkaProtobufToAssert(TestContainer container)
             throws IOException, InterruptedException, URISyntaxException {
 
-        String confFile = "/protobuf/kafka_protobuf_transform_to_assert.conf";
+        String confFile = "/protobuf/kafka_protobuf_to_assert.conf";
         String path = getTestConfigFile(confFile);
         Config config = ConfigFactory.parseFile(new File(path));
         Config sinkConfig = config.getConfigList("source").get(0);
