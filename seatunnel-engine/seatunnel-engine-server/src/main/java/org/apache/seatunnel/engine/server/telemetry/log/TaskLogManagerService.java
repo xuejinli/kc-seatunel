@@ -39,11 +39,16 @@ public class TaskLogManagerService {
         try {
             path = LogUtil.getLogPath();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to get current path", e);
+            log.warn(
+                    "The corresponding log file path is not properly configured, please check the log configuration file.",
+                    e);
         }
     }
 
     public PassiveCompletableFuture<?> clean(long jobId) {
+        if (path == null) {
+            return new PassiveCompletableFuture<>(null);
+        }
         String[] logFiles = getLogFiles(jobId, path);
 
         return new PassiveCompletableFuture<>(
