@@ -105,14 +105,10 @@ seatunnel:
     telemetry:
       logs:
          scheduled-deletion-enable: false
-         prefix: job
-         path: /tmp/seatunnel/logs
 ```
 
 - `history-job-expire-minutes`: Historical job retention time, in minutes, which is also the log retention time.
 - `scheduled-deletion-enable`: Enables or disables scheduled log deletion.
-- `prefix`: The prefix for log file names.
-- `path`: The path to the log files, defaults to the same path as the startup log file.
 
 ## Best practices for developers
 

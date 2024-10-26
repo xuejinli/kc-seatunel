@@ -18,63 +18,29 @@
 package org.apache.seatunnel.engine.server.telemetry.log;
 
 import org.apache.seatunnel.engine.common.config.server.TelemetryLogsConfig;
+import org.apache.seatunnel.engine.common.utils.LogUtil;
 import org.apache.seatunnel.engine.common.utils.PassiveCompletableFuture;
 
-import com.hazelcast.spi.impl.NodeEngineImpl;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 public class TaskLogManagerService {
-
-    private final String prefix;
     private String path;
 
-    public TaskLogManagerService(TelemetryLogsConfig log, NodeEngineImpl nodeEngine) {
-        this.prefix = log.getPrefix();
-        this.path = log.getPath();
-    }
+    public TaskLogManagerService(TelemetryLogsConfig log) {}
 
     public void initClean() {
         try {
-            if (path == null) {
-                Path currentPath =
-                        Paths.get(
-                                TaskLogManagerService.class
-                                        .getProtectionDomain()
-                                        .getCodeSource()
-                                        .getLocation()
-                                        .toURI());
-
-                Path realPath = resolveSymlink(currentPath);
-                Path dirPath = realPath.getParent().getParent();
-                if (dirPath.endsWith("/")) {
-                    path = dirPath + "logs";
-                } else {
-                    path = dirPath + "/logs";
-                }
-            }
+            path = LogUtil.getLogPath();
         } catch (Exception e) {
             throw new RuntimeException("Failed to get current path", e);
         }
-    }
-
-    private static Path resolveSymlink(Path path) throws IOException {
-        while (Files.isSymbolicLink(path)) {
-            Path linkTarget = Files.readSymbolicLink(path);
-            if (!linkTarget.isAbsolute()) {
-                path = path.getParent().resolve(linkTarget).normalize();
-            } else {
-                path = linkTarget;
-            }
-        }
-        return path;
     }
 
     public PassiveCompletableFuture<?> clean(long jobId) {
@@ -105,7 +71,7 @@ public class TaskLogManagerService {
 
         return logDir.list(
                 (dir, name) -> {
-                    if (name.startsWith(prefix) && name.contains(String.valueOf(jobId))) {
+                    if (name.contains(String.valueOf(jobId))) {
                         return true;
                     }
                     return false;

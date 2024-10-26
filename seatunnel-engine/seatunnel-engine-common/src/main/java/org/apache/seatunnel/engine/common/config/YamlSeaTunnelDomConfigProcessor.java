@@ -366,10 +366,6 @@ public class YamlSeaTunnelDomConfigProcessor extends AbstractDomConfigProcessor 
             String name = cleanNodeName(node);
             if (ServerConfigOptions.TELEMETRY_LOGS_SCHEDULED_DELETION_ENABLE.key().equals(name)) {
                 logsConfig.setEnabled(getBooleanValue(getTextContent(node)));
-            } else if (ServerConfigOptions.TELEMETRY_LOGS_PREFIX.key().equals(name)) {
-                logsConfig.setPrefix(getTextContent(node));
-            } else if (ServerConfigOptions.TELEMETRY_LOGS_PATH.key().equals(name)) {
-                logsConfig.setPath(getTextContent(node));
             } else {
                 LOGGER.warning("Unrecognized element: " + name);
             }

@@ -40,4 +40,3 @@ seatunnel:
              enabled: false
           logs:
              scheduled-deletion-enable: true
-             prefix: job

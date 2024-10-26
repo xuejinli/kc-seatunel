@@ -146,8 +146,7 @@ public class SeaTunnelServer
                 && seaTunnelConfig.getEngineConfig().getTelemetryConfig().getLogs().isEnabled()) {
             taskLogManagerService =
                     new TaskLogManagerService(
-                            seaTunnelConfig.getEngineConfig().getTelemetryConfig().getLogs(),
-                            nodeEngine);
+                            seaTunnelConfig.getEngineConfig().getTelemetryConfig().getLogs());
             taskLogManagerService.initClean();
         }
 

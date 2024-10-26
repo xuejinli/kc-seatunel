@@ -105,13 +105,10 @@ seatunnel:
     telemetry:
       logs:
         scheduled-deletion-enable: false
-        prefix: job
-        path: /tmp/seatunnel/logs
 ```
 - `history-job-expire-minutes`: 历史作业保留时间，单位为分钟,同时也是日志保留时间
 - `scheduled-deletion-enable`: 是否启用定时删除日志
-- `prefix`: 日志文件的前缀
-- `path`: 日志文件的路径,默认与启动脚日志文件路径相同
+
 
 ## 开发人员最佳实践
 

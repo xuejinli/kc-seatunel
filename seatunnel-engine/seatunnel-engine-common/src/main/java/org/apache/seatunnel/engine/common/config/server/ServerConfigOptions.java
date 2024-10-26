@@ -217,15 +217,6 @@ public class ServerConfigOptions {
                     .defaultValue(false)
                     .withDescription("Enable scheduled deletion of telemetry logs");
 
-    public static final Option<String> TELEMETRY_LOGS_PATH =
-            Options.key("path").stringType().noDefaultValue().withDescription("Logs path");
-
-    public static final Option<String> TELEMETRY_LOGS_PREFIX =
-            Options.key("prefix")
-                    .stringType()
-                    .defaultValue("job")
-                    .withDescription("Whether open job log.");
-
     public static final Option<TelemetryLogsConfig> TELEMETRY_LOGS =
             Options.key("logs")
                     .type(new TypeReference<TelemetryLogsConfig>() {})

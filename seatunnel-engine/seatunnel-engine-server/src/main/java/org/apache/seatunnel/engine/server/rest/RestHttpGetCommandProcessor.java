@@ -31,6 +31,7 @@ import org.apache.seatunnel.common.utils.JsonUtils;
 import org.apache.seatunnel.engine.common.Constant;
 import org.apache.seatunnel.engine.common.env.EnvironmentUtil;
 import org.apache.seatunnel.engine.common.env.Version;
+import org.apache.seatunnel.engine.common.utils.LogUtil;
 import org.apache.seatunnel.engine.core.classloader.ClassLoaderService;
 import org.apache.seatunnel.engine.core.dag.logical.LogicalDag;
 import org.apache.seatunnel.engine.core.job.JobDAGInfo;
@@ -52,12 +53,6 @@ import org.apache.seatunnel.engine.server.utils.NodeEngineUtil;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.builder.api.Component;
-import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
-import org.apache.logging.log4j.core.config.properties.PropertiesConfiguration;
-import org.apache.logging.log4j.core.lookup.StrSubstitutor;
 
 import com.hazelcast.cluster.Address;
 import com.hazelcast.cluster.Cluster;
@@ -83,7 +78,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -803,11 +797,6 @@ public class RestHttpGetCommandProcessor extends HttpCommandProcessor<HttpGetCom
                 .add(RestConstant.METRICS, toJsonObject(getJobMetrics(jobMetrics)));
     }
 
-    private PropertiesConfiguration getLogConfiguration() {
-        LoggerContext context = (LoggerContext) LogManager.getContext(false);
-        return (PropertiesConfiguration) context.getConfiguration();
-    }
-
     private void getAllNodeLog(HttpGetCommand httpGetCommand, String uri)
             throws NoSuchFieldException, IllegalAccessException {
 
@@ -817,7 +806,7 @@ public class RestHttpGetCommandProcessor extends HttpCommandProcessor<HttpGetCom
         String logName = isLogFile ? param : StringUtils.EMPTY;
         String jobId = !isLogFile ? param : StringUtils.EMPTY;
 
-        String logPath = getLogPath();
+        String logPath = LogUtil.getLogPath();
         if (StringUtils.isBlank(logPath)) {
             logger.warning(
                     "Log file path is empty, no log file path configured in the current configuration file");
@@ -931,50 +920,11 @@ public class RestHttpGetCommandProcessor extends HttpCommandProcessor<HttpGetCom
                 + "</body></html>";
     }
 
-    private String getFileLogPath(PropertiesConfiguration config)
-            throws NoSuchFieldException, IllegalAccessException {
-        Field propertiesField = BuiltConfiguration.class.getDeclaredField("appendersComponent");
-        propertiesField.setAccessible(true);
-        Component propertiesComponent = (Component) propertiesField.get(config);
-        StrSubstitutor substitutor = config.getStrSubstitutor();
-        return propertiesComponent.getComponents().stream()
-                .filter(component -> "fileAppender".equals(component.getAttributes().get("name")))
-                .map(component -> substitutor.replace(component.getAttributes().get("fileName")))
-                .findFirst()
-                .orElse(null);
-    }
-
-    /** Get configuration log path */
-    private String getLogPath() throws NoSuchFieldException, IllegalAccessException {
-        String routingAppender = "routingAppender";
-        String fileAppender = "fileAppender";
-        PropertiesConfiguration config = getLogConfiguration();
-        // Get routingAppender log file path
-        String routingLogFilePath = getRoutingLogFilePath(config);
-
-        // Get fileAppender log file path
-        String fileLogPath = getFileLogPath(config);
-        String logRef =
-                config.getLoggerConfig(StringUtils.EMPTY).getAppenderRefs().stream()
-                        .map(Object::toString)
-                        .filter(ref -> ref.contains(routingAppender) || ref.contains(fileAppender))
-                        .findFirst()
-                        .orElse(StringUtils.EMPTY);
-        if (logRef.equals(routingAppender)) {
-            return routingLogFilePath.substring(0, routingLogFilePath.lastIndexOf("/"));
-        } else if (logRef.equals(fileAppender)) {
-            return fileLogPath.substring(0, routingLogFilePath.lastIndexOf("/"));
-        } else {
-            logger.warning(String.format("Log file path is empty, get logRef : %s", logRef));
-            return null;
-        }
-    }
-
     /** Get Current Node Log By /log request */
     private void getCurrentNodeLog(HttpGetCommand httpGetCommand, String uri)
             throws NoSuchFieldException, IllegalAccessException {
         String logName = getParam(uri);
-        String logPath = getLogPath();
+        String logPath = LogUtil.getLogPath();
 
         if (StringUtils.isBlank(logName)) {
             // Get Current Node Log List
@@ -1035,7 +985,7 @@ public class RestHttpGetCommandProcessor extends HttpCommandProcessor<HttpGetCom
 
     private void getAllLogName(HttpGetCommand httpGetCommand)
             throws NoSuchFieldException, IllegalAccessException {
-        String logPath = getLogPath();
+        String logPath = LogUtil.getLogPath();
         List<File> logFileList = FileUtils.listFile(logPath);
         List<String> fileNameList =
                 logFileList.stream().map(File::getName).collect(Collectors.toList());
@@ -1045,23 +995,5 @@ public class RestHttpGetCommandProcessor extends HttpCommandProcessor<HttpGetCom
             httpGetCommand.send400();
             logger.warning(String.format("Log file name get failed, get log path: %s", logPath));
         }
-    }
-
-    private static String getRoutingLogFilePath(PropertiesConfiguration config)
-            throws NoSuchFieldException, IllegalAccessException {
-        Field propertiesField = BuiltConfiguration.class.getDeclaredField("appendersComponent");
-        propertiesField.setAccessible(true);
-        Component propertiesComponent = (Component) propertiesField.get(config);
-        StrSubstitutor substitutor = config.getStrSubstitutor();
-        return propertiesComponent.getComponents().stream()
-                .filter(
-                        component ->
-                                "routingAppender".equals(component.getAttributes().get("name")))
-                .flatMap(component -> component.getComponents().stream())
-                .flatMap(component -> component.getComponents().stream())
-                .flatMap(component -> component.getComponents().stream())
-                .map(component -> substitutor.replace(component.getAttributes().get("fileName")))
-                .findFirst()
-                .orElse(null);
     }
 }

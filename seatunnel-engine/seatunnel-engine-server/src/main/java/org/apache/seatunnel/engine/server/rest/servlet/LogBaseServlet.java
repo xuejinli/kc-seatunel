@@ -20,14 +20,9 @@ package org.apache.seatunnel.engine.server.rest.servlet;
 import org.apache.seatunnel.common.exception.SeaTunnelRuntimeException;
 import org.apache.seatunnel.common.utils.ExceptionUtils;
 import org.apache.seatunnel.common.utils.FileUtils;
+import org.apache.seatunnel.engine.common.utils.LogUtil;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.builder.api.Component;
-import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
-import org.apache.logging.log4j.core.config.properties.PropertiesConfiguration;
-import org.apache.logging.log4j.core.lookup.StrSubstitutor;
 
 import com.hazelcast.internal.util.StringUtil;
 import com.hazelcast.spi.impl.NodeEngineImpl;
@@ -39,7 +34,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -64,71 +58,11 @@ public class LogBaseServlet extends BaseServlet {
     /** Get configuration log path */
     protected String getLogPath() {
         try {
-            String routingAppender = "routingAppender";
-            String fileAppender = "fileAppender";
-            PropertiesConfiguration config = getLogConfiguration();
-            // Get routingAppender log file path
-            String routingLogFilePath = getRoutingLogFilePath(config);
-
-            // Get fileAppender log file path
-            String fileLogPath = getFileLogPath(config);
-            String logRef =
-                    config.getLoggerConfig(StringUtils.EMPTY).getAppenderRefs().stream()
-                            .map(Object::toString)
-                            .filter(
-                                    ref ->
-                                            ref.contains(routingAppender)
-                                                    || ref.contains(fileAppender))
-                            .findFirst()
-                            .orElse(StringUtils.EMPTY);
-            if (logRef.equals(routingAppender)) {
-                return routingLogFilePath.substring(0, routingLogFilePath.lastIndexOf("/"));
-            } else if (logRef.equals(fileAppender)) {
-                return fileLogPath.substring(0, routingLogFilePath.lastIndexOf("/"));
-            } else {
-                log.warn(String.format("Log file path is empty, get logRef : %s", logRef));
-                return null;
-            }
+            return LogUtil.getLogPath();
         } catch (NoSuchFieldException | IllegalAccessException e) {
             log.error("Get log path error", ExceptionUtils.getMessage(e));
             return null;
         }
-    }
-
-    private String getFileLogPath(PropertiesConfiguration config)
-            throws NoSuchFieldException, IllegalAccessException {
-        Field propertiesField = BuiltConfiguration.class.getDeclaredField("appendersComponent");
-        propertiesField.setAccessible(true);
-        Component propertiesComponent = (Component) propertiesField.get(config);
-        StrSubstitutor substitutor = config.getStrSubstitutor();
-        return propertiesComponent.getComponents().stream()
-                .filter(component -> "fileAppender".equals(component.getAttributes().get("name")))
-                .map(component -> substitutor.replace(component.getAttributes().get("fileName")))
-                .findFirst()
-                .orElse(null);
-    }
-
-    private String getRoutingLogFilePath(PropertiesConfiguration config)
-            throws NoSuchFieldException, IllegalAccessException {
-        Field propertiesField = BuiltConfiguration.class.getDeclaredField("appendersComponent");
-        propertiesField.setAccessible(true);
-        Component propertiesComponent = (Component) propertiesField.get(config);
-        StrSubstitutor substitutor = config.getStrSubstitutor();
-        return propertiesComponent.getComponents().stream()
-                .filter(
-                        component ->
-                                "routingAppender".equals(component.getAttributes().get("name")))
-                .flatMap(component -> component.getComponents().stream())
-                .flatMap(component -> component.getComponents().stream())
-                .flatMap(component -> component.getComponents().stream())
-                .map(component -> substitutor.replace(component.getAttributes().get("fileName")))
-                .findFirst()
-                .orElse(null);
-    }
-
-    private PropertiesConfiguration getLogConfiguration() {
-        LoggerContext context = (LoggerContext) LogManager.getContext(false);
-        return (PropertiesConfiguration) context.getConfiguration();
     }
 
     protected String sendGet(String urlString) {
