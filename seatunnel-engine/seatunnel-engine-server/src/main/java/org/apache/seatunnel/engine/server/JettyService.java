@@ -88,7 +88,7 @@ public class JettyService {
                     chooseAppropriatePort(
                             port, seaTunnelConfig.getEngineConfig().getHttpConfig().getPortRange());
         }
-        log.info("Jetty will start on port: {}", port);
+        log.info("SeaTunnel REST service will start on port {}", port);
         this.server = new Server(port);
     }
 
