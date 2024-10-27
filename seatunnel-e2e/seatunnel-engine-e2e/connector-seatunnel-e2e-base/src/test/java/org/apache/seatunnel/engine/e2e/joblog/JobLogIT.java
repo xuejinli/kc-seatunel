@@ -206,9 +206,36 @@ public class JobLogIT extends SeaTunnelContainer {
                     secondServer.execInContainer(
                             "sh", "-c", "find /tmp/seatunnel/logs -name " + tuple2.f1() + "\n");
             String file1 = execResult.getStdout();
+            soutServerLog();
             Assertions.assertEquals(
                     tuple2.f0(), StringUtils.isBlank(file) && StringUtils.isBlank(file1));
         }
+    }
+
+    private void soutServerLog() throws IOException, InterruptedException {
+
+        Container.ExecResult execResult =
+                server.execInContainer(
+                        "sh", "-c", "cat /tmp/seatunnel/logs/seatunnel-engine-server.log");
+        String serverLogs1 = execResult.getStdout();
+        System.out.println(serverLogs1);
+
+        execResult =
+                secondServer.execInContainer(
+                        "sh", "-c", "cat /tmp/seatunnel/logs/seatunnel-engine-server.log");
+        String secondServerLogs1 = execResult.getStdout();
+        System.out.println(secondServerLogs1);
+
+        execResult =
+                server.execInContainer(
+                        "sh", "-c", "cat /tmp/seatunnel/logs/job-862969647010611201.log");
+        String secondServerLogs2 = execResult.getStdout();
+        System.out.println("--job--\n" + secondServerLogs2);
+        execResult =
+                secondServer.execInContainer(
+                        "sh", "-c", "cat /tmp/seatunnel/logs/job-862969647010611201.log");
+        String secondServerLogs3 = execResult.getStdout();
+        System.out.println("--job--\n" + secondServerLogs3);
     }
 
     private Response submitJob(
