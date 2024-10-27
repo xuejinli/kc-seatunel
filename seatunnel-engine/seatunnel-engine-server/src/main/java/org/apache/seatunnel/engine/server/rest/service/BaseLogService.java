@@ -73,7 +73,7 @@ public class BaseLogService extends BaseService {
                 return null;
             }
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            log.error("Get log path error", ExceptionUtils.getMessage(e));
+            log.error("Get log path error,{}", ExceptionUtils.getMessage(e));
             return null;
         }
     }
@@ -134,7 +134,7 @@ public class BaseLogService extends BaseService {
                 }
             }
         } catch (IOException e) {
-            log.error("Send get Fail.", ExceptionUtils.getMessage(e));
+            log.error("Send get Fail.{}", ExceptionUtils.getMessage(e));
         }
         return null;
     }
@@ -144,8 +144,7 @@ public class BaseLogService extends BaseService {
         uri = StringUtil.stripTrailingSlash(uri).substring(1);
         int indexEnd = uri.indexOf('/');
         if (indexEnd != -1) {
-            String param = uri.substring(indexEnd + 1);
-            return param;
+            return uri.substring(indexEnd + 1);
         }
         return "";
     }
