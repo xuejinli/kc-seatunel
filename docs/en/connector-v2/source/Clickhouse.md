@@ -1,3 +1,4 @@
+
 # Clickhouse
 
 > Clickhouse source connector
@@ -101,6 +102,7 @@ sink {
 
 ```bash
 
+
 env {
   parallelism = 1
   job.mode = "BATCH"
@@ -112,11 +114,6 @@ source {
     database = "default"
     username = "default"
     password = ""
-    server_time_zone = "UTC"
-    result_table_name = "test"
-    clickhouse.config = {
-      "socket_timeout": "300000"
-    }
     table_list = [
       {
         table_path = "t1"
@@ -132,10 +129,12 @@ source {
 }
 
 sink {
-  Assert {
-    rules {
-      table-names = ["t1", "t2"]
-    }
+  Clickhouse {
+    host = "clickhouse:8123"
+    database = "default"
+    table = "t3"
+    username = "default"
+    password = ""
   }
 }
 ```
