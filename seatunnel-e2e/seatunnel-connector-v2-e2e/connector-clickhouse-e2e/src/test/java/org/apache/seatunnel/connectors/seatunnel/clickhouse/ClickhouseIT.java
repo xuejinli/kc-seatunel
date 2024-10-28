@@ -112,8 +112,18 @@ public class ClickhouseIT extends TestSuiteBase implements TestResource {
             disabledReason = "The multi-catalog does not currently support the Spark Flink engine")
     public void testClickhouseMultiSource(TestContainer container) throws Exception {
         Container.ExecResult execResult = container.executeJob(CLICKHOUSE_MULTI_LIST_TABLE_CONFIG);
-        Thread.sleep(3000);
         Assertions.assertEquals(0, execResult.getExitCode());
+
+        Thread.sleep(3000);
+
+        String query = "SELECT COUNT(*) FROM `default`.t3";
+        try (Statement sourceStatement = connection.createStatement();
+                ResultSet sourceResultSet = sourceStatement.executeQuery(query)) {
+            if (sourceResultSet.next()) {
+                int count = sourceResultSet.getInt(1);
+                Assertions.assertEquals(4, count);
+            }
+        }
     }
 
     @BeforeAll
