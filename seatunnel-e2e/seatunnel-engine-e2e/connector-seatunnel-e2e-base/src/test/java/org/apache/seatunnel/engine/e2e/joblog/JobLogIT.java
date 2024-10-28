@@ -129,6 +129,7 @@ public class JobLogIT extends SeaTunnelContainer {
                         Tuple2.tuple2(true, "job-" + CUSTOM_JOB_ID + ".log"),
                         Tuple2.tuple2(false, "job-" + CUSTOM_JOB_ID2 + ".log"),
                         Tuple2.tuple2(false, "job-" + CUSTOM_JOB_ID3 + ".log"));
+        soutServerLog();
         assertFileLogClean(after);
     }
 
@@ -206,7 +207,6 @@ public class JobLogIT extends SeaTunnelContainer {
                     secondServer.execInContainer(
                             "sh", "-c", "find /tmp/seatunnel/logs -name " + tuple2.f1() + "\n");
             String file1 = execResult.getStdout();
-            soutServerLog();
             Assertions.assertEquals(
                     tuple2.f0(), StringUtils.isBlank(file) && StringUtils.isBlank(file1));
         }

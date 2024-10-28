@@ -15,38 +15,47 @@
  * limitations under the License.
  */
 
-package org.apache.seatunnel.engine.server.operation;
+package org.apache.seatunnel.engine.server.telemetry.log.operation;
 
-import org.apache.seatunnel.engine.common.utils.PassiveCompletableFuture;
 import org.apache.seatunnel.engine.server.SeaTunnelServer;
-import org.apache.seatunnel.engine.server.serializable.ClientToServerOperationDataSerializerHook;
+import org.apache.seatunnel.engine.server.serializable.TaskDataSerializerHook;
+import org.apache.seatunnel.engine.server.task.operation.TracingOperation;
 import org.apache.seatunnel.engine.server.telemetry.log.TaskLogManagerService;
 
-import lombok.extern.slf4j.Slf4j;
+import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 
-@Slf4j
-public class CleanLogOperation extends AbstractJobAsyncOperation {
-    public CleanLogOperation() {
-        super();
-    }
+public class CleanLogOperation extends TracingOperation implements IdentifiedDataSerializable {
+
+    private long jobId;
 
     public CleanLogOperation(long jobId) {
-        super(jobId);
+        super();
+        this.jobId = jobId;
+    }
+
+    public CleanLogOperation() {}
+
+    @Override
+    public void runInternal() throws Exception {
+        SeaTunnelServer service = getService();
+        TaskLogManagerService taskLogManagerService = service.getTaskLogManagerService();
+        if (taskLogManagerService != null) {
+            taskLogManagerService.clean(jobId);
+        }
     }
 
     @Override
-    protected PassiveCompletableFuture<?> doRun() throws Exception {
-        SeaTunnelServer service = getService();
-        TaskLogManagerService taskLogManagerService = service.getTaskLogManagerService();
-        if (taskLogManagerService == null) {
-            // not enable
-            return new PassiveCompletableFuture<>(null);
-        }
-        return taskLogManagerService.clean(jobId);
+    public int getFactoryId() {
+        return TaskDataSerializerHook.FACTORY_ID;
     }
 
     @Override
     public int getClassId() {
-        return ClientToServerOperationDataSerializerHook.CLEAN_LOG_OPERATION;
+        return TaskDataSerializerHook.CLEAN_LOG_OPERATION;
+    }
+
+    @Override
+    public String getServiceName() {
+        return SeaTunnelServer.SERVICE_NAME;
     }
 }

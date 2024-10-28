@@ -19,7 +19,6 @@ package org.apache.seatunnel.engine.server.telemetry.log;
 
 import org.apache.seatunnel.engine.common.config.server.TelemetryLogsConfig;
 import org.apache.seatunnel.engine.common.utils.LogUtil;
-import org.apache.seatunnel.engine.common.utils.PassiveCompletableFuture;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,13 +26,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 public class TaskLogManagerService {
     private String path;
 
-    public TaskLogManagerService(TelemetryLogsConfig log) {}
+    public TaskLogManagerService(TelemetryLogsConfig log) {
+    }
 
     public void initClean() {
         try {
@@ -45,24 +44,19 @@ public class TaskLogManagerService {
         }
     }
 
-    public PassiveCompletableFuture<?> clean(long jobId) {
+    public void clean(long jobId) {
+        log.info("Cleaning logs for jobId: {} , path : {}", jobId, path);
         if (path == null) {
-            return new PassiveCompletableFuture<>(null);
+            return;
         }
         String[] logFiles = getLogFiles(jobId, path);
-
-        return new PassiveCompletableFuture<>(
-                CompletableFuture.supplyAsync(
-                        () -> {
-                            for (String logFile : logFiles) {
-                                try {
-                                    Files.delete(Paths.get(path + "/" + logFile));
-                                } catch (IOException e) {
-                                    log.warn("Failed to delete log file: {}", logFile, e);
-                                }
-                            }
-                            return new PassiveCompletableFuture<>(null);
-                        }));
+        for (String logFile : logFiles) {
+            try {
+                Files.delete(Paths.get(path + "/" + logFile));
+            } catch (IOException e) {
+                log.warn("Failed to delete log file: {}", logFile, e);
+            }
+        }
     }
 
     private String[] getLogFiles(long jobId, String path) {
@@ -74,12 +68,6 @@ public class TaskLogManagerService {
             return new String[0];
         }
 
-        return logDir.list(
-                (dir, name) -> {
-                    if (name.contains(String.valueOf(jobId))) {
-                        return true;
-                    }
-                    return false;
-                });
+        return logDir.list((dir, name) -> name.contains(String.valueOf(jobId)));
     }
 }
