@@ -254,72 +254,54 @@ Specifies Whether to process data using the tag attribute format.
 
 Filter pattern, which used for filtering files.
 
-The filtering format is similar to wildcard matching file names in Linux.
-
-| Wildcard     | Meaning                                                                                                                        | Example                                                                                                                                      |
-|--------------|--------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
-| *            | Match 0 or more characters                                                                                                     | f* &emsp;&ensp;&emsp; Any file starting with f<br/>b*.txt &emsp; Any file starting with b, any character in the middle, and ending with. txt |
-| []           | Match a single character in parentheses                                                                                        | [abc]* &emsp; A file that starts with any one of the characters a, b, or c                                                                   |
-| ?            | Match any single character                                                                                                     | f?.txt &emsp; Any file starting with 'f' followed by a character and ending with '. txt'                                                     |
-| [!]          | Match any single character not in parentheses                                                                                  | [!abc]* &emsp; Any file that does not start with abc                                                                                         |
-| [a-z]        | Match any single character from a to z                                                                                         | [a-z]* &emsp; Any file starting with a to z                                                                                                  |
-| {a,b,c}/a..z | When separated by commas, it represents individual characters<br/>When separated by two dots, represents continuous characters | {a,b,c}* &emsp; Files starting with any character from abc<br/>{a..Z}* &emsp;&ensp; Files starting with any character from a to z            |
-
-However, it should be noted that unlike Linux wildcard characters, when encountering file suffixes, the middle dot cannot be omitted.
-
-For example, `abc20241022.csv`, the normal Linux wildcard `abc*` is sufficient, but here we need to use `abc*.*` , Pay attention to a point in the middle.
+The pattern follows standard regular expressions. For details, please refer to https://en.wikipedia.org/wiki/Regular_expression. learn it
 
 File Structure Example:
 ```
-report.txt
-notes.txt
-input.csv
-abch20241022.csv
-abcw20241022.csv
-abcx20241022.csv
-abcq20241022.csv
-abcg20241022.csv
-abcv20241022.csv
-abcb20241022.csv
-old_data.csv
-logo.png
-script.sh
-helpers.sh
+/data/seatunnel/20241001/report.txt
+/data/seatunnel/20241007/abch202410.csv
+/data/seatunnel/20241002/abcg202410.csv
+/data/seatunnel/20241005/old_data.csv
+/data/seatunnel/20241012/logo.png
 ```
 Matching Rules Example:
 
 **Example 1**: *Match all .txt files*，Regular Expression:
 ```
-*.txt
+/data/seatunnel/202410\d*/.*.txt
 ```
 The result of this example matching is:
 ```
-report.txt
-notes.txt
+/data/seatunnel/20241001/report.txt
 ```
-**Example 2**: *Match all Any file starting with abc*，Regular Expression:
+**Example 2**: *Match all file starting with abc*，Regular Expression:
 ```
-abc*.csv
-```
-The result of this example matching is:
-```
-abch20241022.csv
-abcw20241022.csv
-abcx20241022.csv
-abcq20241022.csv
-abcg20241022.csv
-abcv20241022.csv
-abcb20241022.csv
-```
-**Example 3**: *Match all Any file starting with abc，And the fourth character is either x or g*, the Regular Expression:
-```
-abc[x,g]*.csv
+/data/seatunnel/202410\d*/abc.*
 ```
 The result of this example matching is:
 ```
-abcx20241022.csv
-abcg20241022.csv
+/data/seatunnel/20241007/abch202410.csv
+/data/seatunnel/20241002/abcg202410.csv
 ```
+**Example 3**: *Match all file starting with abc，And the fourth character is either x or g*, the Regular Expression:
+```
+/data/seatunnel/20241002/abc[x,g].*
+```
+The result of this example matching is:
+```
+/data/seatunnel/20241002/abcg202410.csv
+```
+**Example 4**: *Match third level folders starting with 202410 and files ending with .csv*, the Regular Expression:
+```
+/data/seatunnel/202410\d*/.*.csv
+```
+The result of this example matching is:
+```
+/data/seatunnel/20241007/abch202410.csv
+/data/seatunnel/20241002/abcg202410.csv
+/data/seatunnel/20241005/old_data.csv
+```
+
 ### compress_codec [string]
 
 The compress codec of files and the details that supported as the following shown:
@@ -482,7 +464,7 @@ env {
 
 source {
   LocalFile {
-    path = "/seatunnel/read/"
+    path = "/data/seatunnel/"
     file_format_type = "csv"
     skip_header_row_number = 1
     // file example abcD2024.csv
