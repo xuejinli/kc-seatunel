@@ -26,6 +26,7 @@ import org.apache.seatunnel.api.table.factory.TableTransformFactory;
 import org.apache.seatunnel.api.table.factory.TableTransformFactoryContext;
 import org.apache.seatunnel.api.table.type.SeaTunnelDataType;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
+import org.apache.seatunnel.api.transform.SeaTunnelMultiRowTransform;
 import org.apache.seatunnel.api.transform.SeaTunnelTransform;
 import org.apache.seatunnel.core.starter.exception.TaskExecuteException;
 import org.apache.seatunnel.core.starter.execution.PluginUtil;
@@ -45,7 +46,6 @@ import org.apache.spark.sql.types.StructType;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -164,33 +164,25 @@ public class TransformExecuteProcessor
         SeaTunnelRowConverter inputRowConverter = new SeaTunnelRowConverter(inputDataType);
         SeaTunnelRowConverter outputRowConverter = new SeaTunnelRowConverter(outputDataTYpe);
         ExpressionEncoder<Row> encoder = RowEncoder.apply(outputSchema);
+
         return stream.mapPartitions(
-                        (MapPartitionsFunction<Row, Row>)
-                                (Iterator<Row> rowIterator) ->
-                                        new TransformIterator(
-                                                rowIterator,
-                                                transform,
-                                                outputSchema,
-                                                inputRowConverter,
-                                                outputRowConverter),
+                        new TransformMapPartitionsFunction(
+                                transform, outputSchema, inputRowConverter, outputRowConverter),
                         encoder)
                 .filter(Objects::nonNull);
     }
 
-    private static class TransformIterator implements Iterator<Row>, Serializable {
-        private Iterator<Row> sourceIterator;
+    private static class TransformMapPartitionsFunction implements MapPartitionsFunction<Row, Row> {
         private SeaTunnelTransform<SeaTunnelRow> transform;
         private StructType structType;
         private SeaTunnelRowConverter inputRowConverter;
         private SeaTunnelRowConverter outputRowConverter;
 
-        public TransformIterator(
-                Iterator<Row> sourceIterator,
+        public TransformMapPartitionsFunction(
                 SeaTunnelTransform<SeaTunnelRow> transform,
                 StructType structType,
                 SeaTunnelRowConverter inputRowConverter,
                 SeaTunnelRowConverter outputRowConverter) {
-            this.sourceIterator = sourceIterator;
             this.transform = transform;
             this.structType = structType;
             this.inputRowConverter = inputRowConverter;
@@ -198,23 +190,28 @@ public class TransformExecuteProcessor
         }
 
         @Override
-        public boolean hasNext() {
-            return sourceIterator.hasNext();
-        }
-
-        @Override
-        public Row next() {
-            try {
+        public Iterator<Row> call(Iterator<Row> sourceIterator) throws Exception {
+            List<Row> rows = new ArrayList<>();
+            while (sourceIterator.hasNext()) {
                 Row row = sourceIterator.next();
                 SeaTunnelRow seaTunnelRow = inputRowConverter.unpack((GenericRowWithSchema) row);
-                seaTunnelRow = (SeaTunnelRow) transform.map(seaTunnelRow);
-                if (seaTunnelRow == null) {
-                    return null;
+                if (transform instanceof SeaTunnelMultiRowTransform) {
+                    List<SeaTunnelRow> seaTunnelRows =
+                            ((SeaTunnelMultiRowTransform<SeaTunnelRow>) transform)
+                                    .MultiRowMap(seaTunnelRow);
+                    if (!seaTunnelRows.isEmpty()) {
+                        for (SeaTunnelRow seaTunnelRowTransform : seaTunnelRows) {
+                            rows.add(outputRowConverter.parcel(seaTunnelRowTransform));
+                        }
+                    }
+                } else {
+                    SeaTunnelRow seaTunnelRowTransform = transform.map(seaTunnelRow);
+                    if (seaTunnelRow != null) {
+                        rows.add(outputRowConverter.parcel(seaTunnelRowTransform));
+                    }
                 }
-                return outputRowConverter.parcel(seaTunnelRow);
-            } catch (Exception e) {
-                throw new TaskExecuteException("Row convert failed, caused: " + e.getMessage(), e);
             }
+            return rows.iterator();
         }
     }
 }
