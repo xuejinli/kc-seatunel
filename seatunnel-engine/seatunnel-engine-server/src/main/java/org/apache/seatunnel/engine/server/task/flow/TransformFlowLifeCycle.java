@@ -116,7 +116,7 @@ public class TransformFlowLifeCycle<T> extends ActionFlowLifeCycle
                 SeaTunnelMultiRowTransform<T> transformDecorator =
                         (SeaTunnelMultiRowTransform<T>) transformer;
                 for (T data : dataList) {
-                    List<T> outputDataArray = transformDecorator.MultiRowMap(data);
+                    List<T> outputDataArray = transformDecorator.multiRowMap(data);
                     log.debug(
                             "Transform[{}] input row {} and output row {}",
                             transformer,

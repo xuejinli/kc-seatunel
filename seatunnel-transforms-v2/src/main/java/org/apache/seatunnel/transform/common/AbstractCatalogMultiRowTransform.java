@@ -47,7 +47,7 @@ public abstract class AbstractCatalogMultiRowTransform
     }
 
     @Override
-    public List<SeaTunnelRow> MultiRowMap(SeaTunnelRow row) {
+    public List<SeaTunnelRow> multiRowMap(SeaTunnelRow row) {
         try {
             return transformRow(row);
         } catch (ErrorDataTransformException e) {

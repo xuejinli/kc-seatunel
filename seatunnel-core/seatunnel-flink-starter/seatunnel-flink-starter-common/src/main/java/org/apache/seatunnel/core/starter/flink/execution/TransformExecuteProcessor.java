@@ -171,7 +171,7 @@ public class TransformExecuteProcessor
         @Override
         public void flatMap(SeaTunnelRow row, Collector<SeaTunnelRow> collector) {
             List<SeaTunnelRow> rows =
-                    ((SeaTunnelMultiRowTransform<SeaTunnelRow>) transform).MultiRowMap(row);
+                    ((SeaTunnelMultiRowTransform<SeaTunnelRow>) transform).multiRowMap(row);
             for (SeaTunnelRow rowResult : rows) {
                 collector.collect(rowResult);
             }

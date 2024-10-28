@@ -27,7 +27,7 @@ public interface SeaTunnelMultiRowTransform<T> extends SeaTunnelTransform<T> {
      * @param row the data need be transformed.
      * @return transformed data.
      */
-    List<T> MultiRowMap(T row);
+    List<T> multiRowMap(T row);
 
     default T map(T row) {
         throw new UnsupportedOperationException("Heads-up conversion is not supported");

@@ -198,7 +198,7 @@ public class TransformExecuteProcessor
                 if (transform instanceof SeaTunnelMultiRowTransform) {
                     List<SeaTunnelRow> seaTunnelRows =
                             ((SeaTunnelMultiRowTransform<SeaTunnelRow>) transform)
-                                    .MultiRowMap(seaTunnelRow);
+                                    .multiRowMap(seaTunnelRow);
                     if (!seaTunnelRows.isEmpty()) {
                         for (SeaTunnelRow seaTunnelRowTransform : seaTunnelRows) {
                             rows.add(outputRowConverter.parcel(seaTunnelRowTransform));
