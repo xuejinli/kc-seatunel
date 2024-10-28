@@ -31,8 +31,7 @@ import java.nio.file.Paths;
 public class TaskLogManagerService {
     private String path;
 
-    public TaskLogManagerService(TelemetryLogsConfig log) {
-    }
+    public TaskLogManagerService(TelemetryLogsConfig log) {}
 
     public void initClean() {
         try {

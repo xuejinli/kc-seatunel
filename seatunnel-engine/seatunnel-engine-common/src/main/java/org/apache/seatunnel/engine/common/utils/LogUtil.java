@@ -29,7 +29,7 @@ import java.lang.reflect.Field;
 
 public class LogUtil {
 
-    /** Get configuration log path */
+    /** Get configuration log path by log4j */
     public static String getLogPath() throws NoSuchFieldException, IllegalAccessException {
         String routingAppender = "routingAppender";
         String fileAppender = "fileAppender";
