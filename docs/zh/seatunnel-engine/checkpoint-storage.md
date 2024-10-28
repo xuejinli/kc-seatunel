@@ -77,7 +77,7 @@ seatunnel:
 
 除了与公共COS buckets交互之外，COS客户端需要与buckets交互所需的凭据。
 客户端支持多种身份验证机制，并且可以配置使用哪种机制及其使用顺序。也可以使用com.qcloud.cos.auth.COSCredentialsProvider的自定义实现。
-如果您使用SimpleCredentialsProvider(可以从腾讯云访问密钥管理中获得)，它们包括一个secretId和一个secretKey。
+如果您使用SimpleCredentialsProvider(可以从腾讯云API密钥管理中获得)，它们包括一个secretId和一个secretKey。
 您可以这样配置:
 
 ```yaml
