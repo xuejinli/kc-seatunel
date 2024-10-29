@@ -43,27 +43,27 @@ If you use SeaTunnel Engine, It automatically integrated the hadoop jar when you
 
 ## Options
 
-|           name            |  type   | required |            default value             |
-|---------------------------|---------|----------|--------------------------------------|
-| path                      | string  | yes      | -                                    |
-| file_format_type          | string  | yes      | -                                    |
-| read_columns              | list    | no       | -                                    |
-| delimiter/field_delimiter | string  | no       | \001                                 |
-| parse_partition_from_path | boolean | no       | true                                 |
-| date_format               | string  | no       | yyyy-MM-dd                           |
-| datetime_format           | string  | no       | yyyy-MM-dd HH:mm:ss                  |
-| time_format               | string  | no       | HH:mm:ss                             |
-| skip_header_row_number    | long    | no       | 0                                    |
-| schema                    | config  | no       | -                                    |
-| sheet_name                | string  | no       | -                                    |
-| xml_row_tag               | string  | no       | -                                    |
-| xml_use_attr_format       | boolean | no       | -                                    |
-| file_filter_pattern       | string  | no       | -                                    |
-| compress_codec            | string  | no       | none                                 |
-| archive_compress_codec    | string  | no       | none                                 |
-| encoding                  | string  | no       | UTF-8                                |
-| common-options            |         | no       | -                                    |
-| tables_configs            | list    | no       | used to define a multiple table task |
+|           name            |  type   | required | default value                                              |
+|---------------------------|---------|----------|------------------------------------------------------------|
+| path                      | string  | yes      | -                                                          |
+| file_format_type          | string  | yes      | -                                                          |
+| read_columns              | list    | no       | -                                                          |
+| delimiter/field_delimiter | string  | no       | \001                                                       |
+| parse_partition_from_path | boolean | no       | true                                                       |
+| date_format               | string  | no       | yyyy-MM-dd                                                 |
+| datetime_format           | string  | no       | yyyy-MM-dd HH:mm:ss                                        |
+| time_format               | string  | no       | HH:mm:ss                                                   |
+| skip_header_row_number    | long    | no       | 0                                                          |
+| schema                    | config  | no       | -                                                          |
+| sheet_name                | string  | no       | -                                                          |
+| xml_row_tag               | string  | no       | -                                                          |
+| xml_use_attr_format       | boolean | no       | -                                                          |
+| file_filter_pattern       | string  | no       | `*.txt` means you only need read the files end with `.txt` |
+| compress_codec            | string  | no       | none                                                       |
+| archive_compress_codec    | string  | no       | none                                                       |
+| encoding                  | string  | no       | UTF-8                                                      |
+| common-options            |         | no       | -                                                          |
+| tables_configs            | list    | no       | used to define a multiple table task                       |
 
 ### path [string]
 
@@ -269,7 +269,7 @@ Matching Rules Example:
 
 **Example 1**: *Match all .txt files*，Regular Expression:
 ```
-/data/seatunnel/202410\d*/.*.txt
+/data/seatunnel/20241001/.*\.txt
 ```
 The result of this example matching is:
 ```
@@ -277,24 +277,24 @@ The result of this example matching is:
 ```
 **Example 2**: *Match all file starting with abc*，Regular Expression:
 ```
-/data/seatunnel/202410\d*/abc.*
+/data/seatunnel/20241002/abc.*
 ```
 The result of this example matching is:
 ```
 /data/seatunnel/20241007/abch202410.csv
 /data/seatunnel/20241002/abcg202410.csv
 ```
-**Example 3**: *Match all file starting with abc，And the fourth character is either x or g*, the Regular Expression:
+**Example 3**: *Match all file starting with abc，And the fourth character is either h or g*, the Regular Expression:
 ```
-/data/seatunnel/20241002/abc[x,g].*
+/data/seatunnel/20241007/abc[h,g].*
 ```
 The result of this example matching is:
 ```
-/data/seatunnel/20241002/abcg202410.csv
+/data/seatunnel/20241007/abch202410.csv
 ```
 **Example 4**: *Match third level folders starting with 202410 and files ending with .csv*, the Regular Expression:
 ```
-/data/seatunnel/202410\d*/.*.csv
+/data/seatunnel/202410\d*/.*\.csv
 ```
 The result of this example matching is:
 ```
@@ -472,6 +472,7 @@ source {
     file_filter_pattern = "abc[DX]*.*"
   }
 }
+
 sink {
   Console {
   }
