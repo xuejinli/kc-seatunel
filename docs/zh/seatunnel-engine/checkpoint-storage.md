@@ -102,6 +102,11 @@ seatunnel:
 
 腾讯云COS相关配置可参考：[Tencent Hadoop-COS文档](https://doc.fincloud.tencent.cn/tcloud/Storage/COS/846365/hadoop)
 
+使用前请将如下jar添加到lib目录下：
+- hadoop-cos-3.4.1.jar
+- cos_api-bundle-5.6.69.jar
+- hadoop-shaded-guava-1.1.1.jar
+
 #### S3
 
 S3基于hdfs-file，所以你可以参考[Hadoop s3文档](https://hadoop.apache.org/docs/stable/hadoop-aws/tools/hadoop-aws/index.html)来配置s3。
