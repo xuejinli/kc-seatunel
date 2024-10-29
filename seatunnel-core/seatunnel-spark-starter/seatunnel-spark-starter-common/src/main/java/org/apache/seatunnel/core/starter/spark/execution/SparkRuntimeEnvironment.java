@@ -137,7 +137,6 @@ public class SparkRuntimeEnvironment implements RuntimeEnvironment {
                                         entry.getKey(),
                                         String.valueOf(entry.getValue().unwrapped())));
         sparkConf.setAppName(jobName);
-        sparkConf.setMaster("local[*]");
         return sparkConf;
     }
 

@@ -36,7 +36,7 @@ import org.apache.seatunnel.translation.spark.execution.DatasetTableInfo;
 import org.apache.seatunnel.translation.spark.serialization.SeaTunnelRowConverter;
 import org.apache.seatunnel.translation.spark.utils.TypeConverterUtils;
 
-import org.apache.spark.api.java.function.MapPartitionsFunction;
+import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder;
@@ -165,50 +165,45 @@ public class TransformExecuteProcessor
         SeaTunnelRowConverter outputRowConverter = new SeaTunnelRowConverter(outputDataTYpe);
         ExpressionEncoder<Row> encoder = RowEncoder.apply(outputSchema);
 
-        return stream.mapPartitions(
+        return stream.flatMap(
                         new TransformMapPartitionsFunction(
-                                transform, outputSchema, inputRowConverter, outputRowConverter),
+                                transform, inputRowConverter, outputRowConverter),
                         encoder)
                 .filter(Objects::nonNull);
     }
 
-    private static class TransformMapPartitionsFunction implements MapPartitionsFunction<Row, Row> {
+    private static class TransformMapPartitionsFunction implements FlatMapFunction<Row, Row> {
         private SeaTunnelTransform<SeaTunnelRow> transform;
-        private StructType structType;
         private SeaTunnelRowConverter inputRowConverter;
         private SeaTunnelRowConverter outputRowConverter;
 
         public TransformMapPartitionsFunction(
                 SeaTunnelTransform<SeaTunnelRow> transform,
-                StructType structType,
                 SeaTunnelRowConverter inputRowConverter,
                 SeaTunnelRowConverter outputRowConverter) {
             this.transform = transform;
-            this.structType = structType;
             this.inputRowConverter = inputRowConverter;
             this.outputRowConverter = outputRowConverter;
         }
 
         @Override
-        public Iterator<Row> call(Iterator<Row> sourceIterator) throws Exception {
+        public Iterator<Row> call(Row row) throws Exception {
             List<Row> rows = new ArrayList<>();
-            while (sourceIterator.hasNext()) {
-                Row row = sourceIterator.next();
-                SeaTunnelRow seaTunnelRow = inputRowConverter.unpack((GenericRowWithSchema) row);
-                if (transform instanceof SeaTunnelMultiRowTransform) {
-                    List<SeaTunnelRow> seaTunnelRows =
-                            ((SeaTunnelMultiRowTransform<SeaTunnelRow>) transform)
-                                    .flatMap(seaTunnelRow);
-                    if (!seaTunnelRows.isEmpty()) {
-                        for (SeaTunnelRow seaTunnelRowTransform : seaTunnelRows) {
-                            rows.add(outputRowConverter.parcel(seaTunnelRowTransform));
-                        }
-                    }
-                } else {
-                    SeaTunnelRow seaTunnelRowTransform = transform.map(seaTunnelRow);
-                    if (seaTunnelRowTransform != null) {
+
+            SeaTunnelRow seaTunnelRow = inputRowConverter.unpack((GenericRowWithSchema) row);
+            if (transform instanceof SeaTunnelMultiRowTransform) {
+                List<SeaTunnelRow> seaTunnelRows =
+                        ((SeaTunnelMultiRowTransform<SeaTunnelRow>) transform)
+                                .flatMap(seaTunnelRow);
+                if (!seaTunnelRows.isEmpty()) {
+                    for (SeaTunnelRow seaTunnelRowTransform : seaTunnelRows) {
                         rows.add(outputRowConverter.parcel(seaTunnelRowTransform));
                     }
+                }
+            } else {
+                SeaTunnelRow seaTunnelRowTransform = transform.map(seaTunnelRow);
+                if (seaTunnelRowTransform != null) {
+                    rows.add(outputRowConverter.parcel(seaTunnelRowTransform));
                 }
             }
             return rows.iterator();
