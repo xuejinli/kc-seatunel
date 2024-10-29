@@ -131,7 +131,7 @@ public class RedisConfig {
             Options.key("support_custom_key")
                     .booleanType()
                     .defaultValue(false)
-                    .withDescription("the key can be customized by the field value in the upstream data.");
+                    .withDescription("if true, the key can be customized by the field value in the upstream data.");
 
     public static final Option<String> VALUE_FIELD =
             Options.key("value_field")
