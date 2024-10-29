@@ -127,7 +127,7 @@ public class RedisSinkWriter extends AbstractSinkWriter<SeaTunnelRow, Void>
         } else {
             value = handleOtherTypes(element, fields);
         }
-        if (StringUtils.isEmpty(value)) {
+        if (value == null) {
             byte[] serialize = serializationSchema.serialize(element);
             value = new String(serialize);
         }
@@ -138,7 +138,7 @@ public class RedisSinkWriter extends AbstractSinkWriter<SeaTunnelRow, Void>
         String hashKeyField = redisParameters.getHashKeyField();
         String hashValueField = redisParameters.getHashValueField();
         if (StringUtils.isEmpty(hashKeyField)) {
-            return "";
+            return null;
         }
         String hashKey;
         if (fields.contains(hashKeyField)) {
@@ -164,7 +164,7 @@ public class RedisSinkWriter extends AbstractSinkWriter<SeaTunnelRow, Void>
     private String handleOtherTypes(SeaTunnelRow element, List<String> fields) {
         String valueField = redisParameters.getValueField();
         if (StringUtils.isEmpty(valueField)) {
-            return "";
+            return null;
         }
         if (fields.contains(valueField)) {
             return element.getField(fields.indexOf(valueField)).toString();
