@@ -100,15 +100,18 @@ public class ClickhouseSourceReader implements SourceReader<SeaTunnelRow, Clickh
                                         output.collect(new SeaTunnelRow(values));
                                     });
                 }
-                this.readerContext.signalNoMoreElement();
-                this.splits.clear();
+                signalNoMoreElement();
             }
-            if (noMoreSplit && splits.isEmpty()) {
-                log.info("Closed the bounded ClickHouse source");
-                this.readerContext.signalNoMoreElement();
-                this.splits.clear();
+            if (noMoreSplit && splits.isEmpty() && Boundedness.BOUNDED.equals(readerContext.getBoundedness())) {
+                signalNoMoreElement();
             }
         }
+    }
+
+    private void signalNoMoreElement() {
+        log.info("Closed the bounded ClickHouse source");
+        this.readerContext.signalNoMoreElement();
+        this.splits.clear();
     }
 
     @Override
