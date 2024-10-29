@@ -12,24 +12,25 @@
 
 ## 选项
 
-|       name       |  type  |       required        | default value |
-|------------------|--------|-----------------------|---------------|
-| host             | string | yes                   | -             |
-| port             | int    | yes                   | -             |
-| key              | string | yes                   | -             |
-| data_type        | string | yes                   | -             |
-| batch_size       | int    | no                    | 10            |
-| user             | string | no                    | -             |
-| auth             | string | no                    | -             |
-| db_num           | int    | no                    | 0             |
-| mode             | string | no                    | single        |
-| nodes            | list   | yes when mode=cluster | -             |
-| format           | string | no                    | json          |
-| expire           | long   | no                    | -1            |
-| value_field      | string | no                    | -             |
-| hash_key_field   | string | no                    | -             |
-| hash_value_field | string | no                    | -             |
-| common-options   |        | no                    | -             |
+| name               | type    |       required        | default value |
+|--------------------|---------|-----------------------|---------------|
+| host               | string  | yes                   | -             |
+| port               | int     | yes                   | -             |
+| key                | string  | yes                   | -             |
+| data_type          | string  | yes                   | -             |
+| batch_size         | int     | no                    | 10            |
+| user               | string  | no                    | -             |
+| auth               | string  | no                    | -             |
+| db_num             | int     | no                    | 0             |
+| mode               | string  | no                    | single        |
+| nodes              | list    | yes when mode=cluster | -             |
+| format             | string  | no                    | json          |
+| expire             | long    | no                    | -1            |
+| support_custom_key | boolean | no                    | false         |
+| value_field        | string  | no                    | -             |
+| hash_key_field     | string  | no                    | -             |
+| hash_value_field   | string  | no                    | -             |
+| common-options     |         | no                    | -             |
 
 ### host [string]
 
@@ -136,6 +137,25 @@ Redis 节点信息，在集群模式下使用，必须按如下格式：
 
 设置 Redis 的过期时间，单位为秒。默认值为 -1，表示键不会自动过期。
 
+### support_custom_key [boolean]
+
+设置为true，表示启用自定义Key。
+
+上游数据如下：
+
+| code | data | success |
+|------|------|---------|
+| 200  | 获取成功 | true    |
+| 500  | 内部错误 | false   |
+
+可以使用`{`和`}`符号自定义Redis键名，`{}`中的字段名会被解析替换为上游数据中的某个字段值，例如：将字段名称指定为 `{code}` 并将 data_type 设置为 `key`，将有两个数据写入 Redis：
+1. `200 -> {code: 200, data: 获取成功, success: true}`
+2. `500 -> {code: 500, data: 内部错误, success: false}`
+
+Redis键名可以由固定部分和变化部分组成，通过Redis分组符号:连接，例如：将字段名称指定为 `code:{code}` 并将 data_type 设置为 `key`，将有两个数据写入 Redis：
+1. `code:200 -> {code: 200, data: 获取成功, success: true}`
+2. `code:500 -> {code: 500, data: 内部错误, success: false}`
+
 ### value_field [string]
 
 要写入Redis的值的字段， `data_type` 支持 `key` `list` `set` `zset`.
@@ -184,6 +204,43 @@ Redis {
   port = 6379
   key = age
   data_type = list
+}
+```
+
+自定义Key示例：
+
+```hocon
+Redis {
+  host = localhost
+  port = 6379
+  key = "name:{name}"
+  support_custom_key = true
+  data_type = key
+}
+```
+
+自定义Value示例：
+
+```hocon
+Redis {
+  host = localhost
+  port = 6379
+  key = person
+  value_field = "name"
+  data_type = key
+}
+```
+
+自定义HashKey和HashValue示例：
+
+```hocon
+Redis {
+  host = localhost
+  port = 6379
+  key = person
+  hash_key_field = "name"
+  hash_value_field = "age"
+  data_type = hash
 }
 ```
 

@@ -127,6 +127,12 @@ public class RedisConfig {
                             "batch_size is used to control the size of a batch of data during read and write operations"
                                     + ",default 10");
 
+    public static final Option<Boolean> SUPPORT_CUSTOM_KEY =
+            Options.key("support_custom_key")
+                    .booleanType()
+                    .defaultValue(false)
+                    .withDescription("if true, enables connection recovery");
+
     public static final Option<String> VALUE_FIELD =
             Options.key("value_field")
                     .stringType()

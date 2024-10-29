@@ -80,7 +80,23 @@ public class RedisSinkWriter extends AbstractSinkWriter<SeaTunnelRow, Void>
     }
 
     private String getKey(SeaTunnelRow element, List<String> fields) {
-        String keyField = redisParameters.getKeyField();
+        String key = redisParameters.getKeyField();
+        Boolean supportCustomKey = redisParameters.getSupportCustomKey();
+        if (Boolean.TRUE.equals(supportCustomKey)) {
+            return getCustomKey(element, fields, key);
+        }
+        return getNormalKey(element, fields, key);
+    }
+
+    private static String getNormalKey(SeaTunnelRow element, List<String> fields, String keyField) {
+        if (fields.contains(keyField)) {
+            return element.getField(fields.indexOf(keyField)).toString();
+        } else {
+            return keyField;
+        }
+    }
+
+    private String getCustomKey(SeaTunnelRow element, List<String> fields, String keyField) {
         String[] keyFieldSegments = keyField.split(REDIS_GROUP_DELIMITER);
         StringBuilder key = new StringBuilder();
         for (int i = 0; i < keyFieldSegments.length; i++) {
