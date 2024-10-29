@@ -254,9 +254,7 @@ Specifies Whether to process data using the tag attribute format.
 
 Filter pattern, which used for filtering files.
 
-The pattern follows standard regular expressions. For details, please refer to https://en.wikipedia.org/wiki/Regular_expression. learn it
-
-File Structure Example:
+The pattern follows standard regular expressions. For details, please refer to https://en.wikipedia.org/wiki/Regular_expression.
 ```
 /data/seatunnel/20241001/report.txt
 /data/seatunnel/20241007/abch202410.csv
