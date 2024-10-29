@@ -17,6 +17,7 @@
 
 package org.apache.seatunnel.connectors.seatunnel.clickhouse.source;
 
+import org.apache.seatunnel.api.source.Boundedness;
 import org.apache.seatunnel.api.source.Collector;
 import org.apache.seatunnel.api.source.SourceReader;
 import org.apache.seatunnel.api.table.catalog.TablePath;
@@ -33,6 +34,7 @@ import com.clickhouse.client.ClickHouseFormat;
 import com.clickhouse.client.ClickHouseNode;
 import com.clickhouse.client.ClickHouseRequest;
 import com.clickhouse.client.ClickHouseResponse;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,6 +43,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+@Slf4j
 public class ClickhouseSourceReader implements SourceReader<SeaTunnelRow, ClickhouseSourceSplit> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ClickhouseSourceReader.class);
@@ -52,7 +55,7 @@ public class ClickhouseSourceReader implements SourceReader<SeaTunnelRow, Clickh
 
     private Deque<ClickhouseSourceSplit> splits = new LinkedList<>();
 
-    boolean noMoreSplit;
+    private volatile boolean noMoreSplit;
 
     ClickhouseSourceReader(List<ClickHouseNode> servers, SourceReader.Context readerContext) {
         this.servers = servers;
@@ -76,44 +79,43 @@ public class ClickhouseSourceReader implements SourceReader<SeaTunnelRow, Clickh
 
     @Override
     public void pollNext(Collector<SeaTunnelRow> output) throws Exception {
+        ClickhouseSourceSplit split;
+
         synchronized (output.getCheckpointLock()) {
-            ClickhouseSourceSplit split = splits.poll();
-            if (split != null) {
-                TablePath tablePath = split.getTablePath();
-                ClickhouseCatalogConfig clickhouseCatalogConfig =
-                        split.getClickhouseCatalogConfig();
-                String sql = clickhouseCatalogConfig.getSql();
-                SeaTunnelRowType seaTunnelRowType =
-                        clickhouseCatalogConfig.getCatalogTable().getSeaTunnelRowType();
-                try (ClickHouseResponse response = this.request.query(sql).executeAndWait()) {
-                    response.stream()
-                            .forEach(
-                                    record -> {
-                                        Object[] values =
-                                                new Object[seaTunnelRowType.getFieldNames().length];
-                                        for (int i = 0; i < record.size(); i++) {
-                                            if (record.getValue(i).isNullOrEmpty()) {
-                                                values[i] = null;
-                                            } else {
-                                                values[i] =
-                                                        TypeConvertUtil.valueUnwrap(
-                                                                seaTunnelRowType.getFieldType(i),
+            split = splits.poll();
+        }
+
+        if (split != null) {
+            TablePath tablePath = split.getTablePath();
+            ClickhouseCatalogConfig catalogConfig = split.getClickhouseCatalogConfig();
+            String sql = catalogConfig.getSql();
+            SeaTunnelRowType rowType = catalogConfig.getCatalogTable().getSeaTunnelRowType();
+
+            try (ClickHouseResponse response = this.request.query(sql).executeAndWait()) {
+                Object[] values = new Object[rowType.getFieldNames().length];
+                response.stream()
+                        .forEach(
+                                record -> {
+                                    for (int i = 0; i < record.size(); i++) {
+                                        values[i] =
+                                                record.getValue(i).isNullOrEmpty()
+                                                        ? null
+                                                        : TypeConvertUtil.valueUnwrap(
+                                                                rowType.getFieldType(i),
                                                                 record.getValue(i));
-                                            }
-                                        }
-                                        SeaTunnelRow seaTunnelRow = new SeaTunnelRow(values);
-                                        if (seaTunnelRow != null) {
-                                            seaTunnelRow.setTableId(String.valueOf(tablePath));
-                                            output.collect(seaTunnelRow);
-                                        }
-                                    });
-                }
-            } else if (splits.isEmpty() && noMoreSplit) {
-                // signal to the source that we have reached the end of the data.
-                readerContext.signalNoMoreElement();
-            } else {
-                Thread.sleep(1000L);
+                                    }
+                                    SeaTunnelRow seaTunnelRow = new SeaTunnelRow(values);
+                                    seaTunnelRow.setTableId(String.valueOf(tablePath));
+                                    output.collect(seaTunnelRow);
+                                });
             }
+        } else if (splits.isEmpty()
+                && noMoreSplit
+                && Boundedness.BOUNDED.equals(readerContext.getBoundedness())) {
+            readerContext.signalNoMoreElement();
+            log.info(
+                    "Closed the bounded ClickHouse source reader task {}.",
+                    readerContext.getIndexOfSubtask());
         }
     }
 

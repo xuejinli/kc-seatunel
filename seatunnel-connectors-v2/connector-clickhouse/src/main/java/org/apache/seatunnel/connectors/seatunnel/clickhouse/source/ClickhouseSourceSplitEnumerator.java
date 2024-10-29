@@ -92,6 +92,8 @@ public class ClickhouseSourceSplitEnumerator
                 assignSplit(readers);
             }
         }
+        log.info("No more splits to assign." + " Sending NoMoreSplitsEvent to reader {}.", readers);
+        readers.forEach(context::signalNoMoreSplits);
     }
 
     @Override

@@ -79,11 +79,10 @@ public class ClickhouseSource
                 SupportColumnProjection {
 
     private List<ClickHouseNode> servers;
-    private SeaTunnelRowType rowTypeInfo;
     private Map<TablePath, ClickhouseCatalogConfig> tableClickhouseCatalogConfigMap =
             new HashedMap<>();
 
-    private final String defaultTablePath = "default";
+    private static final String defaultTablePath = "default";
 
     @Override
     public String getPluginName() {
