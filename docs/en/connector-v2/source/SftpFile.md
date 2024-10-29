@@ -95,7 +95,6 @@ The File does not have a specific type list, and we can indicate which SeaTunnel
 | archive_compress_codec    | string  | no       | none                |
 | encoding                  | string  | no       | UTF-8               |
 | common-options            |         | No       | -                   | Source plugin common parameters, please refer to [Source Common Options](../source-common-options.md) for details.                                                                                                                                                                                                                                                              |
-| file_filter_pattern       | string  | no       |                     | `*.txt` means you only need read the files end with `.txt`                                                                                                                                                                                                                                                                                                                      |
 
 ### file_filter_pattern [string]
 

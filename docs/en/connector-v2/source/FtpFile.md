@@ -63,7 +63,6 @@ If you use SeaTunnel Engine, It automatically integrated the hadoop jar when you
 | archive_compress_codec    | string  | no       | none                |
 | encoding                  | string  | no       | UTF-8               |
 | common-options            |         | no       | -                   |
-| file_filter_pattern       | string  | no       |                     | 
 
 ### host [string]
 
