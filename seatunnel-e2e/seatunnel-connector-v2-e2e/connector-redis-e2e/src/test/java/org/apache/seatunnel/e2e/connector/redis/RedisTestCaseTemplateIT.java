@@ -431,7 +431,8 @@ public abstract class RedisTestCaseTemplateIT extends TestSuiteBase implements T
     @TestTemplate
     public void testCustomHashKeyAndValueWriteRedis(TestContainer container)
             throws IOException, InterruptedException {
-        Container.ExecResult execResult = container.executeJob("/redis-to-redis-custom-hash-key-and-value.conf");
+        Container.ExecResult execResult =
+                container.executeJob("/redis-to-redis-custom-hash-key-and-value.conf");
         Assertions.assertEquals(0, execResult.getExitCode());
         long amount = jedis.hlen("custom-hash-check");
         Assertions.assertEquals(100, amount);
