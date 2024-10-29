@@ -102,7 +102,9 @@ public class ClickhouseSourceReader implements SourceReader<SeaTunnelRow, Clickh
                 }
                 signalNoMoreElement();
             }
-            if (noMoreSplit && splits.isEmpty() && Boundedness.BOUNDED.equals(readerContext.getBoundedness())) {
+            if (noMoreSplit
+                    && splits.isEmpty()
+                    && Boundedness.BOUNDED.equals(readerContext.getBoundedness())) {
                 signalNoMoreElement();
             }
         }
