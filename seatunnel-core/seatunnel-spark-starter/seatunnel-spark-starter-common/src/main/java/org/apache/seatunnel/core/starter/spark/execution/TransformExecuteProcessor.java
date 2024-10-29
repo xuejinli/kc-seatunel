@@ -198,7 +198,7 @@ public class TransformExecuteProcessor
                 if (transform instanceof SeaTunnelMultiRowTransform) {
                     List<SeaTunnelRow> seaTunnelRows =
                             ((SeaTunnelMultiRowTransform<SeaTunnelRow>) transform)
-                                    .multiRowMap(seaTunnelRow);
+                                    .flatMap(seaTunnelRow);
                     if (!seaTunnelRows.isEmpty()) {
                         for (SeaTunnelRow seaTunnelRowTransform : seaTunnelRows) {
                             rows.add(outputRowConverter.parcel(seaTunnelRowTransform));
@@ -206,7 +206,7 @@ public class TransformExecuteProcessor
                     }
                 } else {
                     SeaTunnelRow seaTunnelRowTransform = transform.map(seaTunnelRow);
-                    if (seaTunnelRow != null) {
+                    if (seaTunnelRowTransform != null) {
                         rows.add(outputRowConverter.parcel(seaTunnelRowTransform));
                     }
                 }
