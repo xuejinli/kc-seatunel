@@ -105,9 +105,9 @@ For additional reading on the Hadoop Credential Provider API, you can see: [Cred
 For additional COS configuration, you can see: [Tencent Hadoop-COS Docs](https://doc.fincloud.tencent.cn/tcloud/Storage/COS/846365/hadoop)
 
 Please add the following jar to the lib directory:
-- hadoop-cos-3.4.1.jar
-- cos_api-bundle-5.6.69.jar
-- hadoop-shaded-guava-1.1.1.jar
+- [hadoop-cos-3.4.1.jar](https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-cos/3.4.1)
+- [cos_api-bundle-5.6.69.jar](https://mvnrepository.com/artifact/com.qcloud/cos_api-bundle/5.6.69)
+- [hadoop-shaded-guava-1.1.1.jar](https://mvnrepository.com/artifact/org.apache.hadoop.thirdparty/hadoop-shaded-guava/1.1.1)
 
 #### S3
 

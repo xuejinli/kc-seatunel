@@ -103,9 +103,9 @@ seatunnel:
 腾讯云COS相关配置可参考：[Tencent Hadoop-COS文档](https://doc.fincloud.tencent.cn/tcloud/Storage/COS/846365/hadoop)
 
 使用前请将如下jar添加到lib目录下：
-- hadoop-cos-3.4.1.jar
-- cos_api-bundle-5.6.69.jar
-- hadoop-shaded-guava-1.1.1.jar
+- [hadoop-cos-3.4.1.jar](https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-cos/3.4.1)
+- [cos_api-bundle-5.6.69.jar](https://mvnrepository.com/artifact/com.qcloud/cos_api-bundle/5.6.69)
+- [hadoop-shaded-guava-1.1.1.jar](https://mvnrepository.com/artifact/org.apache.hadoop.thirdparty/hadoop-shaded-guava/1.1.1)
 
 #### S3
 
