@@ -92,7 +92,7 @@ SeaTunnel provides an API for querying logs.
 
 For more details, please refer to the [REST-API](rest-api-v2.md).
 
-### SeaTunnel Log Configuration
+## SeaTunnel Log Configuration
 
 ### Scheduled deletion of old logs
 

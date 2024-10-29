@@ -159,7 +159,7 @@ public class JobMaster {
 
     private final IMap<Long, JobInfo> runningJobInfoIMap;
 
-    @Getter private final Set<ExecutionAddress> historyExecutionPlan = new HashSet<>();
+    @Getter private final Set<ExecutionAddress> historyExecutionAddress = new HashSet<>();
 
     private final IMap<Long, HashMap<TaskLocation, SeaTunnelMetricsContext>> metricsImap;
 
@@ -409,7 +409,7 @@ public class JobMaster {
                     preApplyResourceFutures.entrySet()) {
                 try {
                     Address worker = entry.getValue().get().getWorker();
-                    historyExecutionPlan.add(
+                    historyExecutionAddress.add(
                             new ExecutionAddress(worker.getHost(), worker.getPort()));
 
                 } catch (Exception e) {
@@ -556,7 +556,7 @@ public class JobMaster {
                             jobImmutableInformation,
                             engineConfig,
                             isPhysicalDAGIInfo,
-                            historyExecutionPlan);
+                            historyExecutionAddress);
         }
         return jobDAGInfo;
     }
