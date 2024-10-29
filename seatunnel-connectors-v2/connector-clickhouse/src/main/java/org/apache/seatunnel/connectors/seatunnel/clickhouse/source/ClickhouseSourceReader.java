@@ -79,34 +79,35 @@ public class ClickhouseSourceReader implements SourceReader<SeaTunnelRow, Clickh
 
     @Override
     public void pollNext(Collector<SeaTunnelRow> output) throws Exception {
-        if (!splits.isEmpty()) {
-            try (ClickHouseResponse response = this.request.query(sql).executeAndWait()) {
-                response.stream()
-                        .forEach(
-                                record -> {
-                                    Object[] values =
-                                            new Object[this.rowTypeInfo.getFieldNames().length];
-                                    for (int i = 0; i < record.size(); i++) {
-                                        if (record.getValue(i).isNullOrEmpty()) {
-                                            values[i] = null;
-                                        } else {
-                                            values[i] =
-                                                    TypeConvertUtil.valueUnwrap(
-                                                            this.rowTypeInfo.getFieldType(i),
-                                                            record.getValue(i));
+        synchronized (output.getCheckpointLock()) {
+            if (!splits.isEmpty()) {
+                try (ClickHouseResponse response = this.request.query(sql).executeAndWait()) {
+                    response.stream()
+                            .forEach(
+                                    record -> {
+                                        Object[] values =
+                                                new Object[this.rowTypeInfo.getFieldNames().length];
+                                        for (int i = 0; i < record.size(); i++) {
+                                            if (record.getValue(i).isNullOrEmpty()) {
+                                                values[i] = null;
+                                            } else {
+                                                values[i] =
+                                                        TypeConvertUtil.valueUnwrap(
+                                                                this.rowTypeInfo.getFieldType(i),
+                                                                record.getValue(i));
+                                            }
                                         }
-                                    }
-                                    output.collect(new SeaTunnelRow(values));
-                                });
+                                        output.collect(new SeaTunnelRow(values));
+                                    });
+                }
+                this.readerContext.signalNoMoreElement();
+                this.splits.clear();
             }
-            this.readerContext.signalNoMoreElement();
-            this.splits.clear();
-        } else if (noMoreSplit
-                && splits.isEmpty()
-                && Boundedness.BOUNDED.equals(readerContext.getBoundedness())) {
-            log.info("Closed the bounded ClickHouse source");
-            this.readerContext.signalNoMoreElement();
-            this.splits.clear();
+            if (noMoreSplit && splits.isEmpty()) {
+                log.info("Closed the bounded ClickHouse source");
+                this.readerContext.signalNoMoreElement();
+                this.splits.clear();
+            }
         }
     }
 
