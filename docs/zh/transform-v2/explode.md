@@ -10,13 +10,20 @@
 
 |      name      | type | required |
 |----------------|------|----------|
-| explode_fields | Map  | yes      |
+| explode_string_fields | Map  | yes      |
+| explode_list_fields | List | yes      |
 
 
-### explode_fields [Map]
+### explode_string_fields [Map]
 
 需要按照指定分隔符分割的字段。
 map是由field作为key，分隔符作为value。
+
+
+### explode_list_fields [List]
+
+需要按照指定分隔符分割的字段。
+List为需要切分的字段。
 
 
 ### common options [config]
@@ -31,8 +38,8 @@ The data read from source is a table like this:
 
 | name              | age | card    |
 |-------------------|-----|---------|
-| Joy Ding,May Ding | 20  | 123;234 |
-| Kin Dom,Joy Dom   | 20  | 123;345 |
+| Joy Ding,May Ding | 20  | [123,234]  |
+| Kin Dom,Joy Dom   | 20  | [123,345] |
 
 当我们想根据name和card进行数据拆分：
 
@@ -41,7 +48,8 @@ transform {
   Explode {
     source_table_name = "fake"
     result_table_name = "fake1"
-    explode_fields = {"name":",","card":";"}
+    explode_string_fields = {"name":","}
+    explode_list_fields = ["card"]
   }
 }
 ```
