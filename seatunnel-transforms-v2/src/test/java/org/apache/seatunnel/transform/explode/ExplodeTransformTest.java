@@ -23,6 +23,7 @@ import org.apache.seatunnel.api.table.catalog.PhysicalColumn;
 import org.apache.seatunnel.api.table.catalog.TableIdentifier;
 import org.apache.seatunnel.api.table.catalog.TablePath;
 import org.apache.seatunnel.api.table.catalog.TableSchema;
+import org.apache.seatunnel.api.table.type.ArrayType;
 import org.apache.seatunnel.api.table.type.BasicType;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 
@@ -44,6 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ExplodeTransformTest {
 
     static Map<String, String> explodeFields = new HashMap<>();
+    static List<String> explodeListFields = new ArrayList<>();
     static CatalogTable catalogTable;
     static Object[] values;
 
@@ -52,6 +54,7 @@ class ExplodeTransformTest {
 
         explodeFields.put("key1", ",");
         explodeFields.put("key2", ";");
+        explodeListFields.add("key3");
 
         catalogTable =
                 CatalogTable.of(
@@ -76,7 +79,7 @@ class ExplodeTransformTest {
                                 .column(
                                         PhysicalColumn.of(
                                                 "key3",
-                                                BasicType.STRING_TYPE,
+                                                ArrayType.STRING_ARRAY_TYPE,
                                                 1L,
                                                 Boolean.FALSE,
                                                 null,
@@ -101,7 +104,10 @@ class ExplodeTransformTest {
                         new HashMap<>(),
                         new ArrayList<>(),
                         "comment");
-        values = new Object[] {"value1,value2", "value3;value4", "value5", "value6", "value7"};
+        String[] key3 = new String[2];
+        key3[0] = "value5";
+        key3[1] = "value6";
+        values = new Object[] {"value1,value2", "value3;value4", key3, "value7", "value8"};
     }
 
     @Test
@@ -121,7 +127,12 @@ class ExplodeTransformTest {
                     ReadonlyConfig.fromMap(
                             new HashMap<String, Object>() {
                                 {
-                                    put(ExplodeTransformConfig.EXPLODE_FIELDS.key(), explodeFields);
+                                    put(
+                                            ExplodeTransformConfig.EXPLODE_STRING_FIELDS.key(),
+                                            explodeFields);
+                                    put(
+                                            ExplodeTransformConfig.EXPLODE_LIST_FIELDS.key(),
+                                            explodeListFields);
                                 }
                             }),
                     catalogTable);
@@ -136,7 +147,12 @@ class ExplodeTransformTest {
                 ReadonlyConfig.fromMap(
                         new HashMap<String, Object>() {
                             {
-                                put(ExplodeTransformConfig.EXPLODE_FIELDS.key(), explodeFields);
+                                put(
+                                        ExplodeTransformConfig.EXPLODE_STRING_FIELDS.key(),
+                                        explodeFields);
+                                put(
+                                        ExplodeTransformConfig.EXPLODE_LIST_FIELDS.key(),
+                                        explodeListFields);
                             }
                         }),
                 catalogTable);
@@ -146,7 +162,8 @@ class ExplodeTransformTest {
     void testExplode() {
         // default include
         Map<String, Object> configMap = new HashMap<>();
-        configMap.put(ExplodeTransformConfig.EXPLODE_FIELDS.key(), explodeFields);
+        configMap.put(ExplodeTransformConfig.EXPLODE_STRING_FIELDS.key(), explodeFields);
+        configMap.put(ExplodeTransformConfig.EXPLODE_LIST_FIELDS.key(), explodeListFields);
 
         ExplodeTransform explodeTransform =
                 new ExplodeTransform(ReadonlyConfig.fromMap(configMap), catalogTable);
@@ -161,10 +178,14 @@ class ExplodeTransformTest {
         Assertions.assertNotNull(output);
         List<Object[]> result =
                 Lists.newArrayList(
-                        new Object[] {"value1", "value3", "value5", "value6", "value7"},
-                        new Object[] {"value1", "value4", "value5", "value6", "value7"},
-                        new Object[] {"value2", "value3", "value5", "value6", "value7"},
-                        new Object[] {"value2", "value4", "value5", "value6", "value7"});
+                        new Object[] {"value1", "value3", "value5", "value7", "value8"},
+                        new Object[] {"value1", "value3", "value6", "value7", "value8"},
+                        new Object[] {"value1", "value4", "value5", "value7", "value8"},
+                        new Object[] {"value1", "value4", "value6", "value7", "value8"},
+                        new Object[] {"value2", "value3", "value5", "value7", "value8"},
+                        new Object[] {"value2", "value3", "value6", "value7", "value8"},
+                        new Object[] {"value2", "value4", "value5", "value7", "value8"},
+                        new Object[] {"value2", "value4", "value6", "value7", "value8"});
 
         List<Object[]> outputValues =
                 output.stream().map(SeaTunnelRow::getFields).collect(Collectors.toList());

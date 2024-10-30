@@ -38,7 +38,7 @@ public class ExplodeTransformFactory implements TableTransformFactory {
     @Override
     public OptionRule optionRule() {
 
-        return OptionRule.builder().required(ExplodeTransformConfig.EXPLODE_FIELDS).build();
+        return OptionRule.builder().build();
     }
 
     @Override

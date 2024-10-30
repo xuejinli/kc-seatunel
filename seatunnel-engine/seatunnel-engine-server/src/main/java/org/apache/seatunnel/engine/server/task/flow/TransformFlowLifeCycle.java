@@ -110,7 +110,6 @@ public class TransformFlowLifeCycle<T> extends ActionFlowLifeCycle
         dataList.add(inputData);
 
         for (SeaTunnelTransform<T> transformer : transform) {
-            log.info("transform test: {}", transformer.getPluginName());
             List<T> nextInputDataList = new ArrayList<>();
             if (transformer instanceof SeaTunnelMultiRowTransform) {
                 SeaTunnelMultiRowTransform<T> transformDecorator =

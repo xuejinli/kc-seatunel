@@ -20,12 +20,19 @@ import org.apache.seatunnel.api.configuration.Option;
 import org.apache.seatunnel.api.configuration.Options;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 public class ExplodeTransformConfig implements Serializable {
-    public static final Option<Map<String, String>> EXPLODE_FIELDS =
-            Options.key("explode_fields")
+    public static final Option<Map<String, String>> EXPLODE_STRING_FIELDS =
+            Options.key("explode_string_fields")
                     .mapType()
                     .noDefaultValue()
-                    .withDescription("The map of fields that need to be explode.");
+                    .withDescription("The map of string fields that need to be explode.");
+
+    public static final Option<List<String>> EXPLODE_LIST_FIELDS =
+            Options.key("explode_list_fields")
+                    .listType()
+                    .noDefaultValue()
+                    .withDescription("The map of list fields that need to be explode.");
 }

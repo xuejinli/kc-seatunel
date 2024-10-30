@@ -20,8 +20,10 @@ import org.apache.seatunnel.api.configuration.ReadonlyConfig;
 import org.apache.seatunnel.api.table.catalog.CatalogTable;
 import org.apache.seatunnel.api.table.catalog.Column;
 import org.apache.seatunnel.api.table.catalog.ConstraintKey;
+import org.apache.seatunnel.api.table.catalog.PhysicalColumn;
 import org.apache.seatunnel.api.table.catalog.TableIdentifier;
 import org.apache.seatunnel.api.table.catalog.TableSchema;
+import org.apache.seatunnel.api.table.type.ArrayType;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
 import org.apache.seatunnel.transform.common.AbstractCatalogMultiRowTransform;
@@ -30,6 +32,7 @@ import org.apache.seatunnel.transform.exception.TransformCommonError;
 import org.apache.seatunnel.transform.replace.ReplaceTransformConfig;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 
 import com.google.common.collect.Lists;
 import lombok.NonNull;
@@ -45,7 +48,8 @@ import java.util.stream.Collectors;
 public class ExplodeTransform extends AbstractCatalogMultiRowTransform {
     protected CatalogTable inputCatalogTable;
     public static final String PLUGIN_NAME = "Explode";
-    protected Map<String, String> explodeFields;
+    protected Map<String, String> explodeStringFields;
+    protected List<String> explodeListFields;
     protected SeaTunnelRowType seaTunnelRowType;
     private int[] fieldsIndex;
     private ReadonlyConfig config;
@@ -53,7 +57,8 @@ public class ExplodeTransform extends AbstractCatalogMultiRowTransform {
     public ExplodeTransform(@NonNull ReadonlyConfig config, @NonNull CatalogTable catalogTable) {
         super(catalogTable, CommonOptions.ROW_ERROR_HANDLE_WAY_OPTION.defaultValue());
         this.config = config;
-        this.explodeFields = config.get(ExplodeTransformConfig.EXPLODE_FIELDS);
+        this.explodeStringFields = config.get(ExplodeTransformConfig.EXPLODE_STRING_FIELDS);
+        this.explodeListFields = config.get(ExplodeTransformConfig.EXPLODE_LIST_FIELDS);
         this.seaTunnelRowType = catalogTable.getTableSchema().toPhysicalRowDataType();
         this.inputCatalogTable = catalogTable;
     }
@@ -65,26 +70,50 @@ public class ExplodeTransform extends AbstractCatalogMultiRowTransform {
      */
     protected List<SeaTunnelRow> transformRow(SeaTunnelRow inputRow) {
         List<SeaTunnelRow> rows = Lists.newArrayList(inputRow);
-        for (Map.Entry<String, String> entry : explodeFields.entrySet()) {
-            List<SeaTunnelRow> next = new ArrayList<>();
-            for (SeaTunnelRow row : rows) {
+        if (MapUtils.isNotEmpty(explodeStringFields)) {
+            for (Map.Entry<String, String> entry : explodeStringFields.entrySet()) {
+                List<SeaTunnelRow> next = new ArrayList<>();
+                for (SeaTunnelRow row : rows) {
 
-                String field = entry.getKey();
-                int fieldIndex = seaTunnelRowType.indexOf(field);
-                Object splitFieldValue = inputRow.getField(fieldIndex);
-                if (splitFieldValue == null) {
-                    continue;
+                    String field = entry.getKey();
+                    int fieldIndex = seaTunnelRowType.indexOf(field);
+                    Object splitFieldValue = inputRow.getField(fieldIndex);
+                    if (splitFieldValue == null) {
+                        continue;
+                    }
+                    String separator = entry.getValue();
+                    String[] splitFieldValues = splitFieldValue.toString().split(separator);
+                    for (String fieldValue : splitFieldValues) {
+                        SeaTunnelRow outputRow = row.copy();
+                        outputRow.setField(fieldIndex, fieldValue);
+                        next.add(outputRow);
+                    }
                 }
-                String separator = entry.getValue();
-                String[] splitFieldValues = splitFieldValue.toString().split(separator);
-                for (String fieldValue : splitFieldValues) {
-                    SeaTunnelRow outputRow = row.copy();
-                    outputRow.setField(fieldIndex, fieldValue);
-                    next.add(outputRow);
-                }
+                rows = next;
             }
-            rows = next;
         }
+        if (!CollectionUtils.isEmpty(explodeListFields)) {
+            for (String field : explodeListFields) {
+                List<SeaTunnelRow> next = new ArrayList<>();
+                for (SeaTunnelRow row : rows) {
+                    int fieldIndex = seaTunnelRowType.indexOf(field);
+                    Object splitFieldValue = inputRow.getField(fieldIndex);
+                    if (splitFieldValue == null) {
+                        continue;
+                    }
+                    if (splitFieldValue instanceof Object[]) {
+                        Object[] rowList = (Object[]) splitFieldValue;
+                        for (Object fieldValue : rowList) {
+                            SeaTunnelRow outputRow = row.copy();
+                            outputRow.setField(fieldIndex, fieldValue);
+                            next.add(outputRow);
+                        }
+                    }
+                }
+                rows = next;
+            }
+        }
+
         return rows;
     }
 
@@ -154,8 +183,26 @@ public class ExplodeTransform extends AbstractCatalogMultiRowTransform {
 
         List<Column> collect =
                 columns.stream()
-                        .filter(column -> explodeFields.keySet().contains(column.getName()))
+                        .filter(
+                                column ->
+                                        explodeStringFields.containsKey(column.getName())
+                                                || explodeListFields.contains(column.getName()))
+                        .map(
+                                column -> {
+                                    if (explodeListFields.contains(column.getName())) {
+                                        ArrayType arrayType = (ArrayType) column.getDataType();
+                                        return PhysicalColumn.of(
+                                                column.getName(),
+                                                arrayType.getElementType(),
+                                                200,
+                                                true,
+                                                "",
+                                                "");
+                                    }
+                                    return column;
+                                })
                         .collect(Collectors.toList());
+
         if (CollectionUtils.isEmpty(collect)) {
             throw TransformCommonError.cannotFindInputFieldError(
                     getPluginName(), config.get(ReplaceTransformConfig.KEY_REPLACE_FIELD));
