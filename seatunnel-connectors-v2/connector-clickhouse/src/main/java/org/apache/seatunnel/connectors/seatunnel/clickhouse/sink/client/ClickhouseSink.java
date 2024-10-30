@@ -21,6 +21,7 @@ import org.apache.seatunnel.api.serialization.DefaultSerializer;
 import org.apache.seatunnel.api.serialization.Serializer;
 import org.apache.seatunnel.api.sink.SeaTunnelSink;
 import org.apache.seatunnel.api.sink.SinkWriter;
+import org.apache.seatunnel.api.table.catalog.CatalogTable;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.connectors.seatunnel.clickhouse.config.ReaderOption;
 import org.apache.seatunnel.connectors.seatunnel.clickhouse.state.CKAggCommitInfo;
@@ -35,9 +36,11 @@ public class ClickhouseSink
         implements SeaTunnelSink<SeaTunnelRow, ClickhouseSinkState, CKCommitInfo, CKAggCommitInfo> {
 
     private ReaderOption option;
+    private CatalogTable catalogTable;
 
-    public ClickhouseSink(ReaderOption option) {
+    public ClickhouseSink(ReaderOption option, CatalogTable catalogTable) {
         this.option = option;
+        this.catalogTable = catalogTable;
     }
 
     @Override
@@ -60,5 +63,10 @@ public class ClickhouseSink
     @Override
     public Optional<Serializer<ClickhouseSinkState>> getWriterStateSerializer() {
         return Optional.of(new DefaultSerializer<>());
+    }
+
+    @Override
+    public Optional<CatalogTable> getWriteCatalogTable() {
+        return Optional.of(catalogTable);
     }
 }

@@ -138,7 +138,7 @@ public class ClickhouseSinkFactory implements TableSinkFactory {
                             .supportUpsert(supportUpsert)
                             .allowExperimentalLightweightDelete(allowExperimentalLightweightDelete)
                             .build();
-            return () -> new ClickhouseSink(option);
+            return () -> new ClickhouseSink(option, catalogTable);
         } finally {
             proxy.close();
         }
