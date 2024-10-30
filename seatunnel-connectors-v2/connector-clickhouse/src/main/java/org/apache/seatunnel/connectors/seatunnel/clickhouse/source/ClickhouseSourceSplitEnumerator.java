@@ -131,7 +131,6 @@ public class ClickhouseSourceSplitEnumerator
                 log.info("Assign splits {} to reader {}", assignmentForReader, reader);
                 try {
                     context.assignSplit(reader, assignmentForReader);
-                    context.signalNoMoreSplits(reader);
                 } catch (Exception e) {
                     log.error(
                             "Failed to assign splits {} to reader {}",
@@ -186,7 +185,6 @@ public class ClickhouseSourceSplitEnumerator
                 assignSplit(Collections.singletonList(subtaskId));
             }
         }
-        context.signalNoMoreSplits(subtaskId);
     }
 
     @Override
