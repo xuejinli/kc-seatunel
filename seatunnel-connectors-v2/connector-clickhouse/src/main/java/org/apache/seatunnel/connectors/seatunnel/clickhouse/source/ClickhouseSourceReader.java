@@ -26,9 +26,6 @@ import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
 import org.apache.seatunnel.connectors.seatunnel.clickhouse.config.ClickhouseCatalogConfig;
 import org.apache.seatunnel.connectors.seatunnel.clickhouse.util.TypeConvertUtil;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.clickhouse.client.ClickHouseClient;
 import com.clickhouse.client.ClickHouseFormat;
 import com.clickhouse.client.ClickHouseNode;
@@ -99,8 +96,8 @@ public class ClickhouseSourceReader implements SourceReader<SeaTunnelRow, Clickh
                                                 record.getValue(i).isNullOrEmpty()
                                                         ? null
                                                         : TypeConvertUtil.valueUnwrap(
-                                                        rowType.getFieldType(i),
-                                                        record.getValue(i));
+                                                                rowType.getFieldType(i),
+                                                                record.getValue(i));
                                     }
                                     SeaTunnelRow seaTunnelRow = new SeaTunnelRow(values);
                                     seaTunnelRow.setTableId(String.valueOf(tablePath));

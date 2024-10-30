@@ -110,6 +110,7 @@ public class ClickhouseIT extends TestSuiteBase implements TestResource {
         Container.ExecResult execResult = container.executeJob("/clickhouse_to_console.conf");
         Assertions.assertEquals(0, execResult.getExitCode());
     }
+
     @TestTemplate
     @DisabledOnContainer(
             value = {},
