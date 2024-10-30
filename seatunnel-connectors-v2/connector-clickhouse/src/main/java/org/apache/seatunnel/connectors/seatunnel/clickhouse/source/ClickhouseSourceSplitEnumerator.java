@@ -186,6 +186,7 @@ public class ClickhouseSourceSplitEnumerator
                 assignSplit(Collections.singletonList(subtaskId));
             }
         }
+        context.signalNoMoreSplits(subtaskId);
     }
 
     @Override

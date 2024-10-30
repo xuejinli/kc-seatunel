@@ -46,8 +46,6 @@ import java.util.Random;
 @Slf4j
 public class ClickhouseSourceReader implements SourceReader<SeaTunnelRow, ClickhouseSourceSplit> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ClickhouseSourceReader.class);
-
     private final List<ClickHouseNode> servers;
     private ClickHouseClient client;
     private final SourceReader.Context readerContext;
@@ -101,8 +99,8 @@ public class ClickhouseSourceReader implements SourceReader<SeaTunnelRow, Clickh
                                                 record.getValue(i).isNullOrEmpty()
                                                         ? null
                                                         : TypeConvertUtil.valueUnwrap(
-                                                                rowType.getFieldType(i),
-                                                                record.getValue(i));
+                                                        rowType.getFieldType(i),
+                                                        record.getValue(i));
                                     }
                                     SeaTunnelRow seaTunnelRow = new SeaTunnelRow(values);
                                     seaTunnelRow.setTableId(String.valueOf(tablePath));
