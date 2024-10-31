@@ -67,7 +67,7 @@ public class MysqlCDCIT extends TestSuiteBase implements TestResource {
     private static final String MYSQL_USER_PASSWORD = "mysqlpw";
     private static final String MYSQL_DATABASE = "mysql_cdc";
     private static final String MYSQL_DATABASE2 = "mysql_cdc2";
-    private static final MySqlContainer MYSQL_CONTAINER = createMySqlContainer(MySqlVersion.V8_0);
+    private static final MySqlContainer MYSQL_CONTAINER = createMySqlContainer(MySqlVersion.V9_0);
 
     private final UniqueDatabase inventoryDatabase =
             new UniqueDatabase(
@@ -117,7 +117,7 @@ public class MysqlCDCIT extends TestSuiteBase implements TestResource {
     }
 
     private String driverUrl() {
-        return "https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/8.0.32/mysql-connector-j-8.0.32.jar";
+        return "https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/9.0.0/mysql-connector-j-9.0.0.jar";
     }
 
     @TestContainerExtension
@@ -144,6 +144,44 @@ public class MysqlCDCIT extends TestSuiteBase implements TestResource {
 
     @TestTemplate
     public void testMysqlCdcCheckDataE2e(TestContainer container) {
+        // Clear related content to ensure that multiple operations are not affected
+        clearTable(MYSQL_DATABASE, SOURCE_TABLE_1);
+        clearTable(MYSQL_DATABASE, SINK_TABLE);
+
+        CompletableFuture.supplyAsync(
+                () -> {
+                    try {
+                        container.executeJob("/mysqlcdc_to_mysql.conf");
+                    } catch (Exception e) {
+                        log.error("Commit task exception :" + e.getMessage());
+                        throw new RuntimeException(e);
+                    }
+                    return null;
+                });
+        await().atMost(60000, TimeUnit.MILLISECONDS)
+                .untilAsserted(
+                        () -> {
+                            log.info(query(getSinkQuerySQL(MYSQL_DATABASE, SINK_TABLE)).toString());
+                            Assertions.assertIterableEquals(
+                                    query(getSourceQuerySQL(MYSQL_DATABASE, SOURCE_TABLE_1)),
+                                    query(getSinkQuerySQL(MYSQL_DATABASE, SINK_TABLE)));
+                        });
+
+        // insert update delete
+        upsertDeleteSourceTable(MYSQL_DATABASE, SOURCE_TABLE_1);
+
+        // stream stage
+        await().atMost(60000, TimeUnit.MILLISECONDS)
+                .untilAsserted(
+                        () -> {
+                            Assertions.assertIterableEquals(
+                                    query(getSourceQuerySQL(MYSQL_DATABASE, SOURCE_TABLE_1)),
+                                    query(getSinkQuerySQL(MYSQL_DATABASE, SINK_TABLE)));
+                        });
+    }
+
+    @TestTemplate
+    public void testMysqlCdcCheckDataE2eOnMysqlHighVersion(TestContainer container) {
         // Clear related content to ensure that multiple operations are not affected
         clearTable(MYSQL_DATABASE, SOURCE_TABLE_1);
         clearTable(MYSQL_DATABASE, SINK_TABLE);
