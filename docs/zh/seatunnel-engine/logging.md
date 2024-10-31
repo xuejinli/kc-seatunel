@@ -104,10 +104,11 @@ seatunnel:
     history-job-expire-minutes: 1440
     telemetry:
       logs:
-        scheduled-deletion-enable: false
+        scheduled-deletion-enable: true
 ```
-- `history-job-expire-minutes`: 历史作业保留时间，单位为分钟,同时也是日志保留时间
-- `scheduled-deletion-enable`: 是否启用定时删除日志
+
+- `history-job-expire-minutes`: 设置历史作业和日志的保留时间（单位：分钟）。系统将在指定的时间后自动清除过期的作业信息和日志文件。
+- `scheduled-deletion-enable`: 启用定时清理功能，默认为 `true`。系统将在作业达到 `history-job-expire-minutes` 设置的过期时间后自动删除相关日志文件。关闭该功能后，日志将永久保留在磁盘上，需要用户自行管理，否则可能影响磁盘占用。建议根据需求合理配置。
 
 
 ## 开发人员最佳实践

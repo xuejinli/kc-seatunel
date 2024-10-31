@@ -214,8 +214,10 @@ public class ServerConfigOptions {
     public static final Option<Boolean> TELEMETRY_LOGS_SCHEDULED_DELETION_ENABLE =
             Options.key("scheduled-deletion-enable")
                     .booleanType()
-                    .defaultValue(false)
-                    .withDescription("Enable scheduled deletion of telemetry logs");
+                    .defaultValue(true)
+                    .withDescription(
+                            "Enable scheduled cleanup, with default value of true. The system will automatically delete relevant log files when job expiration time, as defined by `history-job-expire-minutes`, is reached. "
+                                    + "If this feature is disabled, logs will remain permanently on disk, requiring manual management, which may affect disk space usage. It is recommended to configure this setting based on specific needs.");
 
     public static final Option<TelemetryLogsConfig> TELEMETRY_LOGS =
             Options.key("logs")

@@ -104,11 +104,11 @@ seatunnel:
     history-job-expire-minutes: 1440
     telemetry:
       logs:
-         scheduled-deletion-enable: false
+        scheduled-deletion-enable: true
 ```
 
-- `history-job-expire-minutes`: Historical job retention time, in minutes, which is also the log retention time.
-- `scheduled-deletion-enable`: Enables or disables scheduled log deletion.
+- `history-job-expire-minutes`: Sets the retention time for historical job data and logs (in minutes). The system will automatically clear expired job information and log files after the specified period.
+- `scheduled-deletion-enable`: Enable scheduled cleanup, with default value of `true`. The system will automatically delete relevant log files when job expiration time, as defined by `history-job-expire-minutes`, is reached. If this feature is disabled, logs will remain permanently on disk, requiring manual management, which may affect disk space usage. It is recommended to configure this setting based on specific needs.
 
 ## Best practices for developers
 
