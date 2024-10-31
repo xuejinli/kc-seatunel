@@ -19,6 +19,7 @@ package org.apache.seatunnel.connectors.seatunnel.prometheus.sink;
 import org.apache.seatunnel.api.configuration.ReadonlyConfig;
 import org.apache.seatunnel.api.sink.SinkWriter;
 import org.apache.seatunnel.api.sink.SupportMultiTableSink;
+import org.apache.seatunnel.api.table.catalog.CatalogTable;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
 import org.apache.seatunnel.connectors.seatunnel.common.sink.AbstractSimpleSink;
@@ -28,6 +29,7 @@ import org.apache.seatunnel.connectors.seatunnel.http.config.HttpParameter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 public class PrometheusSink extends AbstractSimpleSink<SeaTunnelRow, Void>
         implements SupportMultiTableSink {
@@ -63,6 +65,11 @@ public class PrometheusSink extends AbstractSimpleSink<SeaTunnelRow, Void>
     @Override
     public String getPluginName() {
         return "Prometheus";
+    }
+
+    @Override
+    public Optional<CatalogTable> getWriteCatalogTable() {
+        return super.getWriteCatalogTable();
     }
 
     @Override
