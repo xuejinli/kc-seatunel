@@ -40,7 +40,8 @@ public class JobRestoreIT extends SeaTunnelContainer {
     /** When testing job recovery, is it successful to reapply for resources */
     @Test
     public void testJobRestoreApplyResources() throws IOException, InterruptedException {
-        Container.ExecResult execResult = executeJob(server, "/restore-job/restore_job_apply_resources.conf");
+        Container.ExecResult execResult =
+                executeJob(server, "/restore-job/restore_job_apply_resources.conf");
         Assertions.assertEquals(1, execResult.getExitCode());
         Assertions.assertFalse(server.getLogs().contains("NoEnoughResourceException"));
     }
