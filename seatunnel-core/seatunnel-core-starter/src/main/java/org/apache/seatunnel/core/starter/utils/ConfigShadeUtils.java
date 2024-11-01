@@ -34,6 +34,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -139,10 +140,20 @@ public final class ConfigShadeUtils {
         String jsonString = config.root().render(ConfigRenderOptions.concise());
         ObjectNode jsonNodes = JsonUtils.parseObject(jsonString);
         Map<String, Object> configMap = JsonUtils.toMap(jsonNodes);
-        List<Map<String, Object>> sources =
-                (ArrayList<Map<String, Object>>) configMap.get(Constants.SOURCE);
-        List<Map<String, Object>> sinks =
-                (ArrayList<Map<String, Object>>) configMap.get(Constants.SINK);
+        Object sourceObj = configMap.get(Constants.SOURCE);
+        List<Map<String, Object>> sources;
+        if (sourceObj instanceof Map) {
+            sources = Collections.singletonList((Map<String, Object>) sourceObj);
+        } else {
+            sources = (ArrayList<Map<String, Object>>) sourceObj;
+        }
+        List<Map<String, Object>> sinks;
+        Object sinkObj = configMap.get(Constants.SINK);
+        if (sinkObj instanceof Map) {
+            sinks = Collections.singletonList((Map<String, Object>) sinkObj);
+        } else {
+            sinks = (ArrayList<Map<String, Object>>) sinkObj;
+        }
         Preconditions.checkArgument(
                 !sources.isEmpty(), "Miss <Source> config! Please check the config file.");
         Preconditions.checkArgument(
