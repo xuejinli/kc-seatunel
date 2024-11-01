@@ -18,6 +18,7 @@
 package org.apache.seatunnel.connectors.seatunnel.file.juicefs.config;
 
 import org.apache.seatunnel.api.configuration.ReadonlyConfig;
+import org.apache.seatunnel.connectors.seatunnel.file.config.BaseSourceConfigOptions;
 import org.apache.seatunnel.connectors.seatunnel.file.config.HadoopConf;
 
 import org.apache.commons.lang3.StringUtils;
@@ -56,7 +57,7 @@ public class JuicefsHadoopConf extends HadoopConf {
         JuicefsHadoopConf hadoopConf = new JuicefsHadoopConf(jfsName);
         String schema = jfsName.split("://")[0];
         hadoopConf.setSchema(schema);
-        String remoteUser = config.get(JuicefsConfigOptions.REMOTE_USER);
+        String remoteUser = config.get(BaseSourceConfigOptions.REMOTE_USER);
         if (StringUtils.isNotEmpty(remoteUser)) {
             hadoopConf.setRemoteUser(remoteUser);
         }

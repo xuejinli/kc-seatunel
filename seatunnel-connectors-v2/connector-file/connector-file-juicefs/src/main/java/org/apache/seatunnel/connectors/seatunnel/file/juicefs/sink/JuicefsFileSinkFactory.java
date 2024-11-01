@@ -25,6 +25,7 @@ import org.apache.seatunnel.api.table.connector.TableSink;
 import org.apache.seatunnel.api.table.factory.Factory;
 import org.apache.seatunnel.api.table.factory.TableSinkFactoryContext;
 import org.apache.seatunnel.connectors.seatunnel.file.config.BaseSinkConfig;
+import org.apache.seatunnel.connectors.seatunnel.file.config.BaseSourceConfigOptions;
 import org.apache.seatunnel.connectors.seatunnel.file.config.FileFormat;
 import org.apache.seatunnel.connectors.seatunnel.file.config.FileSystemType;
 import org.apache.seatunnel.connectors.seatunnel.file.factory.BaseMultipleTableFileSinkFactory;
@@ -46,7 +47,7 @@ public class JuicefsFileSinkFactory extends BaseMultipleTableFileSinkFactory {
                 .required(JuicefsConfigOptions.JFS_NAME)
                 .required(JuicefsConfigOptions.META_URL)
                 .optional(JuicefsConfigOptions.HADOOP_PROPERTIES)
-                .optional(JuicefsConfigOptions.REMOTE_USER)
+                .optional(BaseSourceConfigOptions.REMOTE_USER)
                 .optional(BaseSinkConfig.FILE_FORMAT_TYPE)
                 .conditional(
                         BaseSinkConfig.FILE_FORMAT_TYPE,

@@ -57,7 +57,7 @@ public class JuicefsFileSourceFactory implements TableSourceFactory {
                 .required(JuicefsConfigOptions.JFS_NAME)
                 .required(JuicefsConfigOptions.META_URL)
                 .optional(JuicefsConfigOptions.HADOOP_PROPERTIES)
-                .optional(JuicefsConfigOptions.REMOTE_USER)
+                .optional(BaseSourceConfigOptions.REMOTE_USER)
                 .optional(BaseSourceConfigOptions.FILE_FORMAT_TYPE)
                 .conditional(
                         BaseSourceConfigOptions.FILE_FORMAT_TYPE,

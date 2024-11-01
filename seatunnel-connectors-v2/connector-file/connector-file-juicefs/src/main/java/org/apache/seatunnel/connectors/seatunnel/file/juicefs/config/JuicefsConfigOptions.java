@@ -37,10 +37,6 @@ public class JuicefsConfigOptions extends BaseSourceConfigOptions {
                     .stringType()
                     .noDefaultValue()
                     .withDescription("Juicefs meta url");
-
-    public static final Option<String> REMOTE_USER =
-            Options.key("remote_user").stringType().noDefaultValue().withDescription("Remote user");
-
     /**
      * The current key for that config option. if you need to add a new option, you can add it here
      * and refer to this:
