@@ -32,6 +32,7 @@ import org.apache.seatunnel.core.starter.execution.PluginUtil;
 import org.apache.seatunnel.plugin.discovery.seatunnel.SeaTunnelFactoryDiscovery;
 import org.apache.seatunnel.plugin.discovery.seatunnel.SeaTunnelTransformPluginDiscovery;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -172,8 +173,10 @@ public class TransformExecuteProcessor
         public void flatMap(SeaTunnelRow row, Collector<SeaTunnelRow> collector) {
             List<SeaTunnelRow> rows =
                     ((SeaTunnelMultiRowTransform<SeaTunnelRow>) transform).flatMap(row);
-            for (SeaTunnelRow rowResult : rows) {
-                collector.collect(rowResult);
+            if (CollectionUtils.isNotEmpty(rows)) {
+                for (SeaTunnelRow rowResult : rows) {
+                    collector.collect(rowResult);
+                }
             }
         }
     }

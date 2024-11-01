@@ -36,6 +36,7 @@ import org.apache.seatunnel.translation.spark.execution.DatasetTableInfo;
 import org.apache.seatunnel.translation.spark.serialization.SeaTunnelRowConverter;
 import org.apache.seatunnel.translation.spark.utils.TypeConverterUtils;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -195,7 +196,7 @@ public class TransformExecuteProcessor
                 List<SeaTunnelRow> seaTunnelRows =
                         ((SeaTunnelMultiRowTransform<SeaTunnelRow>) transform)
                                 .flatMap(seaTunnelRow);
-                if (!seaTunnelRows.isEmpty()) {
+                if (CollectionUtils.isNotEmpty(seaTunnelRows)) {
                     for (SeaTunnelRow seaTunnelRowTransform : seaTunnelRows) {
                         rows.add(outputRowConverter.parcel(seaTunnelRowTransform));
                     }

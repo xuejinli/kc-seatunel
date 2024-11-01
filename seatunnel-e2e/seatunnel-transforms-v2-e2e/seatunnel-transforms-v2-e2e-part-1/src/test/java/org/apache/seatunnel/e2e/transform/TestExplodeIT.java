@@ -30,5 +30,8 @@ public class TestExplodeIT extends TestSuiteBase {
     public void testExplode(TestContainer container) throws IOException, InterruptedException {
         Container.ExecResult execResult = container.executeJob("/explode_transform.conf");
         Assertions.assertEquals(0, execResult.getExitCode());
+
+        Container.ExecResult execResultBySql = container.executeJob("/explode_transform_sql.conf");
+        Assertions.assertEquals(0, execResultBySql.getExitCode());
     }
 }

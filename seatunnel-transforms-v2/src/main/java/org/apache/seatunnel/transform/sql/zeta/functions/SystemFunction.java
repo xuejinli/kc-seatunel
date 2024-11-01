@@ -100,6 +100,7 @@ public class SystemFunction {
             case "BYTE":
                 return Byte.parseByte(v1.toString());
             case "BYTES":
+            case "BINARY":
                 return v1.toString().getBytes(StandardCharsets.UTF_8);
             case "DOUBLE":
                 return Double.parseDouble(v1.toString());

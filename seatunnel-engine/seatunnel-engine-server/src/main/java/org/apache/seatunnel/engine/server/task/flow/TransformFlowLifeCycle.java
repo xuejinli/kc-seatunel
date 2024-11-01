@@ -28,6 +28,8 @@ import org.apache.seatunnel.engine.server.checkpoint.CheckpointBarrier;
 import org.apache.seatunnel.engine.server.task.SeaTunnelTask;
 import org.apache.seatunnel.engine.server.task.record.Barrier;
 
+import org.apache.commons.collections4.CollectionUtils;
+
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -121,7 +123,9 @@ public class TransformFlowLifeCycle<T> extends ActionFlowLifeCycle
                             transformer,
                             data,
                             outputDataArray);
-                    nextInputDataList.addAll(outputDataArray);
+                    if (CollectionUtils.isNotEmpty(outputDataArray)) {
+                        nextInputDataList.addAll(outputDataArray);
+                    }
                 }
             } else {
                 for (T data : dataList) {
