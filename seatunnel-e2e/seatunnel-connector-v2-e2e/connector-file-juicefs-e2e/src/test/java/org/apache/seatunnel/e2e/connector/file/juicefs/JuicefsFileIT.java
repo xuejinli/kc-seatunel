@@ -28,7 +28,7 @@ import org.testcontainers.containers.Container;
 
 import java.io.IOException;
 
-@Disabled
+@Disabled("Please testing it in your local environment with juicefs conf")
 public class JuicefsFileIT extends TestSuiteBase  implements TestResource {
 
     public static final String HADOOP_JUICEFS_DOWNLOAD =
