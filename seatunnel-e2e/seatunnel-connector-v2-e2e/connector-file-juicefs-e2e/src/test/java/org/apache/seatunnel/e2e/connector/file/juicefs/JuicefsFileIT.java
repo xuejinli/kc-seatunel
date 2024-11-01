@@ -36,13 +36,14 @@ public class JuicefsFileIT extends TestSuiteBase  implements TestResource {
 
     @BeforeAll
     @Override
-    public void startUp() throws Exception {
+    public void startUp() {
         JuicefsUtils juicefsUtils = new JuicefsUtils();
         juicefsUtils.uploadTestFiles("/excel/e2e.xlsx", "/read/excel/e2e.xlsx", true);
         juicefsUtils.uploadTestFiles("/json/e2e.json", "/read/json/e2e.json", true);
         juicefsUtils.uploadTestFiles("/orc/e2e.orc", "/read/orc/e2e.orc", true);
         juicefsUtils.uploadTestFiles("/parquet/e2e.parquet", "/read/parquet/e2e.parquet", true);
         juicefsUtils.uploadTestFiles("/text/e2e.txt", "/read/text/e2e.txt", true);
+        juicefsUtils.close();
     }
 
     @AfterAll
