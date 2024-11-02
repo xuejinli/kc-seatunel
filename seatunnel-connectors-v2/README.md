@@ -49,13 +49,18 @@ own connectors, you need to follow the steps below.
 
 3.Create two packages corresponding to source and sink
 
-​    package org.apache.seatunnel.connectors.seatunnel.{connector name}}.source
-
-​    package org.apache.seatunnel.connectors.seatunnel.{connector name}}.sink
+    package org.apache.seatunnel.connectors.seatunnel.{connector name}}.source
+    package org.apache.seatunnel.connectors.seatunnel.{connector name}}.sink
 
 4.add connector info to plugin-mapping.properties file in seatunnel root path.
 
 5.add connector dependency to seatunnel-dist/pom.xml, so the connector jar can be find in binary package.
+
+6.There are several classes that must be implemented on the source side, namely {connector name} Source, {connector name} SourceFactor, {connector name} SourceReader. Please refer to other connectors for details
+
+7.{Connector Name} SourceFactory needs to be annotated with the **@AutoService (Factory.class)** annotation on the class name, and in addition to the required methods, an additional 'creatSource' method needs to be rewritten
+
+8.{Connector Name} Source needs to override the getProducedCatalogTables method
 
 ### **Startup Class**
 
@@ -134,7 +139,7 @@ completed by implementing this interface.
   these 100 pieces of data for batch processing. Stream processing does not have this requirement, so most SourceReaders
   with integrated stream batches will have the following code:
 
-```java
+```
 if(Boundedness.BOUNDED.equals(context.getBoundedness())){
     // signal to the source that we have reached the end of the data.
     context.signalNoMoreElement();
@@ -208,8 +213,7 @@ It is recommended to put it in the same directory as the implementation class of
 - `factoryIdentifier` is used to indicate the name of the current Factory. This value should be the same as the 
     value returned by `getPluginName`, so that if Factory is used to create Source/Sink in the future,
     A seamless switch can be achieved.
-- `createSink` and `createSource` are the methods for creating Source and Sink respectively, 
-    and do not need to be implemented at present.
+- `createSink` and `createSource` are the methods for creating Source and Sink respectively.
 - `optionRule` returns the parameter logic, which is used to indicate which parameters of our connector are supported,
     which parameters are required, which parameters are optional, and which parameters are exclusive, which parameters are bundledRequired.
     This method will be used when we visually create the connector logic, and it will also be used to generate a complete parameter 
