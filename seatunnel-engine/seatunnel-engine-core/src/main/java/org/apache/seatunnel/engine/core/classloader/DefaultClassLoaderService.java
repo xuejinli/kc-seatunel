@@ -24,6 +24,7 @@ import org.apache.seatunnel.engine.common.loader.SeaTunnelChildFirstClassLoader;
 import com.google.common.annotations.VisibleForTesting;
 import com.hazelcast.spi.impl.NodeEngine;
 import com.hazelcast.spi.impl.NodeEngineImpl;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -48,6 +49,7 @@ public class DefaultClassLoaderService implements ClassLoaderService {
         log.info("start classloader service" + (cacheMode ? " with cache mode" : ""));
     }
 
+    @SneakyThrows
     @Override
     public synchronized ClassLoader getClassLoader(
             long jobId, Collection<URL> jars, NodeEngine nodeEngine) {
@@ -69,7 +71,7 @@ public class DefaultClassLoaderService implements ClassLoaderService {
         } else {
             if (Objects.nonNull(nodeEngine)) {
                 for (URL jar : jars) {
-                    File file = new File(jar.getFile());
+                    File file = new File(jar.toURI());
                     if (!file.exists()) {
                         String host =
                                 ((NodeEngineImpl) nodeEngine).getNode().getThisAddress().getHost();
