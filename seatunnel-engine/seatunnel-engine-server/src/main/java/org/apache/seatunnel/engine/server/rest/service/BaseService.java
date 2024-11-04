@@ -131,7 +131,7 @@ public abstract class BaseService {
                         : seaTunnelServer.getClassLoaderService();
         ClassLoader classLoader =
                 classLoaderService.getClassLoader(
-                        jobId, jobImmutableInformation.getPluginJarsUrls());
+                        jobId, jobImmutableInformation.getPluginJarsUrls(), nodeEngine);
         LogicalDag logicalDag =
                 CustomClassLoadedObject.deserializeWithCustomClassLoader(
                         nodeEngine.getSerializationService(),

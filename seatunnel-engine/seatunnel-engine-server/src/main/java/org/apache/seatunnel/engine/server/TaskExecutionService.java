@@ -304,7 +304,7 @@ public class TaskExecutionService implements DynamicMetricsProvider {
                 }
                 ClassLoader classLoader =
                         classLoaderService.getClassLoader(
-                                taskImmutableInfo.getJobId(), Lists.newArrayList(jars));
+                                taskImmutableInfo.getJobId(), Lists.newArrayList(jars), nodeEngine);
                 Task task;
                 if (jars.isEmpty()) {
                     task = nodeEngine.getSerializationService().toObject(taskData.get(i));

@@ -97,7 +97,12 @@ public class RestJobExecutionEnvironment extends AbstractJobEnvironment {
     @Override
     protected MultipleTableJobConfigParser getJobConfigParser() {
         return new MultipleTableJobConfigParser(
-                seaTunnelJobConfig, idGenerator, jobConfig, commonPluginJars, isStartWithSavePoint);
+                seaTunnelJobConfig,
+                idGenerator,
+                jobConfig,
+                commonPluginJars,
+                isStartWithSavePoint,
+                nodeEngine);
     }
 
     public JobImmutableInformation build() {
