@@ -71,7 +71,7 @@ public class DefaultClassLoaderService implements ClassLoaderService {
         } else {
             if (Objects.nonNull(nodeEngine)) {
                 for (URL jar : jars) {
-                    File file = new File(jar.toURI());
+                    File file = new File(jar.toURI().getPath());
                     if (!file.exists()) {
                         String host =
                                 ((NodeEngineImpl) nodeEngine).getNode().getThisAddress().getHost();
