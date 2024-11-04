@@ -124,9 +124,7 @@ public class ClassLoaderServiceTest extends AbstractClassLoaderServiceTest {
                 () -> {
                     try {
                         classLoaderService.getClassLoader(
-                                3L,
-                                Lists.newArrayList(new URL("file:///fake.jar")),
-                                mockNodeEngine);
+                                3L, Lists.newArrayList(new URL("file:/fake.jar")), mockNodeEngine);
                     } catch (ClassLoaderException e) {
                         Assertions.assertTrue(
                                 e.getMessage()
@@ -138,7 +136,7 @@ public class ClassLoaderServiceTest extends AbstractClassLoaderServiceTest {
 
         // Creating a temporary jar file for testing
         File tempJar = File.createTempFile("console", ".jar");
-        String tempJarPath = "file://" + tempJar.getPath();
+        String tempJarPath = tempJar.toURI().toURL().toString();
 
         // Test case to check successful class loader creation with existing jar file
         Assertions.assertDoesNotThrow(
