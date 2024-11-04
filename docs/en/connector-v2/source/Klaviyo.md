@@ -45,7 +45,7 @@ http request url
 
 API private key for login, you can get more detail at this link:
 
-https://developers.klaviyo.com/en/docs
+https://developers.klaviyo.com/en/docs/authenticate_#private-key-authentication
 
 ### revision [String]
 
