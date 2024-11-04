@@ -170,8 +170,8 @@ public class TaskExecutionServiceTest extends AbstractSeaTunnelServerTest {
     public void testClassloaderSplit() throws IOException {
         File console = File.createTempFile("console", ".jar");
         File fake = File.createTempFile("fake", ".jar");
-        String consoleFile = "file://" + console.getPath();
-        String fakeFile = "file://" + fake.getPath();
+        String consoleFile = console.toURI().toURL().toString();
+        String fakeFile = fake.toURI().toURL().toString();
 
         TaskExecutionService taskExecutionService = server.getTaskExecutionService();
 
