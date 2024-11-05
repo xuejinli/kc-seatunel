@@ -77,7 +77,11 @@ public class DefaultClassLoaderService implements ClassLoaderService {
                                 ((NodeEngineImpl) nodeEngine).getNode().getThisAddress().getHost();
                         throw new ClassLoaderException(
                                 ClassLoaderErrorCode.NOT_FOUND_JAR,
-                                "Node:" + host + ", file not found, path: " + jar);
+                                "The jar file "
+                                        + jar
+                                        + " can not be found in node "
+                                        + host
+                                        + ", please ensure that the deployment paths of SeaTunnel on different nodes are consistent.");
                     }
                 }
             } else {
