@@ -56,7 +56,7 @@ own connectors, you need to follow the steps below.
 
 5.add connector dependency to seatunnel-dist/pom.xml, so the connector jar can be find in binary package.
 
-6.There are several classes that must be implemented on the source side, namely {connector name} Source, {connector name} SourceFactor, {connector name} SourceReader. Please refer to other connectors for details
+6.There are several classes that must be implemented on the source side, namely {connector name} Source, {connector name} SourceFactory, {connector name} SourceReader. Please refer to other connectors for details
 
 7.{Connector Name} SourceFactory needs to be annotated with the **@AutoService (Factory.class)** annotation on the class name, and in addition to the required methods, an additional 'creatSource' method needs to be rewritten
 
@@ -139,7 +139,7 @@ completed by implementing this interface.
   these 100 pieces of data for batch processing. Stream processing does not have this requirement, so most SourceReaders
   with integrated stream batches will have the following code:
 
-```
+```java
 if(Boundedness.BOUNDED.equals(context.getBoundedness())){
     // signal to the source that we have reached the end of the data.
     context.signalNoMoreElement();

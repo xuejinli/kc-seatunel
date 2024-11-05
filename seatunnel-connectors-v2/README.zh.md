@@ -46,7 +46,7 @@ SeaTunnel为与计算引擎进行解耦，设计了新的连接器API，通过�
 
 5.将连接器添加到seatunnel-dist/pom.xml,这样连接器jar就可以在二进制包中找到.
 
-6.source端有几个必须实现的类，分别是{连接器名}Source、{连接器名}SourceFactor、{连接器名}SourceReader，具体可以参考其他连接器
+6.source端有几个必须实现的类，分别是{连接器名}Source、{连接器名}SourceFactory、{连接器名}SourceReader，具体可以参考其他连接器
 
 7.{连接器名}SourceFactory 里面需要在类名上标注 **@AutoService(Factory.class)** 注解，并且除了必须实现的方法外，需要额外再重写一个 createSource 方法
 
@@ -108,7 +108,7 @@ SeaTunnel为与计算引擎进行解耦，设计了新的连接器API，通过�
   中调用`SourceReader.Context.signalNoMoreElement`
   通知SeaTunnel没有数据读取了，那么就可以利用这100条数据进行批处理。流处理没有这个要求，那么大多数流批一体的SourceReader都会出现如下代码：
 
-```
+```java
 if (Boundedness.BOUNDED.equals(context.getBoundedness())) {
     // signal to the source that we have reached the end of the data.
     context.signalNoMoreElement();
