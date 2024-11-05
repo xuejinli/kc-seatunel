@@ -30,6 +30,7 @@ public class ColumnConfig implements Serializable {
     private final String srcField;
 
     private final String destField;
+    private final boolean deleteSrcField;
 
     private final SeaTunnelDataType<?> destType;
     private final ErrorHandleWay errorHandleWay;
@@ -37,14 +38,20 @@ public class ColumnConfig implements Serializable {
     public ColumnConfig(
             String path,
             String srcField,
+            boolean deleteSrcField,
             String destField,
             SeaTunnelDataType<?> destType,
             ErrorHandleWay errorHandleWay) {
         this.path = path;
         this.srcField = srcField;
+        this.deleteSrcField = deleteSrcField;
         this.destField = destField;
         this.destType = destType;
         this.errorHandleWay = errorHandleWay;
+    }
+
+    public boolean isDeleteSrcField() {
+        return deleteSrcField;
     }
 
     public String getPath() {

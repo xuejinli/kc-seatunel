@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static org.apache.seatunnel.transform.exception.JsonPathTransformErrorCode.JSON_PATH_COMPILE_ERROR;
 
@@ -197,5 +198,13 @@ public class JsonPathTransform extends MultipleFieldOutputTransform {
             columns[i] = PhysicalColumn.of(fieldName, fieldType, 200, true, "", "");
         }
         return columns;
+    }
+
+    @Override
+    protected List<String> getDeletedColumns() {
+        return this.config.getColumnConfigs().stream()
+                .filter(ColumnConfig::isDeleteSrcField)
+                .map(ColumnConfig::getSrcField)
+                .collect(Collectors.toList());
     }
 }
