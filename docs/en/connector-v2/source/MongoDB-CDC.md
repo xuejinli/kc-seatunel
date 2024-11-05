@@ -186,6 +186,14 @@ source {
     collection = ["inventory.products"]
     username = stuser
     password = stpw
+    schema = {
+      fields {
+        "_id" : string,
+        "name" : string,
+        "description" : string,
+        "weight" : string
+      }
+    }
   }
 }
 
@@ -240,7 +248,3 @@ sink {
    }
 }
 ```
-
-## Feature
-- Support Multi-table Synchronization for MongoDB-CDC.
-

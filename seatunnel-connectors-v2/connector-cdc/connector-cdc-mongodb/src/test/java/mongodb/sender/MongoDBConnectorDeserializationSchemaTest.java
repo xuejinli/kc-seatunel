@@ -17,6 +17,7 @@
 
 package mongodb.sender;
 
+import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.seatunnel.api.table.catalog.CatalogTable;
 import org.apache.seatunnel.api.table.catalog.CatalogTableUtil;
 import org.apache.seatunnel.api.table.catalog.PhysicalColumn;
@@ -25,12 +26,8 @@ import org.apache.seatunnel.api.table.catalog.TableSchema;
 import org.apache.seatunnel.api.table.type.BasicType;
 import org.apache.seatunnel.api.table.type.SeaTunnelDataType;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
-import org.apache.seatunnel.common.utils.ReflectionUtils;
 import org.apache.seatunnel.connectors.seatunnel.cdc.mongodb.sender.MongoDBConnectorDeserializationSchema;
 import org.apache.seatunnel.connectors.seatunnel.cdc.mongodb.utils.MongodbRecordUtils;
-
-import org.apache.kafka.connect.source.SourceRecord;
-
 import org.bson.BsonDocument;
 import org.bson.BsonInt64;
 import org.bson.BsonString;
@@ -108,7 +105,7 @@ public class MongoDBConnectorDeserializationSchemaTest {
                         "inventory.products",
                         keyDocument,
                         valueDocument);
-        Object tableId = ReflectionUtils.invoke(schema, "extractTableId", sourceRecord);
+        Object tableId = schema.extractTableIdForTest(sourceRecord);
         Assertions.assertEquals("inventory.products", tableId);
     }
 }
