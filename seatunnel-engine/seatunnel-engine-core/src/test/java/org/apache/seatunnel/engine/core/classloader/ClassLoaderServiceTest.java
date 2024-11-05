@@ -131,7 +131,7 @@ public class ClassLoaderServiceTest extends AbstractClassLoaderServiceTest {
                         Assertions.assertTrue(
                                 e.getMessage()
                                         .contains(
-                                                "Node:localhost, file not found, path: file:/fake.jar"));
+                                                "The jar file file:/fake.jar can not be found in node localhost, please ensure that the deployment paths of SeaTunnel on different nodes are consistent."));
                         throw e;
                     }
                 });
