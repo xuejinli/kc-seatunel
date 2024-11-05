@@ -17,11 +17,8 @@
 
 package org.apache.seatunnel.connectors.seatunnel.cdc.mongodb.sender;
 
-import com.mongodb.client.model.changestream.OperationType;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.connect.data.Schema;
-import org.apache.kafka.connect.data.Struct;
-import org.apache.kafka.connect.source.SourceRecord;
+import org.apache.seatunnel.shade.com.google.common.annotations.VisibleForTesting;
+
 import org.apache.seatunnel.api.source.Collector;
 import org.apache.seatunnel.api.table.catalog.TablePath;
 import org.apache.seatunnel.api.table.type.ArrayType;
@@ -35,7 +32,11 @@ import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
 import org.apache.seatunnel.api.table.type.SqlType;
 import org.apache.seatunnel.connectors.cdc.debezium.DebeziumDeserializationSchema;
 import org.apache.seatunnel.connectors.seatunnel.cdc.mongodb.exception.MongodbConnectorException;
-import org.apache.seatunnel.shade.com.google.common.annotations.VisibleForTesting;
+
+import org.apache.kafka.connect.data.Schema;
+import org.apache.kafka.connect.data.Struct;
+import org.apache.kafka.connect.source.SourceRecord;
+
 import org.bson.BsonDocument;
 import org.bson.BsonType;
 import org.bson.BsonValue;
@@ -43,7 +44,11 @@ import org.bson.json.JsonMode;
 import org.bson.json.JsonWriterSettings;
 import org.bson.types.Decimal128;
 
+import com.mongodb.client.model.changestream.OperationType;
+import lombok.extern.slf4j.Slf4j;
+
 import javax.annotation.Nonnull;
+
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
