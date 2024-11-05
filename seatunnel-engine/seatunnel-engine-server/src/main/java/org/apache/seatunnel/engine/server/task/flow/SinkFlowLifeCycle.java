@@ -25,6 +25,7 @@ import org.apache.seatunnel.api.sink.SinkCommitter;
 import org.apache.seatunnel.api.sink.SinkWriter;
 import org.apache.seatunnel.api.sink.SinkWriter.Context;
 import org.apache.seatunnel.api.sink.SupportResourceShare;
+import org.apache.seatunnel.api.sink.event.WriterCloseEvent;
 import org.apache.seatunnel.api.sink.multitablesink.MultiTableSink;
 import org.apache.seatunnel.api.table.catalog.CatalogTable;
 import org.apache.seatunnel.api.table.catalog.TablePath;
@@ -174,6 +175,7 @@ public class SinkFlowLifeCycle<T, CommitInfoT extends Serializable, AggregatedCo
     public void close() throws IOException {
         super.close();
         writer.close();
+        writerContext.getEventListener().onEvent(new WriterCloseEvent());
         try {
             if (resourceManager != null) {
                 resourceManager.close();
