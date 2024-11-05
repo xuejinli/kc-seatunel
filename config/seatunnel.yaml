@@ -17,6 +17,7 @@
 
 seatunnel:
   engine:
+    classloader-cache-mode: true
     history-job-expire-minutes: 1440
     backup-count: 1
     queue-type: blockingqueue
@@ -40,3 +41,4 @@ seatunnel:
     http:
       enable-http: true
       port: 8080
+      enable-dynamic-port: false
