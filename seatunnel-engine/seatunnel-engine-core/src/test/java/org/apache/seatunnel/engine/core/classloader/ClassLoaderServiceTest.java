@@ -117,14 +117,16 @@ public class ClassLoaderServiceTest extends AbstractClassLoaderServiceTest {
         Mockito.when(mockNode.getThisAddress()).thenReturn(new Address("localhost", 5801));
         NodeEngineImpl mockNodeEngine = Mockito.mock(NodeEngineImpl.class);
         Mockito.when(mockNodeEngine.getNode()).thenReturn(mockNode);
-
+        // Creating DefaultClassLoaderService object for testing
+        DefaultClassLoaderService defaultClassLoaderService =
+                new DefaultClassLoaderService(cacheMode(), mockNodeEngine);
         // Test case to check ClassLoaderException when file is not found
         Assertions.assertThrows(
                 ClassLoaderException.class,
                 () -> {
                     try {
-                        classLoaderService.getClassLoader(
-                                3L, Lists.newArrayList(new URL("file:/fake.jar")), mockNodeEngine);
+                        defaultClassLoaderService.getClassLoader(
+                                3L, Lists.newArrayList(new URL("file:/fake.jar")));
                     } catch (ClassLoaderException e) {
                         Assertions.assertTrue(
                                 e.getMessage()
@@ -141,8 +143,8 @@ public class ClassLoaderServiceTest extends AbstractClassLoaderServiceTest {
         // Test case to check successful class loader creation with existing jar file
         Assertions.assertDoesNotThrow(
                 () ->
-                        classLoaderService.getClassLoader(
-                                3L, Lists.newArrayList(new URL(tempJarPath)), mockNodeEngine));
+                        defaultClassLoaderService.getClassLoader(
+                                3L, Lists.newArrayList(new URL(tempJarPath))));
 
         // Deleting the temporary jar file after test
         tempJar.delete();

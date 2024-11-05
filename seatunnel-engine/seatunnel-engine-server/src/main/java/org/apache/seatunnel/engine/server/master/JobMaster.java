@@ -230,8 +230,7 @@ public class JobMaster {
                         .getClassLoaderService()
                         .getClassLoader(
                                 jobImmutableInformation.getJobId(),
-                                jobImmutableInformation.getPluginJarsUrls(),
-                                nodeEngine);
+                                jobImmutableInformation.getPluginJarsUrls());
         logicalDag =
                 CustomClassLoadedObject.deserializeWithCustomClassLoader(
                         nodeEngine.getSerializationService(),

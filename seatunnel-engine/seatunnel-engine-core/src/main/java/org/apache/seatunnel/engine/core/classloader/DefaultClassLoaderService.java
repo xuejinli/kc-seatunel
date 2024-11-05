@@ -41,9 +41,11 @@ public class DefaultClassLoaderService implements ClassLoaderService {
     private final boolean cacheMode;
     private final Map<Long, Map<String, ClassLoader>> classLoaderCache;
     private final Map<Long, Map<String, AtomicInteger>> classLoaderReferenceCount;
+    private final NodeEngine nodeEngine;
 
-    public DefaultClassLoaderService(boolean cacheMode) {
+    public DefaultClassLoaderService(boolean cacheMode, NodeEngine nodeEngine) {
         this.cacheMode = cacheMode;
+        this.nodeEngine = nodeEngine;
         classLoaderCache = new ConcurrentHashMap<>();
         classLoaderReferenceCount = new ConcurrentHashMap<>();
         log.info("start classloader service" + (cacheMode ? " with cache mode" : ""));
@@ -51,10 +53,8 @@ public class DefaultClassLoaderService implements ClassLoaderService {
 
     @SneakyThrows
     @Override
-    public synchronized ClassLoader getClassLoader(
-            long jobId, Collection<URL> jars, NodeEngine nodeEngine) {
+    public synchronized ClassLoader getClassLoader(long jobId, Collection<URL> jars) {
         log.debug("Get classloader for job {} with jars {}", jobId, jars);
-        log.info("Get classloader for job {} with jars {}", jobId, jars);
         if (cacheMode) {
             // with cache mode, all jobs share the same classloader if the jars are the same
             jobId = 1L;
@@ -89,11 +89,6 @@ public class DefaultClassLoaderService implements ClassLoaderService {
             classLoaderReferenceCount.get(jobId).put(key, new AtomicInteger(1));
             return classLoader;
         }
-    }
-
-    @Override
-    public synchronized ClassLoader getClassLoader(long jobId, Collection<URL> jars) {
-        return getClassLoader(jobId, jars, null);
     }
 
     @Override

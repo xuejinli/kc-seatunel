@@ -118,7 +118,7 @@ public class SeaTunnelServer
 
         classLoaderService =
                 new DefaultClassLoaderService(
-                        seaTunnelConfig.getEngineConfig().isClassloaderCacheMode());
+                        seaTunnelConfig.getEngineConfig().isClassloaderCacheMode(), nodeEngine);
 
         eventService = new EventService(nodeEngine);
 

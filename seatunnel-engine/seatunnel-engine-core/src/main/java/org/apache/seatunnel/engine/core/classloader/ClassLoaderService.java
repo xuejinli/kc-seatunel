@@ -17,8 +17,6 @@
 
 package org.apache.seatunnel.engine.core.classloader;
 
-import com.hazelcast.spi.impl.NodeEngine;
-
 import java.net.URL;
 import java.util.Collection;
 
@@ -33,15 +31,6 @@ public interface ClassLoaderService {
      */
     ClassLoader getClassLoader(long jobId, Collection<URL> jars);
 
-    /**
-     * Get the classloader of the connector plugin.
-     *
-     * @param jobId the job id
-     * @param jars the jars of the connector plugin
-     * @param nodeEngine the node engine
-     * @return the classloader of the connector plugin
-     */
-    ClassLoader getClassLoader(long jobId, Collection<URL> jars, NodeEngine nodeEngine);
     /**
      * Release the classloader of the connector plugin.
      *

@@ -67,7 +67,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import com.google.common.collect.Lists;
-import com.hazelcast.spi.impl.NodeEngine;
 import lombok.extern.slf4j.Slf4j;
 import scala.Tuple2;
 
@@ -113,8 +112,6 @@ public class MultipleTableJobConfigParser {
     private final JobConfigParser fallbackParser;
     private final boolean isStartWithSavePoint;
 
-    private NodeEngine nodeEngine;
-
     public MultipleTableJobConfigParser(
             String jobDefineFilePath, IdGenerator idGenerator, JobConfig jobConfig) {
         this(jobDefineFilePath, idGenerator, jobConfig, Collections.emptyList(), false);
@@ -122,7 +119,7 @@ public class MultipleTableJobConfigParser {
 
     public MultipleTableJobConfigParser(
             Config seaTunnelJobConfig, IdGenerator idGenerator, JobConfig jobConfig) {
-        this(seaTunnelJobConfig, idGenerator, jobConfig, Collections.emptyList(), false, null);
+        this(seaTunnelJobConfig, idGenerator, jobConfig, Collections.emptyList(), false);
     }
 
     public MultipleTableJobConfigParser(
@@ -162,8 +159,7 @@ public class MultipleTableJobConfigParser {
             IdGenerator idGenerator,
             JobConfig jobConfig,
             List<URL> commonPluginJars,
-            boolean isStartWithSavePoint,
-            NodeEngine nodeEngine) {
+            boolean isStartWithSavePoint) {
         this.idGenerator = idGenerator;
         this.jobConfig = jobConfig;
         this.commonPluginJars = commonPluginJars;
@@ -172,7 +168,6 @@ public class MultipleTableJobConfigParser {
         this.envOptions = ReadonlyConfig.fromConfig(seaTunnelJobConfig.getConfig("env"));
         this.fallbackParser =
                 new JobConfigParser(idGenerator, commonPluginJars, this, isStartWithSavePoint);
-        this.nodeEngine = nodeEngine;
     }
 
     public ImmutablePair<List<Action>, Set<URL>> parse(ClassLoaderService classLoaderService) {
@@ -199,9 +194,7 @@ public class MultipleTableJobConfigParser {
         } else {
             classLoader =
                     classLoaderService.getClassLoader(
-                            Long.parseLong(jobConfig.getJobContext().getJobId()),
-                            connectorJars,
-                            nodeEngine);
+                            Long.parseLong(jobConfig.getJobContext().getJobId()), connectorJars);
         }
         try {
             Thread.currentThread().setContextClassLoader(classLoader);
