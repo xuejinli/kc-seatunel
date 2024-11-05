@@ -33,7 +33,6 @@ import org.apache.seatunnel.transform.sql.zeta.functions.NumericFunction;
 import org.apache.seatunnel.transform.sql.zeta.functions.StringFunction;
 import org.apache.seatunnel.transform.sql.zeta.functions.SystemFunction;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -782,9 +781,6 @@ public class ZetaSQLFunction {
             String[] fieldNames,
             SeaTunnelDataType<?>[] seaTunnelDataTypes,
             List<LateralView> lateralViews) {
-        if (CollectionUtils.isEmpty(lateralViews)) {
-            return new SeaTunnelRowType(fieldNames, seaTunnelDataTypes);
-        }
         for (LateralView lateralView : lateralViews) {
             Function function = lateralView.getGeneratorFunction();
             String functionName = function.getName();
