@@ -984,3 +984,16 @@ Example:
 
 select UUID() as seatunnel_uuid
 
+
+### LATERAL VIEW 
+#### EXPLODE
+
+explode array column to rows.
+OUTER EXPLODE will return NULL, while array is NULL or empty
+
+```
+SELECT * FROM fake 
+	LATERAL VIEW EXPLODE ( SPILT ( NAME, ',' ) ) AS NAME 
+	LATERAL VIEW EXPLODE ( SPILT ( pk_id, ';' ) ) AS pk_id 
+	LATERAL VIEW OUTER EXPLODE ( age ) AS age
+```

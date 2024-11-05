@@ -975,3 +975,15 @@ case when c_string in ('c_string') then 1 else 0 end
 
 select UUID() as seatunnel_uuid
 
+### LATERAL VIEW
+#### EXPLODE
+
+将 array 列展开成多行。
+OUTER EXPLODE 当 array 为NULL或者为空时，返回NULL
+
+```
+SELECT * FROM fake 
+	LATERAL VIEW EXPLODE ( SPILT ( NAME, ',' ) ) AS NAME 
+	LATERAL VIEW EXPLODE ( SPILT ( pk_id, ';' ) ) AS pk_id 
+	LATERAL VIEW OUTER EXPLODE ( age ) AS age
+```
