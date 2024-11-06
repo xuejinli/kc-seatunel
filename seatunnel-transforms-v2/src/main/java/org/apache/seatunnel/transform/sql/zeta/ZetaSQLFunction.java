@@ -330,6 +330,7 @@ public class ZetaSQLFunction {
             Parenthesis parenthesis = (Parenthesis) expression;
             return computeForValue(parenthesis.getExpression(), inputFields);
         }
+        // bytes not supported at the moment,use BINARY instead.
         if (expression instanceof CaseExpression) {
             CaseExpression caseExpression = (CaseExpression) expression;
             final Object value = executeCaseExpr(caseExpression, inputFields);
