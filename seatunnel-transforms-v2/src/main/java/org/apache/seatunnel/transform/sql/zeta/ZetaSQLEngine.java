@@ -216,6 +216,9 @@ public class ZetaSQLEngine implements SQLEngine {
                 idx++;
             }
         }
+        if (CollectionUtils.isEmpty(selectBody.getLateralViews())) {
+            return new SeaTunnelRowType(fieldNames, seaTunnelDataTypes);
+        }
         return zetaSQLFunction.lateralViewMapping(
                 fieldNames, seaTunnelDataTypes, selectBody.getLateralViews());
     }
