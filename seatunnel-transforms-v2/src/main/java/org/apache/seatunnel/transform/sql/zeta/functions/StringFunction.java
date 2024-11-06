@@ -21,6 +21,8 @@ import org.apache.seatunnel.common.exception.CommonErrorCodeDeprecated;
 import org.apache.seatunnel.transform.exception.TransformException;
 import org.apache.seatunnel.transform.sql.zeta.ZetaSQLFunction;
 
+import org.apache.groovy.parser.antlr4.util.StringUtils;
+
 import java.nio.charset.StandardCharsets;
 import java.time.temporal.Temporal;
 import java.util.Arrays;
@@ -334,7 +336,7 @@ public class StringFunction {
 
     public static String[] spilt(List<Object> args) {
         String arg = (String) args.get(0);
-        if (arg == null) {
+        if (StringUtils.isEmpty(arg)) {
             return null;
         }
         String delimiter = "";

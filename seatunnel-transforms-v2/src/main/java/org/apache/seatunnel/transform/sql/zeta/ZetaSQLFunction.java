@@ -778,6 +778,14 @@ public class ZetaSQLFunction {
             return;
         }
         if (splitFieldValue.getClass().isArray()) {
+            if (ArrayUtils.isEmpty((Object[]) splitFieldValue)) {
+                if (isUsingOuter) {
+                    next.add(
+                            copySeaTunnelRow(
+                                    outRowType.getTotalFields(), row, aliasFieldIndex, null));
+                }
+                return;
+            }
             for (Object fieldValue : (Object[]) splitFieldValue) {
                 next.add(
                         copySeaTunnelRow(
