@@ -216,11 +216,11 @@ public class ZetaSQLEngine implements SQLEngine {
                 idx++;
             }
         }
-        if (CollectionUtils.isEmpty(selectBody.getLateralViews())) {
+        List<LateralView> lateralViews = selectBody.getLateralViews();
+        if (CollectionUtils.isEmpty(lateralViews)) {
             return new SeaTunnelRowType(fieldNames, seaTunnelDataTypes);
         }
-        return zetaSQLFunction.lateralViewMapping(
-                fieldNames, seaTunnelDataTypes, selectBody.getLateralViews());
+        return zetaSQLFunction.lateralViewMapping(fieldNames, seaTunnelDataTypes, lateralViews);
     }
 
     @Override
