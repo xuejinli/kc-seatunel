@@ -981,7 +981,7 @@ select UUID() as seatunnel_uuid
 将 array 列展开成多行。
 OUTER EXPLODE 当 array 为NULL或者为空时，返回NULL
 EXPLODE(SPILT(FIELD_NAME,separator))用来切分字符串类型，SPILT 第一个参数是字段名，第二个参数是分隔符
-
+EXPLODE(ARRAY(value1,value2)) 用于自定义数组切分，在原有基础上生成一个新的字段。
 ```
 SELECT * FROM fake 
 	LATERAL VIEW EXPLODE ( SPILT ( NAME, ',' ) ) AS NAME 

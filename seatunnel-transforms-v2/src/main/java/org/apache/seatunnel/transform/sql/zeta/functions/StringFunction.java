@@ -332,6 +332,18 @@ public class StringFunction {
         return trim(arg, true, true, sp);
     }
 
+    public static String[] spilt(List<Object> args) {
+        String arg = (String) args.get(0);
+        if (arg == null) {
+            return null;
+        }
+        String delimiter = "";
+        if (args.size() >= 2) {
+            delimiter = (String) args.get(1);
+        }
+        return arg.split(delimiter);
+    }
+
     public static String trim(String s, boolean leading, boolean trailing, String sp) {
         char space = sp == null || sp.isEmpty() ? ' ' : sp.charAt(0);
         int begin = 0, end = s.length();

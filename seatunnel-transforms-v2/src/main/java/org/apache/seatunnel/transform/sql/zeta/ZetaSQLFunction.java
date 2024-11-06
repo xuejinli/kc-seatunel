@@ -19,6 +19,7 @@ package org.apache.seatunnel.transform.sql.zeta;
 
 import org.apache.seatunnel.api.table.catalog.PhysicalColumn;
 import org.apache.seatunnel.api.table.type.ArrayType;
+import org.apache.seatunnel.api.table.type.BasicType;
 import org.apache.seatunnel.api.table.type.DecimalType;
 import org.apache.seatunnel.api.table.type.MapType;
 import org.apache.seatunnel.api.table.type.SeaTunnelDataType;
@@ -114,6 +115,7 @@ public class ZetaSQLFunction {
     public static final String SUBSTR = "SUBSTR";
     public static final String TO_CHAR = "TO_CHAR";
     public static final String TRANSLATE = "TRANSLATE";
+    public static final String SPILT = "SPILT";
 
     // -------------------------numeric functions----------------------------
     public static final String ABS = "ABS";
@@ -178,8 +180,9 @@ public class ZetaSQLFunction {
     public static final String YEAR = "YEAR";
     public static final String FROM_UNIXTIME = "FROM_UNIXTIME";
 
+    // -------------------------lateralView functions----------------------------
     public static final String EXPLODE = "EXPLODE";
-    public static final String SPILT = "SPILT";
+    public static final String ARRAY = "ARRAY";
 
     // -------------------------system functions----------------------------
     public static final String COALESCE = "COALESCE";
@@ -436,6 +439,8 @@ public class ZetaSQLFunction {
                 return StringFunction.toChar(args);
             case TRANSLATE:
                 return StringFunction.translate(args);
+            case SPILT:
+                return StringFunction.spilt(args);
             case ABS:
                 return NumericFunction.abs(args);
             case ACOS:
@@ -543,6 +548,8 @@ public class ZetaSQLFunction {
                 return SystemFunction.ifnull(args);
             case NULLIF:
                 return SystemFunction.nullif(args);
+            case ARRAY:
+                return SystemFunction.array(args);
             case UUID:
                 return randomUUID().toString();
             default:
@@ -698,8 +705,9 @@ public class ZetaSQLFunction {
             Function function = lateralView.getGeneratorFunction();
             boolean isUsingOuter = lateralView.isUsingOuter();
             String functionName = function.getName();
+            String alias = lateralView.getColumnAlias().getName();
             if (EXPLODE.equalsIgnoreCase(functionName)) {
-                seaTunnelRows = explode(seaTunnelRows, function, outRowType, isUsingOuter);
+                seaTunnelRows = explode(seaTunnelRows, function, outRowType, isUsingOuter, alias);
             } else {
                 throw new SeaTunnelRuntimeException(
                         CommonErrorCodeDeprecated.UNSUPPORTED_OPERATION,
@@ -714,8 +722,10 @@ public class ZetaSQLFunction {
             List<SeaTunnelRow> seaTunnelRows,
             Function lateralViewFunction,
             SeaTunnelRowType outRowType,
-            boolean isUsingOuter) {
+            boolean isUsingOuter,
+            String alias) {
         ExpressionList<?> expressions = lateralViewFunction.getParameters();
+        int aliasFieldIndex = outRowType.indexOf(alias);
         for (Expression expression : expressions) {
             if (expression instanceof Column) {
                 String column = ((Column) expression).getColumnName();
@@ -729,110 +739,114 @@ public class ZetaSQLFunction {
                     if (splitFieldValue instanceof Object[]) {
                         Object[] rowList = (Object[]) splitFieldValue;
                         if (ArrayUtils.isEmpty(rowList) && isUsingOuter) {
-                            SeaTunnelRow outputRow = row.copy();
-                            outputRow.setField(fieldIndex, null);
-                            next.add(outputRow);
+                            next.add(copy(outRowType.getTotalFields(), row, aliasFieldIndex, null));
                         } else {
                             for (Object fieldValue : rowList) {
-                                SeaTunnelRow outputRow = row.copy();
-                                outputRow.setField(fieldIndex, fieldValue);
-                                next.add(outputRow);
+                                next.add(
+                                        copy(
+                                                outRowType.getTotalFields(),
+                                                row,
+                                                aliasFieldIndex,
+                                                fieldValue));
                             }
                         }
                     }
                 }
                 seaTunnelRows = next;
-            }
-            if (expression instanceof Function) {
-                Function function = (Function) expression;
-                String functionName = function.getName();
-                if (SPILT.equalsIgnoreCase(functionName)) {
-                    ExpressionList expressionList = function.getParameters();
-                    String column = ((Column) expressionList.get(0)).getColumnName();
-                    String delimiter = ((StringValue) expressionList.get(1)).getValue();
-                    List<SeaTunnelRow> next = new ArrayList<>();
-                    for (SeaTunnelRow row : seaTunnelRows) {
-
-                        int fieldIndex = outRowType.indexOf(column);
-                        Object splitFieldValue = row.getField(fieldIndex);
-                        if (splitFieldValue == null) {
-                            continue;
+            } else if (expression instanceof Function) {
+                List<SeaTunnelRow> next = new ArrayList<>();
+                for (SeaTunnelRow row : seaTunnelRows) {
+                    Object values = computeForValue(expression, row.getFields());
+                    if (values.getClass().isArray()) {
+                        for (Object fieldValue : (Object[]) values) {
+                            next.add(
+                                    copy(
+                                            outRowType.getTotalFields(),
+                                            row,
+                                            aliasFieldIndex,
+                                            fieldValue.toString()));
                         }
-                        String[] splitFieldValues = splitFieldValue.toString().split(delimiter);
-                        for (String fieldValue : splitFieldValues) {
-                            SeaTunnelRow outputRow = row.copy();
-                            outputRow.setField(fieldIndex, fieldValue);
-                            next.add(outputRow);
-                        }
+                    } else {
+                        throw new SeaTunnelRuntimeException(
+                                CommonErrorCodeDeprecated.UNSUPPORTED_OPERATION,
+                                "Transform config error! UnSupport explode function:"
+                                        + ((Function) expression).getName());
                     }
-                    seaTunnelRows = next;
-
-                } else {
-                    throw new SeaTunnelRuntimeException(
-                            CommonErrorCodeDeprecated.UNSUPPORTED_OPERATION,
-                            "Transform config error! UnSupport function:" + functionName);
                 }
+                seaTunnelRows = next;
             }
         }
         return seaTunnelRows;
     }
 
+    private SeaTunnelRow copy(int length, SeaTunnelRow row, int fieldIndex, Object fieldValue) {
+        Object[] fields = new Object[length];
+        System.arraycopy(row.getFields(), 0, fields, 0, row.getFields().length);
+        SeaTunnelRow outputRow = new SeaTunnelRow(fields);
+        outputRow.setRowKind(row.getRowKind());
+        outputRow.setTableId(row.getTableId());
+        outputRow.setField(fieldIndex, fieldValue);
+        return outputRow;
+    }
+
     public SeaTunnelRowType lateralViewMapping(
             String[] fieldNames,
             SeaTunnelDataType<?>[] seaTunnelDataTypes,
-            List<LateralView> lateralViews) {
+            List<LateralView> lateralViews,
+            List<String> inputColumnsMapping) {
         for (LateralView lateralView : lateralViews) {
             Function function = lateralView.getGeneratorFunction();
             String functionName = function.getName();
+            String alias = lateralView.getColumnAlias().getName();
             if (EXPLODE.equalsIgnoreCase(functionName)) {
-                explodeTypeMapping(fieldNames, seaTunnelDataTypes, function);
+                ExpressionList<?> expressions = function.getParameters();
+                int aliasIndex = Arrays.asList(fieldNames).indexOf(alias);
+                for (Expression expression : expressions) {
+                    if (expression instanceof Column) {
+                        String column = ((Column) expression).getColumnName();
+                        int columnIndex = Arrays.asList(fieldNames).indexOf(column);
+                        if (columnIndex == -1) {
+                            throw new TransformException(
+                                    INPUT_FIELDS_NOT_FOUND,
+                                    "Lateral view field must be in select item:" + fieldNames);
+                        }
+                        ArrayType arrayType = (ArrayType) seaTunnelDataTypes[columnIndex];
+                        SeaTunnelDataType seaTunnelDataType =
+                                PhysicalColumn.of(
+                                                column,
+                                                arrayType.getElementType(),
+                                                200,
+                                                true,
+                                                "",
+                                                "")
+                                        .getDataType();
+                        if (aliasIndex == -1) {
+                            fieldNames = ArrayUtils.add(fieldNames, alias);
+                            seaTunnelDataTypes =
+                                    ArrayUtils.add(seaTunnelDataTypes, seaTunnelDataType);
+                            inputColumnsMapping.add(alias);
+                        } else {
+                            seaTunnelDataTypes[columnIndex] = seaTunnelDataType;
+                        }
+                    } else {
+                        // default string type
+                        SeaTunnelDataType seaTunnelDataType =
+                                PhysicalColumn.of(alias, BasicType.STRING_TYPE, 10L, true, "", "")
+                                        .getDataType();
+                        if (aliasIndex == -1) {
+                            fieldNames = ArrayUtils.add(fieldNames, alias);
+                            seaTunnelDataTypes =
+                                    ArrayUtils.add(seaTunnelDataTypes, seaTunnelDataType);
+                            inputColumnsMapping.add(alias);
+                        }
+                    }
+                }
             } else {
                 throw new SeaTunnelRuntimeException(
                         CommonErrorCodeDeprecated.UNSUPPORTED_OPERATION,
                         "Transform config error! UnSupport function:" + functionName);
             }
         }
-
         return new SeaTunnelRowType(fieldNames, seaTunnelDataTypes);
-    }
-
-    private void explodeTypeMapping(
-            String[] fieldNames,
-            SeaTunnelDataType<?>[] seaTunnelDataTypes,
-            Function lateralViewFunction) {
-        ExpressionList<?> expressions = lateralViewFunction.getParameters();
-        for (Expression expression : expressions) {
-            if (expression instanceof Column) {
-                String column = ((Column) expression).getColumnName();
-                int columnIndex = Arrays.asList(fieldNames).indexOf(column);
-                if (columnIndex == -1) {
-                    throw new TransformException(
-                            INPUT_FIELDS_NOT_FOUND,
-                            "Lateral view field must be in select item:" + fieldNames);
-                }
-                ArrayType arrayType = (ArrayType) seaTunnelDataTypes[columnIndex];
-                seaTunnelDataTypes[columnIndex] =
-                        PhysicalColumn.of(column, arrayType.getElementType(), 200, true, "", "")
-                                .getDataType();
-            }
-            if (expression instanceof Function) {
-                Function function = (Function) expression;
-                String functionName = function.getName();
-                if (SPILT.equalsIgnoreCase(functionName)) {
-                    ExpressionList expressionList = function.getParameters();
-                    String column = ((Column) expressionList.get(0)).getColumnName();
-                    int columnIndex = Arrays.asList(fieldNames).indexOf(column);
-                    if (columnIndex == -1) {
-                        throw new TransformException(
-                                INPUT_FIELDS_NOT_FOUND,
-                                "Lateral view field must be in select item:" + fieldNames);
-                    }
-                } else {
-                    throw new SeaTunnelRuntimeException(
-                            CommonErrorCodeDeprecated.UNSUPPORTED_OPERATION,
-                            "Transform config error! UnSupport function:" + functionName);
-                }
-            }
-        }
     }
 }

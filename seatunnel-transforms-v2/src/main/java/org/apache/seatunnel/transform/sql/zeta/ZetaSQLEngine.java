@@ -220,7 +220,8 @@ public class ZetaSQLEngine implements SQLEngine {
         if (CollectionUtils.isEmpty(lateralViews)) {
             return new SeaTunnelRowType(fieldNames, seaTunnelDataTypes);
         }
-        return zetaSQLFunction.lateralViewMapping(fieldNames, seaTunnelDataTypes, lateralViews);
+        return zetaSQLFunction.lateralViewMapping(
+                fieldNames, seaTunnelDataTypes, lateralViews, inputColumnsMapping);
     }
 
     @Override

@@ -991,10 +991,11 @@ select UUID() as seatunnel_uuid
 explode array column to rows.
 OUTER EXPLODE will return NULL, while array is NULL or empty
 EXPLODE(SPILT(FIELD_NAME,separator))Used to split string type. The first parameter of SPILT function  is the field name, the second parameter is the separator
-
+EXPLODE(ARRAY(value1,value2)) Used to custom array type.
 ```
 SELECT * FROM fake 
 	LATERAL VIEW EXPLODE ( SPILT ( NAME, ',' ) ) AS NAME 
 	LATERAL VIEW EXPLODE ( SPILT ( pk_id, ';' ) ) AS pk_id 
 	LATERAL VIEW OUTER EXPLODE ( age ) AS age
+	LATERAL VIEW OUTER EXPLODE ( ARRAY(1,1) ) AS num
 ```
