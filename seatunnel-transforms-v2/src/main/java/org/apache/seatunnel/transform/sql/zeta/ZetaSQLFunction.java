@@ -741,7 +741,8 @@ public class ZetaSQLFunction {
                             next,
                             aliasFieldIndex,
                             row,
-                            expression);
+                            expression,
+                            true);
                 }
                 seaTunnelRows = next;
             } else if (expression instanceof Function) {
@@ -755,7 +756,8 @@ public class ZetaSQLFunction {
                             next,
                             aliasFieldIndex,
                             row,
-                            expression);
+                            expression,
+                            false);
                 }
                 seaTunnelRows = next;
             }
@@ -770,7 +772,8 @@ public class ZetaSQLFunction {
             List<SeaTunnelRow> next,
             int aliasFieldIndex,
             SeaTunnelRow row,
-            Expression expression) {
+            Expression expression,
+            boolean keepValueType) {
         if (splitFieldValue == null) {
             if (isUsingOuter) {
                 next.add(copySeaTunnelRow(outRowType.getTotalFields(), row, aliasFieldIndex, null));
@@ -787,12 +790,9 @@ public class ZetaSQLFunction {
                 return;
             }
             for (Object fieldValue : (Object[]) splitFieldValue) {
+                Object value = keepValueType ? fieldValue : String.valueOf(fieldValue);
                 next.add(
-                        copySeaTunnelRow(
-                                outRowType.getTotalFields(),
-                                row,
-                                aliasFieldIndex,
-                                fieldValue.toString()));
+                        copySeaTunnelRow(outRowType.getTotalFields(), row, aliasFieldIndex, value));
             }
         } else {
             throw new SeaTunnelRuntimeException(
