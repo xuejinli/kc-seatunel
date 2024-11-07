@@ -147,6 +147,7 @@ public class RocketMqIT extends TestSuiteBase implements TestResource {
         DefaultSeaTunnelRowSerializer serializer =
                 new DefaultSeaTunnelRowSerializer(
                         "test_topic_source",
+                        null,
                         SEATUNNEL_ROW_TYPE,
                         DEFAULT_FORMAT,
                         DEFAULT_FIELD_DELIMITER);
@@ -209,6 +210,7 @@ public class RocketMqIT extends TestSuiteBase implements TestResource {
         DefaultSeaTunnelRowSerializer serializer =
                 new DefaultSeaTunnelRowSerializer(
                         "test_topic_text",
+                        null,
                         SEATUNNEL_ROW_TYPE,
                         SchemaFormat.TEXT,
                         DEFAULT_FIELD_DELIMITER);
@@ -228,6 +230,7 @@ public class RocketMqIT extends TestSuiteBase implements TestResource {
         DefaultSeaTunnelRowSerializer serializer =
                 new DefaultSeaTunnelRowSerializer(
                         "test_topic_text_offset_check",
+                        null,
                         SEATUNNEL_ROW_TYPE,
                         SchemaFormat.TEXT,
                         DEFAULT_FIELD_DELIMITER);
@@ -245,6 +248,7 @@ public class RocketMqIT extends TestSuiteBase implements TestResource {
         DefaultSeaTunnelRowSerializer serializer =
                 new DefaultSeaTunnelRowSerializer(
                         "test_topic_json",
+                        null,
                         SEATUNNEL_ROW_TYPE,
                         DEFAULT_FORMAT,
                         DEFAULT_FIELD_DELIMITER);
@@ -292,6 +296,7 @@ public class RocketMqIT extends TestSuiteBase implements TestResource {
         DefaultSeaTunnelRowSerializer serializer =
                 new DefaultSeaTunnelRowSerializer(
                         "test_topic_group",
+                        null,
                         SEATUNNEL_ROW_TYPE,
                         DEFAULT_FORMAT,
                         DEFAULT_FIELD_DELIMITER);
