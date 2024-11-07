@@ -31,10 +31,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IOUtils;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayOutputStream;
@@ -49,7 +49,7 @@ import static org.apache.seatunnel.engine.checkpoint.storage.constants.StorageCo
 @Slf4j
 public class HdfsStorage extends AbstractCheckpointStorage {
 
-    public FileSystem fs;
+    public HadoopFileSystemProxy fsProxy;
     private static final String STORAGE_TMP_SUFFIX = "tmp";
     private static final String STORAGE_TYPE_KEY = "storage.type";
 
@@ -64,11 +64,7 @@ public class HdfsStorage extends AbstractCheckpointStorage {
             configuration.remove(STORAGE_NAME_SPACE);
         }
         Configuration hadoopConf = getConfiguration(configuration);
-        try {
-            fs = FileSystem.get(hadoopConf);
-        } catch (IOException e) {
-            throw new CheckpointStorageException("Failed to get file system", e);
-        }
+        fsProxy = new HadoopFileSystemProxy(hadoopConf);
     }
 
     private Configuration getConfiguration(Map<String, String> config)
@@ -104,28 +100,17 @@ public class HdfsStorage extends AbstractCheckpointStorage {
                                 + "/"
                                 + getCheckPointName(state)
                                 + STORAGE_TMP_SUFFIX);
-        try (FSDataOutputStream out = fs.create(tmpFilePath, false)) {
-            out.write(datas);
-        } catch (IOException e) {
-            throw new CheckpointStorageException(
-                    String.format(
-                            "Failed to write checkpoint data, file: %s, state: %s",
-                            tmpFilePath, state),
-                    e);
-        }
         try {
-            boolean success = fs.rename(tmpFilePath, filePath);
-            if (!success) {
-                throw new CheckpointStorageException("Failed to rename tmp file to final file");
-            }
-
+            FSDataOutputStream out = fsProxy.create(tmpFilePath);
+            out.write(datas);
+            fsProxy.renameFile(tmpFilePath, filePath, true);
         } catch (IOException e) {
             throw new CheckpointStorageException("Failed to rename tmp file to final file");
         } finally {
             try {
                 // clean up tmp file, if still lying around
-                if (fs.exists(tmpFilePath)) {
-                    fs.delete(tmpFilePath, false);
+                if (fsProxy.fileExist(tmpFilePath)) {
+                    fsProxy.deleteFile(tmpFilePath);
                 }
             } catch (IOException ioe) {
                 log.error("Failed to delete tmp file", ioe);
@@ -236,7 +221,7 @@ public class HdfsStorage extends AbstractCheckpointStorage {
     public void deleteCheckpoint(String jobId) {
         String jobPath = getStorageParentDirectory() + jobId;
         try {
-            fs.delete(new Path(jobPath), true);
+            fsProxy.deleteFile(new Path(jobPath));
         } catch (IOException e) {
             log.warn("Failed to delete checkpoint for job {}", jobId, e);
         }
@@ -286,9 +271,8 @@ public class HdfsStorage extends AbstractCheckpointStorage {
                     if (pipelineId.equals(getPipelineIdByFileName(fileName))
                             && checkpointId.equals(getCheckpointIdByFileName(fileName))) {
                         try {
-                            fs.delete(
-                                    new Path(path + DEFAULT_CHECKPOINT_FILE_PATH_SPLIT + fileName),
-                                    false);
+                            fsProxy.deleteFile(
+                                    new Path(path + DEFAULT_CHECKPOINT_FILE_PATH_SPLIT + fileName));
                         } catch (Exception e) {
                             log.error(
                                     "Failed to delete checkpoint {} for job {}, pipeline {}",
@@ -316,9 +300,8 @@ public class HdfsStorage extends AbstractCheckpointStorage {
                     if (pipelineId.equals(getPipelineIdByFileName(fileName))
                             && checkpointIdList.contains(checkpointIdByFileName)) {
                         try {
-                            fs.delete(
-                                    new Path(path + DEFAULT_CHECKPOINT_FILE_PATH_SPLIT + fileName),
-                                    false);
+                            fsProxy.deleteFile(
+                                    new Path(path + DEFAULT_CHECKPOINT_FILE_PATH_SPLIT + fileName));
                         } catch (Exception e) {
                             log.error(
                                     "Failed to delete checkpoint {} for job {}, pipeline {}",
@@ -334,12 +317,12 @@ public class HdfsStorage extends AbstractCheckpointStorage {
     private List<String> getFileNames(String path) throws CheckpointStorageException {
         try {
             Path parentPath = new Path(path);
-            if (!fs.exists(parentPath)) {
+            if (!fsProxy.fileExist(parentPath)) {
                 log.info("Path " + path + " is not a directory");
                 return new ArrayList<>();
             }
             FileStatus[] fileStatus =
-                    fs.listStatus(parentPath, path1 -> path1.getName().endsWith(FILE_FORMAT));
+                    fsProxy.listStatus(parentPath, path1 -> path1.getName().endsWith(FILE_FORMAT));
             List<String> fileNames = new ArrayList<>();
             for (FileStatus status : fileStatus) {
                 fileNames.add(status.getPath().getName());
@@ -356,11 +339,12 @@ public class HdfsStorage extends AbstractCheckpointStorage {
      * @param fileName file name
      * @return checkpoint data
      */
+    @SneakyThrows
     private PipelineState readPipelineState(String fileName, String jobId)
             throws CheckpointStorageException {
         fileName =
                 getStorageParentDirectory() + jobId + DEFAULT_CHECKPOINT_FILE_PATH_SPLIT + fileName;
-        try (FSDataInputStream in = fs.open(new Path(fileName));
+        try (FSDataInputStream in = fsProxy.getInputStream(fileName);
                 ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
             IOUtils.copyBytes(in, stream, 1024);
             byte[] bytes = stream.toByteArray();
