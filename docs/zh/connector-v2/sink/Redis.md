@@ -62,7 +62,7 @@ Redis 端口
 
 请参见 data_type 部分以了解具体的写入规则。
 
-当然，这里写入的数据格式只是以 json 为例，具体格式以用户配置的 format 为准。
+当然，这里写入的数据格式只是以 json 为例，具体格式以用户配置的 `format` 为准。
 
 ### data_type [string]
 
