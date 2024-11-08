@@ -138,6 +138,24 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
     }
 
     @Test
+    public void testSubmitHoconJobWithCustomJobId() {
+        AtomicInteger i = new AtomicInteger();
+        Arrays.asList(server, secondServer)
+                .forEach(
+                        container -> {
+                            Tuple3<Integer, String, Long> task = tasks.get(0);
+                            submitHoconJobAndAssertResponse(
+                                    container,
+                                    task._1(),
+                                    task._2(),
+                                    i,
+                                    paramJobName + "&jobId=" + task._3(),
+                                    true,
+                                    task._3().toString());
+                        });
+    }
+
+    @Test
     public void testSubmitJobWithCustomJobIdV2() {
         AtomicInteger i = new AtomicInteger();
         Arrays.asList(server, secondServer)
@@ -222,7 +240,7 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
                         container -> {
                             Tuple3<Integer, String, Long> task = tasks.get(0);
                             Response response =
-                                    submitJobWithHoconStyle(
+                                    submitHoconJob(
                                             "BATCH",
                                             container,
                                             task._1(),
@@ -270,7 +288,7 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
                         container -> {
                             Tuple3<Integer, String, Long> task = tasks.get(1);
                             Response response =
-                                    submitJobWithHoconStyle(
+                                    submitHoconJob(
                                             "BATCH",
                                             container,
                                             task._1(),
@@ -590,6 +608,16 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
         return submitJob(jobMode, container, port, contextPath, false, jobName, paramJobName);
     }
 
+    private Response submitHoconJob(
+            GenericContainer<?> container,
+            int port,
+            String contextPath,
+            String jobMode,
+            String jobName,
+            String paramJobName) {
+        return submitHoconJob(jobMode, container, port, contextPath, false, jobName, paramJobName);
+    }
+
     @Test
     public void testStopJobs() {
         Arrays.asList(server)
@@ -846,7 +874,7 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
         return JsonUtil.toJson(jobList);
     }
 
-    private Response submitJobWithHoconStyle(
+    private Response submitHoconJob(
             String jobMode,
             GenericContainer<?> container,
             int port,
@@ -1039,6 +1067,20 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
         i.getAndIncrement();
     }
 
+    private void submitHoconJobAndAssertResponse(
+            GenericContainer<? extends GenericContainer<?>> container,
+            int port,
+            String contextPath,
+            AtomicInteger i,
+            String customParam,
+            boolean isCustomJobId,
+            String customJobId) {
+        Response response = submitHoconJobAndResponse(container, port, contextPath, i, customParam);
+        String jobId = response.getBody().jsonPath().getString("jobId");
+        assertResponse(container, port, contextPath, i, jobId, customJobId, isCustomJobId);
+        i.getAndIncrement();
+    }
+
     private Response submitJobAndResponse(
             GenericContainer<? extends GenericContainer<?>> container,
             int port,
@@ -1049,6 +1091,25 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
                 i.get() == 0
                         ? submitJob(container, port, contextPath, "BATCH", jobName, customParam)
                         : submitJob(container, port, contextPath, "BATCH", jobName, null);
+        if (i.get() == 0) {
+            response.then().statusCode(200).body("jobName", equalTo(paramJobName));
+        } else {
+            response.then().statusCode(200).body("jobName", equalTo(jobName));
+        }
+        return response;
+    }
+
+    private Response submitHoconJobAndResponse(
+            GenericContainer<? extends GenericContainer<?>> container,
+            int port,
+            String contextPath,
+            AtomicInteger i,
+            String customParam) {
+        Response response =
+                i.get() == 0
+                        ? submitHoconJob(
+                                container, port, contextPath, "BATCH", jobName, customParam)
+                        : submitHoconJob(container, port, contextPath, "BATCH", jobName, null);
         if (i.get() == 0) {
             response.then().statusCode(200).body("jobName", equalTo(paramJobName));
         } else {
