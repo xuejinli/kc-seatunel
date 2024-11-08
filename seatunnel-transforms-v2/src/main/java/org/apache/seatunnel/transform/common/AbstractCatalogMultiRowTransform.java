@@ -17,11 +17,8 @@
 package org.apache.seatunnel.transform.common;
 
 import org.apache.seatunnel.api.table.catalog.CatalogTable;
-import org.apache.seatunnel.api.table.catalog.TableIdentifier;
-import org.apache.seatunnel.api.table.catalog.TableSchema;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.api.transform.SeaTunnelMultiRowTransform;
-import org.apache.seatunnel.transform.exception.ErrorDataTransformException;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -30,75 +27,20 @@ import java.util.List;
 
 @Slf4j
 public abstract class AbstractCatalogMultiRowTransform
+        extends AbstractSeaTunnelTransform<SeaTunnelRow, List<SeaTunnelRow>>
         implements SeaTunnelMultiRowTransform<SeaTunnelRow> {
-    protected final ErrorHandleWay rowErrorHandleWay;
-    protected CatalogTable inputCatalogTable;
-
-    protected volatile CatalogTable outputCatalogTable;
 
     public AbstractCatalogMultiRowTransform(@NonNull CatalogTable inputCatalogTable) {
-        this(inputCatalogTable, CommonOptions.ROW_ERROR_HANDLE_WAY_OPTION.defaultValue());
+        super(inputCatalogTable);
     }
 
     public AbstractCatalogMultiRowTransform(
             @NonNull CatalogTable inputCatalogTable, ErrorHandleWay rowErrorHandleWay) {
-        this.inputCatalogTable = inputCatalogTable;
-        this.rowErrorHandleWay = rowErrorHandleWay;
+        super(inputCatalogTable, rowErrorHandleWay);
     }
 
     @Override
     public List<SeaTunnelRow> flatMap(SeaTunnelRow row) {
-        try {
-            return transformRow(row);
-        } catch (ErrorDataTransformException e) {
-            if (e.getErrorHandleWay() != null) {
-                ErrorHandleWay errorHandleWay = e.getErrorHandleWay();
-                if (errorHandleWay.allowSkipThisRow()) {
-                    log.debug("Skip row due to error", e);
-                    return null;
-                }
-                throw e;
-            }
-            if (rowErrorHandleWay.allowSkip()) {
-                log.debug("Skip row due to error", e);
-                return null;
-            }
-            throw e;
-        }
+        return transform(row);
     }
-
-    /**
-     * Outputs transformed row data.
-     *
-     * @param inputRow upstream input row data
-     */
-    protected abstract List<SeaTunnelRow> transformRow(SeaTunnelRow inputRow);
-
-    @Override
-    public CatalogTable getProducedCatalogTable() {
-        if (outputCatalogTable == null) {
-            synchronized (this) {
-                if (outputCatalogTable == null) {
-                    outputCatalogTable = transformCatalogTable();
-                }
-            }
-        }
-
-        return outputCatalogTable;
-    }
-
-    private CatalogTable transformCatalogTable() {
-        TableIdentifier tableIdentifier = transformTableIdentifier();
-        TableSchema tableSchema = transformTableSchema();
-        return CatalogTable.of(
-                tableIdentifier,
-                tableSchema,
-                inputCatalogTable.getOptions(),
-                inputCatalogTable.getPartitionKeys(),
-                inputCatalogTable.getComment());
-    }
-
-    protected abstract TableSchema transformTableSchema();
-
-    protected abstract TableIdentifier transformTableIdentifier();
 }
