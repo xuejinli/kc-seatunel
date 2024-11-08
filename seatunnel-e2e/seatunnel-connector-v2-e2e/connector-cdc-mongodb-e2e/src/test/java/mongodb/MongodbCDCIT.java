@@ -152,6 +152,7 @@ public class MongodbCDCIT extends TestSuiteBase implements TestResource {
     @TestTemplate
     public void testMongodbCdcToMysqlCheckDataE2e(TestContainer container)
             throws InterruptedException {
+        cleanSourceTable();
         CompletableFuture.supplyAsync(
                 () -> {
                     try {
