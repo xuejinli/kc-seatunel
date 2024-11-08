@@ -216,6 +216,30 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
     }
 
     @Test
+    public void testStartWithSavePointWithoutJobIdAndHoconStyle() {
+        Arrays.asList(server, secondServer)
+                .forEach(
+                        container -> {
+                            Tuple3<Integer, String, Long> task = tasks.get(0);
+                            Response response =
+                                    submitJobWithHoconStyle(
+                                            "BATCH",
+                                            container,
+                                            task._1(),
+                                            task._2(),
+                                            true,
+                                            jobName,
+                                            paramJobName);
+                            response.then()
+                                    .statusCode(400)
+                                    .body(
+                                            "message",
+                                            equalTo(
+                                                    "Please provide jobId when start with save point."));
+                        });
+    }
+
+    @Test
     public void testStartWithSavePointWithoutJobIdV2() {
         Arrays.asList(server, secondServer)
                 .forEach(
@@ -223,6 +247,30 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
                             Tuple3<Integer, String, Long> task = tasks.get(1);
                             Response response =
                                     submitJob(
+                                            "BATCH",
+                                            container,
+                                            task._1(),
+                                            task._2(),
+                                            true,
+                                            jobName,
+                                            paramJobName);
+                            response.then()
+                                    .statusCode(400)
+                                    .body(
+                                            "message",
+                                            equalTo(
+                                                    "Please provide jobId when start with save point."));
+                        });
+    }
+
+    @Test
+    public void testStartWithSavePointWithoutJobIdV2AndHoconStyle() {
+        Arrays.asList(server, secondServer)
+                .forEach(
+                        container -> {
+                            Tuple3<Integer, String, Long> task = tasks.get(1);
+                            Response response =
+                                    submitJobWithHoconStyle(
                                             "BATCH",
                                             container,
                                             task._1(),
@@ -796,6 +844,70 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
             jobList.add(job);
         }
         return JsonUtil.toJson(jobList);
+    }
+
+    private Response submitJobWithHoconStyle(
+            String jobMode,
+            GenericContainer<?> container,
+            int port,
+            String contextPath,
+            boolean isStartWithSavePoint,
+            String jobName,
+            String paramJobName) {
+        String requestBody =
+                String.format(
+                        "env {\n"
+                                + "  job.name = \"%s\"\n"
+                                + "  job.mode = \"%s\"\n"
+                                + "}\n\n"
+                                + "source {\n"
+                                + "  FakeSource {\n"
+                                + "    result_table_name = \"fake\"\n"
+                                + "    schema = {\n"
+                                + "      fields {\n"
+                                + "        name = \"string\"\n"
+                                + "        age = \"int\"\n"
+                                + "        card = \"int\"\n"
+                                + "      }\n"
+                                + "    }\n"
+                                + "  }\n"
+                                + "}\n\n"
+                                + "transform {\n"
+                                + "}\n\n"
+                                + "sink {\n"
+                                + "  Console {\n"
+                                + "    source_table_name = \"fake\"\n"
+                                + "  }\n"
+                                + "}\n",
+                        jobName, jobMode);
+        String parameters = null;
+        if (paramJobName != null) {
+            parameters = "jobName=" + paramJobName;
+        }
+        if (isStartWithSavePoint) {
+            parameters = parameters + "&isStartWithSavePoint=true";
+        }
+        parameters = parameters + "&configStyle=hocon";
+        Response response =
+                given().body(requestBody)
+                        .header("Content-Type", "text/plain; charset=utf-8")
+                        .post(
+                                parameters == null
+                                        ? http
+                                                + container.getHost()
+                                                + colon
+                                                + port
+                                                + contextPath
+                                                + RestConstant.SUBMIT_JOB_URL
+                                        : http
+                                                + container.getHost()
+                                                + colon
+                                                + port
+                                                + contextPath
+                                                + RestConstant.SUBMIT_JOB_URL
+                                                + "?"
+                                                + parameters);
+        return response;
     }
 
     private Response submitJob(
