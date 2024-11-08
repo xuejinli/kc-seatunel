@@ -63,6 +63,14 @@ public class TestSQLIT extends TestSuiteBase {
         Container.ExecResult execResultBySql =
                 container.executeJob("/sql_transform/explode_transform.conf");
         Assertions.assertEquals(0, execResultBySql.getExitCode());
+
+        Container.ExecResult execResultBySqlWithoutOuter =
+                container.executeJob("/sql_transform/explode_transform_without_outer.conf");
+        Assertions.assertEquals(0, execResultBySqlWithoutOuter.getExitCode());
+
+        Container.ExecResult execResultBySqlWithOuter =
+                container.executeJob("/sql_transform/explode_transform_with_outer.conf");
+        Assertions.assertEquals(0, execResultBySqlWithOuter.getExitCode());
     }
 
     @TestTemplate

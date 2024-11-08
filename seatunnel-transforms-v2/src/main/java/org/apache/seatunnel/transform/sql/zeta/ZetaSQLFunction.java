@@ -794,11 +794,14 @@ public class ZetaSQLFunction {
                 return;
             }
             for (Object fieldValue : (Object[]) splitFieldValue) {
+
+                if (!isUsingOuter && fieldValue == null) {
+                    continue;
+                }
                 Object value =
                         fieldValue == null
                                 ? null
                                 : (keepValueType ? fieldValue : String.valueOf(fieldValue));
-
                 next.add(
                         copySeaTunnelRowWithNewValue(
                                 outRowType.getTotalFields(), row, aliasFieldIndex, value));
