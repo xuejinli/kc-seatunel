@@ -778,7 +778,9 @@ public class ZetaSQLFunction {
             boolean keepValueType) {
         if (splitFieldValue == null) {
             if (isUsingOuter) {
-                next.add(copySeaTunnelRow(outRowType.getTotalFields(), row, aliasFieldIndex, null));
+                next.add(
+                        copySeaTunnelRowWithNewValue(
+                                outRowType.getTotalFields(), row, aliasFieldIndex, null));
             }
             return;
         }
@@ -786,7 +788,7 @@ public class ZetaSQLFunction {
             if (ArrayUtils.isEmpty((Object[]) splitFieldValue)) {
                 if (isUsingOuter) {
                     next.add(
-                            copySeaTunnelRow(
+                            copySeaTunnelRowWithNewValue(
                                     outRowType.getTotalFields(), row, aliasFieldIndex, null));
                 }
                 return;
@@ -798,7 +800,8 @@ public class ZetaSQLFunction {
                                 : (keepValueType ? fieldValue : String.valueOf(fieldValue));
 
                 next.add(
-                        copySeaTunnelRow(outRowType.getTotalFields(), row, aliasFieldIndex, value));
+                        copySeaTunnelRowWithNewValue(
+                                outRowType.getTotalFields(), row, aliasFieldIndex, value));
             }
         } else {
             throw new SeaTunnelRuntimeException(
@@ -808,7 +811,7 @@ public class ZetaSQLFunction {
         }
     }
 
-    private SeaTunnelRow copySeaTunnelRow(
+    private SeaTunnelRow copySeaTunnelRowWithNewValue(
             int length, SeaTunnelRow row, int fieldIndex, Object fieldValue) {
         Object[] fields = new Object[length];
         System.arraycopy(row.getFields(), 0, fields, 0, row.getFields().length);
