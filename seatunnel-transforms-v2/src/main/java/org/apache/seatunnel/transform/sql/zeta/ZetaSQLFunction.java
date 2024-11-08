@@ -792,7 +792,11 @@ public class ZetaSQLFunction {
                 return;
             }
             for (Object fieldValue : (Object[]) splitFieldValue) {
-                Object value = keepValueType ? fieldValue : String.valueOf(fieldValue);
+                Object value =
+                        fieldValue == null
+                                ? null
+                                : (keepValueType ? fieldValue : String.valueOf(fieldValue));
+
                 next.add(
                         copySeaTunnelRow(outRowType.getTotalFields(), row, aliasFieldIndex, value));
             }

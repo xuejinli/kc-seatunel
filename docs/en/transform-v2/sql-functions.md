@@ -302,6 +302,14 @@ Example:
 
 REPLACE(NAME, ' ')
 
+### SPLIT
+
+Split a string into an array.
+
+Example:
+
+select SPLIT(test,';') as arrays
+
 ### SOUNDEX
 
 ```SOUNDEX(string)```
@@ -992,13 +1000,6 @@ Example:
 
 select ARRAY('test1','test2','test3') as arrays
 
-### SPLIT
-
-Split a string into an array.
-
-Example:
-
-select SPLIT(test,';') as arrays
 
 ### LATERAL VIEW 
 #### EXPLODE

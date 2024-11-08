@@ -302,6 +302,15 @@ REPEAT(NAME || ' ', 10)
 
 REPLACE(NAME, ' ')
 
+
+### SPLIT
+
+将字符串切分成数组。
+
+示例:
+
+select SPLIT(test,';') as arrays
+
 ### SOUNDEX
 
 ```SOUNDEX(string)```
@@ -983,14 +992,6 @@ select UUID() as seatunnel_uuid
 示例:
 
 select ARRAY('test1','test2','test3') as arrays
-
-### SPLIT
-
-将字符串切分成数组。
-
-示例:
-
-select SPLIT(test,';') as arrays
 
 ### LATERAL VIEW
 #### EXPLODE
