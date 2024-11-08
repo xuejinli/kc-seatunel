@@ -34,7 +34,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IOUtils;
 
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayOutputStream;
@@ -100,8 +99,7 @@ public class HdfsStorage extends AbstractCheckpointStorage {
                                 + "/"
                                 + getCheckPointName(state)
                                 + STORAGE_TMP_SUFFIX);
-        try {
-            FSDataOutputStream out = fsProxy.create(tmpFilePath);
+        try (FSDataOutputStream out = fsProxy.getOutputStream(tmpFilePath)) {
             out.write(datas);
             fsProxy.renameFile(tmpFilePath, filePath, true);
         } catch (IOException e) {
@@ -339,12 +337,11 @@ public class HdfsStorage extends AbstractCheckpointStorage {
      * @param fileName file name
      * @return checkpoint data
      */
-    @SneakyThrows
     private PipelineState readPipelineState(String fileName, String jobId)
             throws CheckpointStorageException {
         fileName =
                 getStorageParentDirectory() + jobId + DEFAULT_CHECKPOINT_FILE_PATH_SPLIT + fileName;
-        try (FSDataInputStream in = fsProxy.getInputStream(fileName);
+        try (FSDataInputStream in = fsProxy.getFileSystem().open(new Path(fileName));
                 ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
             IOUtils.copyBytes(in, stream, 1024);
             byte[] bytes = stream.toByteArray();

@@ -80,10 +80,6 @@ public class HadoopFileSystemProxy implements Serializable, Closeable {
         return execute(() -> getFileSystem().getFileStatus(new Path(filePath)).isFile());
     }
 
-    public FSDataOutputStream create(@NonNull Path filePath) throws IOException {
-        return execute(() -> getFileSystem().create(filePath, true));
-    }
-
     public void deleteFile(@NonNull Path filePath) throws IOException {
         execute(
                 () -> {
@@ -203,8 +199,12 @@ public class HadoopFileSystemProxy implements Serializable, Closeable {
         return execute(() -> getFileSystem().getFileStatus(new Path(filePath)));
     }
 
-    public FSDataOutputStream getOutputStream(String filePath) throws IOException {
-        return execute(() -> getFileSystem().create(new Path(filePath), true));
+    public FSDataOutputStream getOutputStream(Path filePath) throws IOException {
+        return execute(() -> getFileSystem().create(filePath, false));
+    }
+
+    public FSDataOutputStream getOutputStream(Path filePath, boolean overwrite) throws IOException {
+        return execute(() -> getFileSystem().create(filePath, overwrite));
     }
 
     public FSDataInputStream getInputStream(String filePath) throws IOException {
