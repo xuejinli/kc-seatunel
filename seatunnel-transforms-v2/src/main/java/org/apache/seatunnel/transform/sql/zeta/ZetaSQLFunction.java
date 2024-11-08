@@ -115,7 +115,7 @@ public class ZetaSQLFunction {
     public static final String SUBSTR = "SUBSTR";
     public static final String TO_CHAR = "TO_CHAR";
     public static final String TRANSLATE = "TRANSLATE";
-    public static final String SPILT = "SPILT";
+    public static final String SPLIT = "SPLIT";
 
     // -------------------------numeric functions----------------------------
     public static final String ABS = "ABS";
@@ -215,7 +215,9 @@ public class ZetaSQLFunction {
             List<Object> functionArgs = new ArrayList<>();
             if (column != null) {
                 functionArgs.add(computeForValue(column, inputFields));
-                functionArgs.add(((StringValue) function.getFromExpression()).getValue());
+                if (function.getFromExpression() != null) {
+                    functionArgs.add(((StringValue) function.getFromExpression()).getValue());
+                }
             }
             return executeFunctionExpr(TRIM, functionArgs);
         }
@@ -440,8 +442,8 @@ public class ZetaSQLFunction {
                 return StringFunction.toChar(args);
             case TRANSLATE:
                 return StringFunction.translate(args);
-            case SPILT:
-                return StringFunction.spilt(args);
+            case SPLIT:
+                return StringFunction.split(args);
             case ABS:
                 return NumericFunction.abs(args);
             case ACOS:

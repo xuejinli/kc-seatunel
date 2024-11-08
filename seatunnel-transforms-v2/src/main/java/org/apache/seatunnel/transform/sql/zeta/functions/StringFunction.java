@@ -334,7 +334,7 @@ public class StringFunction {
         return trim(arg, true, true, sp);
     }
 
-    public static String[] spilt(List<Object> args) {
+    public static String[] split(List<Object> args) {
         String arg = (String) args.get(0);
         if (StringUtils.isEmpty(arg)) {
             return null;
