@@ -147,3 +147,5 @@ Our [Official Documentation](https://seatunnel.apache.org/docs) includes detaile
 ### 7. Is there a community or support channel?
 
 Join our Slack community for support and discussions: [SeaTunnel Slack](https://s.apache.org/seatunnel-slack).
+
+More FAQs can be found in our [FAQ](https://seatunnel.apache.org/docs/faq) section.
