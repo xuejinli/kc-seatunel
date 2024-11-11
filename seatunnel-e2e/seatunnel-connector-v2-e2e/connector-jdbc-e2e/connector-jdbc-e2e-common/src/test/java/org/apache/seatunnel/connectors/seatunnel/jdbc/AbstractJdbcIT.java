@@ -26,6 +26,8 @@ import org.apache.seatunnel.api.table.catalog.ConstraintKey;
 import org.apache.seatunnel.api.table.catalog.PrimaryKey;
 import org.apache.seatunnel.api.table.catalog.TablePath;
 import org.apache.seatunnel.api.table.catalog.TableSchema;
+import org.apache.seatunnel.api.table.catalog.exception.CatalogException;
+import org.apache.seatunnel.api.table.catalog.exception.TableNotExistException;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.common.exception.SeaTunnelRuntimeException;
 import org.apache.seatunnel.common.utils.ExceptionUtils;
@@ -207,6 +209,17 @@ public abstract class AbstractJdbcIT extends TestSuiteBase implements TestResour
                                     jdbcCase.getSourceTable()));
             statement.execute(createSource);
 
+            if (jdbcCase.getAdditionalSqlOnSource() != null) {
+                String additionalSql =
+                        String.format(
+                                jdbcCase.getAdditionalSqlOnSource(),
+                                buildTableInfoWithSchema(
+                                        jdbcCase.getDatabase(),
+                                        jdbcCase.getSchema(),
+                                        jdbcCase.getSourceTable()));
+                statement.execute(additionalSql);
+            }
+
             if (!jdbcCase.isUseSaveModeCreateTable()) {
                 if (jdbcCase.getSinkCreateSql() != null) {
                     createTemplate = jdbcCase.getSinkCreateSql();
@@ -219,6 +232,17 @@ public abstract class AbstractJdbcIT extends TestSuiteBase implements TestResour
                                         jdbcCase.getSchema(),
                                         jdbcCase.getSinkTable()));
                 statement.execute(createSink);
+            }
+
+            if (jdbcCase.getAdditionalSqlOnSink() != null) {
+                String additionalSql =
+                        String.format(
+                                jdbcCase.getAdditionalSqlOnSink(),
+                                buildTableInfoWithSchema(
+                                        jdbcCase.getDatabase(),
+                                        jdbcCase.getSchema(),
+                                        jdbcCase.getSinkTable()));
+                statement.execute(additionalSql);
             }
 
             connection.commit();
@@ -462,6 +486,17 @@ public abstract class AbstractJdbcIT extends TestSuiteBase implements TestResour
             catalog.dropDatabase(targetTablePath, false);
             Assertions.assertFalse(catalog.databaseExists(targetTablePath.getDatabaseName()));
         }
+        Exception exception =
+                Assertions.assertThrows(
+                        Exception.class,
+                        () ->
+                                catalog.truncateTable(
+                                        TablePath.of("not_exist", "not_exist", "not_exist"),
+                                        false));
+
+        Assertions.assertTrue(
+                exception instanceof TableNotExistException
+                        || exception instanceof CatalogException);
     }
 
     @Test

@@ -28,6 +28,7 @@ import org.apache.seatunnel.api.table.catalog.exception.CatalogException;
 import org.apache.seatunnel.api.table.catalog.exception.DatabaseNotExistException;
 import org.apache.seatunnel.api.table.catalog.exception.TableAlreadyExistException;
 import org.apache.seatunnel.api.table.type.SeaTunnelDataType;
+import org.apache.seatunnel.connectors.seatunnel.iceberg.catalog.IcebergCatalog;
 import org.apache.seatunnel.connectors.seatunnel.iceberg.config.SinkConfig;
 import org.apache.seatunnel.connectors.seatunnel.iceberg.data.IcebergTypeMapper;
 import org.apache.seatunnel.connectors.seatunnel.iceberg.sink.schema.SchemaAddColumn;
@@ -105,6 +106,8 @@ public class SchemaUtils {
         SinkConfig config = new SinkConfig(readonlyConfig);
         // build auto create table
         Map<String, String> options = new HashMap<>(table.getOptions());
+        Optional.ofNullable(table.getComment())
+                .map(e -> options.put(IcebergCatalog.PROPS_TABLE_COMMENT, e));
         // override
         options.putAll(config.getAutoCreateProps());
         return createTable(catalog, toIcebergTableIdentifier(tablePath), config, schema, options);
@@ -207,14 +210,17 @@ public class SchemaUtils {
                         .filter(updateType -> !typeMatches(table.schema(), updateType))
                         .collect(toList());
 
-        // filter out columns that have the updated type
+        // filter out columns that have already been deleted
         List<SchemaDeleteColumn> deleteColumns =
                 wrapper.deleteColumns().stream()
                         .filter(deleteColumn -> findColumns(table.schema(), deleteColumn))
                         .collect(toList());
 
-        // Rename column name
-        List<SchemaChangeColumn> changeColumns = new ArrayList<>(wrapper.changeColumns());
+        // filter out columns that have already been changed
+        List<SchemaChangeColumn> changeColumns =
+                wrapper.changeColumns().stream()
+                        .filter(changeColumn -> findColumns(table.schema(), changeColumn))
+                        .collect(toList());
 
         if (addColumns.isEmpty()
                 && modifyColumns.isEmpty()
@@ -253,6 +259,11 @@ public class SchemaUtils {
 
     private static boolean findColumns(Schema schema, SchemaDeleteColumn deleteColumn) {
         return schema.findField(deleteColumn.name()) != null;
+    }
+
+    private static boolean findColumns(
+            org.apache.iceberg.Schema schema, SchemaChangeColumn changeColumn) {
+        return schema.findField(changeColumn.oldName()) != null;
     }
 
     public static SeaTunnelDataType<?> toSeaTunnelType(String fieldName, Type type) {
