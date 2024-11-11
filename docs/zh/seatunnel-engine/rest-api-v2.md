@@ -8,13 +8,19 @@ SeaTunnel有一个用于监控的API，可用于查询运行作业的状态和�
 
 ## 概述
 
-v2版本的api使用jetty支持，与v1版本的接口规范相同 ,可以通过修改`seatunnel.yaml`中的配置项来指定端口和context-path
+v2版本的api使用jetty支持，与v1版本的接口规范相同 ,可以通过修改`seatunnel.yaml`中的配置项来指定端口和context-path，
+同时可以配置 `enable-dynamic-port` 开启动态端口(默认从 `port` 开始累加)，默认为关闭，
+如果`enable-dynamic-port`为`true`，我们将使用`port`和`port`+`port-range`范围内未使用的端口，默认范围是100。
+
 ```yaml
 
 seatunnel:
   engine:
-    enable-http: true
-    port: 8080
+    http:
+      enable-http: true
+      port: 8080
+      enable-dynamic-port: false
+      port-range: 100
 ```
 
 同时也可以配置context-path,配置如下：
@@ -23,9 +29,10 @@ seatunnel:
 
 seatunnel:
   engine:
-    enable-http: true
-    port: 8080
-    context-path: /seatunnel
+    http:
+      enable-http: true
+      port: 8080
+      context-path: /seatunnel
 ```
 
 ## API参考
@@ -80,14 +87,21 @@ seatunnel:
     "jobId": "",
     "jobName": "",
     "jobStatus": "",
-    "envOptions": {
-    },
     "createTime": "",
     "jobDag": {
-      "vertices": [
+      "jobId": "",
+      "envOptions": [],
+      "vertexInfoMap": [
+        {
+          "vertexId": 1,
+          "type": "",
+          "vertexName": "",
+          "tablePaths": [
+            ""
+          ]
+        }
       ],
-      "edges": [
-      ]
+      "pipelineEdges": {}
     },
     "pluginJarsUrls": [
     ],
@@ -125,6 +139,7 @@ seatunnel:
   "createTime": "",
   "jobDag": {
     "jobId": "",
+    "envOptions": [],
     "vertexInfoMap": [
       {
         "vertexId": 1,
@@ -204,6 +219,7 @@ seatunnel:
   "createTime": "",
   "jobDag": {
     "jobId": "",
+    "envOptions": [],
     "vertexInfoMap": [
       {
         "vertexId": 1,
@@ -270,6 +286,7 @@ seatunnel:
     "finishTime": "",
     "jobDag": {
       "jobId": "",
+      "envOptions": [],
       "vertexInfoMap": [
         {
           "vertexId": 1,
@@ -728,4 +745,75 @@ seatunnel:
   "message": "Invalid JSON format in request body."
 }
 ```
+</details>
+
+
+------------------------------------------------------------------------------------------
+
+### 获取所有节点日志内容
+
+<details>
+ <summary><code>GET</code> <code><b>/logs/:jobId</b></code> <code>(返回日志列表。)</code></summary>
+
+#### 请求参数
+
+#### 参数(在请求体中params字段中添加)
+
+> |         参数名称         |   是否必传   |  参数类型  |               参数描述                |
+> |----------------------|----------|--------|-----------------------------------|
+> | jobId                | optional | string | job id                            |
+
+当`jobId`为空时，返回所有节点的日志信息，否则返回指定`jobId`在所有节点的的日志列表。
+
+#### 响应
+
+返回请求节点的日志列表、内容
+
+#### 返回所有日志文件列表
+
+如果你想先查看日志列表，可以通过`GET`请求获取日志列表，`http://localhost:8080/logs?format=json`
+
+```json
+[
+  {
+    "node": "localhost:8080",
+    "logLink": "http://localhost:8080/logs/job-899485770241277953.log",
+    "logName": "job-899485770241277953.log"
+  },
+  {
+    "node": "localhost:8080",
+    "logLink": "http://localhost:8080/logs/job-899470314109468673.log",
+    "logName": "job-899470314109468673.log"
+  }
+]
+```
+
+当前支持的格式有`json`和`html`，默认为`html`。
+
+
+#### 例子
+
+获取所有节点jobId为`733584788375666689`的日志信息：`http://localhost:8080/logs/733584788375666689`
+获取所有节点日志列表：`http://localhost:8080/logs`
+获取所有节点日志列表以JSON格式返回：`http://localhost:8080/logs?format=json`
+获取日志文件内容：`http://localhost:8080/logs/job-898380162133917698.log`
+
+
+</details>
+
+
+### 获取单节点日志内容
+
+<details>
+ <summary><code>GET</code> <code><b>/log</b></code> <code>(返回日志列表。)</code></summary>
+
+#### 响应
+
+返回请求节点的日志列表
+
+#### 例子
+
+获取当前节点的日志列表：`http://localhost:5801/log`
+获取日志文件内容：`http://localhost:5801/log/job-898380162133917698.log``
+
 </details>

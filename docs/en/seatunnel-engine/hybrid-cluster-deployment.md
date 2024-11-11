@@ -127,7 +127,7 @@ seatunnel:
 This configuration primarily addresses the issue of resource leakage caused by constantly creating and attempting to destroy the class loader.
 If you encounter exceptions related to metaspace overflow, you can try enabling this configuration.
 To reduce the frequency of class loader creation, after enabling this configuration, SeaTunnel will not attempt to release the corresponding class loader when a job is completed, allowing it to be used by subsequent jobs. This is more effective when the number of Source/Sink connectors used in the running job is not excessive.
-The default value is false.
+The default value is true.
 Example
 
 ```yaml
@@ -135,6 +135,24 @@ seatunnel:
   engine:
     classloader-cache-mode: true
 ```
+
+### 4.6 Job Scheduling Strategy
+
+When resources are insufficient, the job scheduling strategy can be configured in the following two modes:
+
+1. `WAIT`: Wait for resources to be available.
+
+2. `REJECT`: Reject the job, default value.
+
+Example
+
+```yaml
+seatunnel:
+  engine:
+    job-schedule-strategy: WAIT
+```
+
+When `dynamic-slot: true` is used, the `job-schedule-strategy: WAIT` configuration will become invalid and will be forcibly changed to `job-schedule-strategy: REJECT`, because this parameter is meaningless in dynamic slots.
 
 ## 5. Configure The SeaTunnel Engine Network Service
 

@@ -56,7 +56,7 @@
 
     <properties>
         <!--todo The classification is too confusing, reclassify by type-->
-        <revision>2.3.8-SNAPSHOT</revision>
+        <revision>2.3.9-SNAPSHOT</revision>
         <seatunnel.config.shade.version>2.1.1</seatunnel.config.shade.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
@@ -135,7 +135,7 @@
         <maven-scm-provider-jgit.version>2.0.0</maven-scm-provider-jgit.version>
         <testcontainer.version>1.17.6</testcontainer.version>
         <spotless.version>2.29.0</spotless.version>
-        <jsqlparser.version>4.5</jsqlparser.version>
+        <jsqlparser.version>4.9</jsqlparser.version>
         <json-path.version>2.7.0</json-path.version>
         <groovy.version>4.0.16</groovy.version>
         <jetty.version>9.4.56.v20240826</jetty.version>
@@ -157,6 +157,8 @@
         <!-- prometheus simpleclient -->
         <prometheus.simpleclient.version>0.16.0</prometheus.simpleclient.version>
         <enableSourceJarCreation>true</enableSourceJarCreation>
+
+        <hadoop-aws.version>3.1.4</hadoop-aws.version>
 
     </properties>
 
