@@ -1,7 +1,7 @@
 # Frequently Asked Questions
 
 ## Do I need to install engines like Spark or Flink to use SeaTunnel?
-No, SeaTunnel supports Zeta, Spark, and Flink as options for the integration engine. You can choose one of them. The community especially recommends using Zeta, a new-generation high-performance engine specifically built for integration scenarios.
+SeaTunnel supports Zeta, Spark, and Flink as options for the integration engine. You can choose one of them. The community especially recommends using Zeta, a new-generation high-performance engine specifically built for integration scenarios.
 The community provides the most support for Zeta, which also has richer features.
 
 ## What data sources and destinations does SeaTunnel support?
@@ -12,104 +12,29 @@ SeaTunnel supports a variety of data sources and destinations. You can find the 
 ## Which data sources currently support CDC (Change Data Capture)?
 Currently, CDC is supported for MongoDB CDC, MySQL CDC, OpenGauss CDC, Oracle CDC, PostgreSQL CDC, SQL Server CDC, TiDB CDC, etc. For more details, refer to the [Source](https://seatunnel.apache.org/docs/connector-v2/source) documentation.
 
+## Does SeaTunnel Support Automatic Table Creation?
+Many of SeaTunnel’s Sink connectors support automatic table creation. You can refer to the documentation for each specific Sink connector to find details about the `schema_save_mode` parameter. If the `schema_save_mode` parameter is available in the sink configuration, automatic table creation is supported.
+Using the Jdbc Sink as an example, you can refer to the [Jdbc Sink documentation](https://seatunnel.apache.org/docs/2.3.8/connector-v2/sink/Jdbc/#schema_save_mode-enum), which provides detailed information on the `schema_save_mode` parameter. Specifically:
+
+1. **RECREATE_SCHEMA**: Creates the table if it doesn’t exist; if it does exist, the table is dropped and recreated.
+2. **CREATE_SCHEMA_WHEN_NOT_EXIST**: Creates the table if it doesn’t exist; skips creation if the table already exists.
+3. **ERROR_WHEN_SCHEMA_NOT_EXIST**: Throws an error if the table doesn’t exist.
+4. **IGNORE**: Ignores any table-related handling.
+
+## Does SeaTunnel Support Handling Existing Data on the Target Side Before Syncing?
+Many of SeaTunnel’s Sink connectors support handling existing data on the target side. You can refer to the specific Sink connector’s documentation, which includes details on the `data_save_mode` parameter. If the `data_save_mode` parameter is available in the sink configuration, target data handling is supported.
+Using the Jdbc Sink as an example, you can refer to the [Jdbc Sink documentation](https://seatunnel.apache.org/docs/2.3.8/connector-v2/sink/Jdbc/#data_save_mode-enum), which provides detailed information on the `data_save_mode` parameter. Specifically:
+
+1. **DROP_DATA**: Retains the database structure but deletes data.
+2. **APPEND_DATA**: Retains both the database structure and the existing data.
+3. **CUSTOM_PROCESSING**: Allows custom data handling as defined by the user.
+4. **ERROR_WHEN_DATA_EXISTS**: Throws an error if data already exists.
+
 ## Does it support CDC from MySQL replica? How is the log fetched?
 Yes, it is supported by subscribing to the MySQL binlog and parsing the binlog on the synchronization server.
 
-## What permissions are required for MySQL CDC synchronization and how to enable them?
-You need `SELECT` permission on the relevant databases and tables.
-1. The authorization statement is as follows:
-```
-GRANT SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'username'@'host' IDENTIFIED BY 'password';
-FLUSH PRIVILEGES;
-```
-
-2. Edit `/etc/mysql/my.cnf` and add the following lines:
-```
-[mysqld]
-log-bin=/var/log/mysql/mysql-bin.log
-expire_logs_days = 7
-binlog_format = ROW
-binlog_row_image=full
-```
-
-3. Restart the MySQL service:
-```
-service mysql restart
-```
-
-## What permissions are required for SQL Server CDC synchronization and how to enable them?
-Using SQL Server CDC as a data source requires enabling the MS-CDC feature in SQL Server. The steps are as follows:
-
-1. Check if the SQL Server CDC Agent is running:
-```
-EXEC xp_servicecontrol N'querystate', N'SQLServerAGENT';
--- If the result is "running," it means the agent is enabled. Otherwise, it needs to be started manually.
-```
-
-2. If using Linux, enable the SQL Server CDC Agent:
-```
-/opt/mssql/bin/mssql-conf setup
-The result that is returned is as follows:
-1) Evaluation (free, no production use rights, 180-day limit)
-2) Developer (free, no production use rights)
-3) Express (free)
-4) Web (PAID)
-5) Standard (PAID)
-6) Enterprise (PAID)
-7) Enterprise Core (PAID)
-8) I bought a license through a retail sales channel and have a product key to enter.
-```
-Choose the appropriate option based on your situation.
-Select option 2 (Developer) for a free version that includes the agent. Enable the agent by running:
-```
-/opt/mssql/bin/mssql-conf set sqlagent.enabled true
-```
-
-If using Windows, enable SQL Server Agent (e.g., for SQL Server 2008):
-   - Refer to the [official documentation](https://learn.microsoft.com/en-us/previous-versions/sql/sql-server-2008-r2/ms191454(v=sql.105)).
-```
-Open "SQL Server Configuration Manager" from the Start menu, navigate to "SQL Server Services," right-click the "SQL Server Agent" instance, and start it.
-```
-
-3. Firstly, enable CDC at the database level:
-```
-USE TestDB; -- Replace with your actual database name
-EXEC sys.sp_cdc_enable_db;
-
--- Check if the database has CDC enabled
-SELECT name, is_cdc_enabled
-FROM sys.databases
-WHERE name = 'database'; -- Replace with the name of your database
-```
-
-4. Secondly, enable CDC at the table level:
-```
-USE TestDB; -- Replace with your actual database name
-EXEC sys.sp_cdc_enable_table
-@source_schema = 'dbo',
-@source_name = 'table', -- Replace with the table name
-@role_name = NULL,
-@capture_instance = 'table'; -- Replace with a unique capture instance name
-
--- Check if the table has CDC enabled
-SELECT name, is_tracked_by_cdc
-FROM sys.tables
-WHERE name = 'table'; -- Replace with the table name
-```
-
 ## Does SeaTunnel support CDC synchronization for tables without primary keys?
-No, CDC synchronization is not supported for tables without primary keys. This is because, if there are two identical rows upstream and one is deleted or modified, it would be impossible to distinguish which row should be deleted or modified downstream, potentially resulting in both rows being affected. 
-
-## Error during PostgreSQL task execution: Caused by: org.postgresql.util.PSQLException: ERROR: all replication slots are in use
-This error occurs when the replication slots in PostgreSQL are full and need to be released. Modify the `postgresql.conf` file to increase `max_wal_senders` and `max_replication_slots`, then restart the PostgreSQL service using the command:
-```
-systemctl restart postgresql
-```
-Example configuration:
-```
-max_wal_senders = 1000      # max number of walsender processes
-max_replication_slots = 1000     # max number of replication slots
-```
+No, CDC synchronization is not supported for tables without primary keys. This is because, if there are two identical rows upstream and one is deleted or modified, it would be impossible to distinguish which row should be deleted or modified downstream, potentially resulting in both rows being affected.
 
 ## What should I do if I have a problem that I can't solve on my own?
 If you encounter an issue while using SeaTunnel that you cannot resolve, you can:
@@ -136,7 +61,7 @@ $SEATUNNEL_HOME/bin/seatunnel.sh \
 -i city=shanghai \
 -i date=20231110
 ```
-Use the `-i` or `--variable` parameter followed by `key=value` to specify the variable's value, ensuring that `key` matches the variable name in the configuration. For more details, refer to: https://seatunnel.apache.org/docs/concept/config
+Use the `-i` or `--variable` parameter followed by `key=value` to specify the variable's value, ensuring that `key` matches the variable name in the configuration. For more details, refer to: https://seatunnel.apache.org/docs/concept/config/#config-variable-substitution
 
 ## How do I write a multi-line text configuration in the configuration file?
 To break a long text into multiple lines, use triple double quotes to indicate the start and end:
