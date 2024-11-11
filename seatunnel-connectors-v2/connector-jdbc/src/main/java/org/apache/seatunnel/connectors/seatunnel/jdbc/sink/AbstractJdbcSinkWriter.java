@@ -91,15 +91,20 @@ public abstract class AbstractJdbcSinkWriter<ResourceT>
         List<Column> columns = new ArrayList<>(tableSchema.getColumns());
         switch (event.getEventType()) {
             case SCHEMA_CHANGE_ADD_COLUMN:
-                AlterTableAddColumnEvent alterTableAddColumnEvent = (AlterTableAddColumnEvent) event;
+                AlterTableAddColumnEvent alterTableAddColumnEvent =
+                        (AlterTableAddColumnEvent) event;
                 Column addColumn = alterTableAddColumnEvent.getColumn();
                 String afterColumn = alterTableAddColumnEvent.getAfterColumn();
                 if (StringUtils.isNotBlank(afterColumn)) {
-                    Optional<Column> columnOptional = columns.stream().filter(column -> afterColumn.equals(column.getName())).findFirst();
-                    columnOptional.ifPresent(column -> {
-                        int index = columns.indexOf(column);
-                        columns.add(index + 1, addColumn);
-                    });
+                    Optional<Column> columnOptional =
+                            columns.stream()
+                                    .filter(column -> afterColumn.equals(column.getName()))
+                                    .findFirst();
+                    columnOptional.ifPresent(
+                            column -> {
+                                int index = columns.indexOf(column);
+                                columns.add(index + 1, addColumn);
+                            });
                 } else {
                     columns.add(addColumn);
                 }
