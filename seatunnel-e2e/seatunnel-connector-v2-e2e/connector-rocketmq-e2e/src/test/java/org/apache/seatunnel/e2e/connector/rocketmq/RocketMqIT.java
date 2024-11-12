@@ -184,7 +184,7 @@ public class RocketMqIT extends TestSuiteBase implements TestResource {
         Assertions.assertEquals(0, execResult.getExitCode(), execResult.getStderr());
 
         String topicName = "test_topic";
-        Map<String, String> data = getRocketMqConsumerData(topicName);
+        Map<String, RocketMqConsumerMessage> data = getRocketMqConsumerData(topicName);
         ObjectMapper objectMapper = new ObjectMapper();
         String key = data.keySet().iterator().next();
         ObjectNode objectNode = objectMapper.readValue(key, ObjectNode.class);
@@ -200,7 +200,7 @@ public class RocketMqIT extends TestSuiteBase implements TestResource {
                 container.executeJob("/rocketmq-text-sink_fake_to_rocketmq.conf");
         Assertions.assertEquals(0, execResult.getExitCode(), execResult.getStderr());
         String topicName = "test_text_topic";
-        Map<String, String> data = getRocketMqConsumerData(topicName);
+        Map<String, RocketMqConsumerMessage> data = getRocketMqConsumerData(topicName);
         Assertions.assertEquals(10, data.size());
     }
 
@@ -304,6 +304,25 @@ public class RocketMqIT extends TestSuiteBase implements TestResource {
         testRocketMqGroupOffsetsToConsole(container);
     }
 
+    @TestTemplate
+    public void testSinkRocketMqMessageTag(TestContainer container)
+            throws IOException, InterruptedException {
+        Container.ExecResult execResult =
+                container.executeJob("/rocketmq-sink_fake_to_rocketmq_message_tag.conf");
+        Assertions.assertEquals(0, execResult.getExitCode(), execResult.getStderr());
+
+        String topicName = "test_topic";
+        String tag = "test_tag";
+        Map<String, RocketMqConsumerMessage> data = getRocketMqConsumerData(topicName);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String key = data.keySet().iterator().next();
+        ObjectNode objectNode = objectMapper.readValue(key, ObjectNode.class);
+        Assertions.assertTrue(objectNode.has("c_map"));
+        Assertions.assertTrue(objectNode.has("c_string"));
+        Assertions.assertEquals(10, data.size());
+        Assertions.assertEquals(tag, data.get(key).getTag());
+    }
+
     public void testRocketMqGroupOffsetsToConsole(TestContainer container)
             throws IOException, InterruptedException {
         Container.ExecResult execResult =
@@ -339,8 +358,8 @@ public class RocketMqIT extends TestSuiteBase implements TestResource {
         }
     }
 
-    private Map<String, String> getRocketMqConsumerData(String topicName) {
-        Map<String, String> data = new HashMap<>();
+    private Map<String, RocketMqConsumerMessage> getRocketMqConsumerData(String topicName) {
+        Map<String, RocketMqConsumerMessage> data = new HashMap<>();
         try {
             DefaultLitePullConsumer consumer =
                     RocketMqAdminUtil.initDefaultLitePullConsumer(newConfiguration(), false);
@@ -378,9 +397,10 @@ public class RocketMqIT extends TestSuiteBase implements TestResource {
                     break;
                 }
                 for (MessageExt message : messages) {
+                    RocketMqConsumerMessage consumerMessage = new RocketMqConsumerMessage(new String(message.getBody(), StandardCharsets.UTF_8), message.getTags());
                     data.put(
                             message.getKeys(),
-                            new String(message.getBody(), StandardCharsets.UTF_8));
+                            consumerMessage);
                     consumer.getOffsetStore()
                             .updateConsumeOffsetToBroker(
                                     new MessageQueue(
