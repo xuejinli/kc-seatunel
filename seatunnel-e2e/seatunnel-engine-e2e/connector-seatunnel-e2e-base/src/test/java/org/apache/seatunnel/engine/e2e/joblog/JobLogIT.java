@@ -287,7 +287,7 @@ public class JobLogIT extends SeaTunnelContainer {
                 new GenericContainer<>(getDockerImage())
                         .withNetwork(NETWORK)
                         .withEnv("TZ", "UTC")
-                        .withCommand("sh " + ContainerUtil.adaptPathForWin(BIN_PATH.toString()))
+                        .withCommand(ContainerUtil.adaptPathForWin(BIN_PATH.toString()))
                         .withNetworkAliases(networkAlias)
                         .withExposedPorts()
                         .withLogConsumer(
