@@ -100,6 +100,10 @@ public abstract class AbstractJdbcSinkWriter<ResourceT>
                             columns.stream()
                                     .filter(column -> afterColumn.equals(column.getName()))
                                     .findFirst();
+                    if (!columnOptional.isPresent()) {
+                        columns.add(addColumn);
+                        break;
+                    }
                     columnOptional.ifPresent(
                             column -> {
                                 int index = columns.indexOf(column);
