@@ -397,10 +397,11 @@ public class RocketMqIT extends TestSuiteBase implements TestResource {
                     break;
                 }
                 for (MessageExt message : messages) {
-                    RocketMqConsumerMessage consumerMessage = new RocketMqConsumerMessage(new String(message.getBody(), StandardCharsets.UTF_8), message.getTags());
-                    data.put(
-                            message.getKeys(),
-                            consumerMessage);
+                    RocketMqConsumerMessage consumerMessage =
+                            new RocketMqConsumerMessage(
+                                    new String(message.getBody(), StandardCharsets.UTF_8),
+                                    message.getTags());
+                    data.put(message.getKeys(), consumerMessage);
                     consumer.getOffsetStore()
                             .updateConsumeOffsetToBroker(
                                     new MessageQueue(
