@@ -62,6 +62,7 @@ public abstract class AbstractJdbcSinkWriter<ResourceT>
     protected JdbcDialect dialect;
     protected TablePath sinkTablePath;
     protected TableSchema tableSchema;
+    protected TableSchema databaseTableSchema;
     protected transient boolean isOpen;
     protected JdbcConnectionProvider connectionProvider;
     protected JdbcSinkConfig jdbcSinkConfig;
@@ -135,7 +136,11 @@ public abstract class AbstractJdbcSinkWriter<ResourceT>
         }
         this.outputFormat =
                 new JdbcOutputFormatBuilder(
-                                dialect, connectionProvider, jdbcSinkConfig, tableSchema)
+                                dialect,
+                                connectionProvider,
+                                jdbcSinkConfig,
+                                tableSchema,
+                                databaseTableSchema)
                         .build();
         this.outputFormat.open();
     }
