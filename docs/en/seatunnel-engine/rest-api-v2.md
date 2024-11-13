@@ -384,11 +384,12 @@ When we can't get the job info, the response will be:
 
 #### Parameters
 
-> |         name         |   type   | data type |            description            |
-> |----------------------|----------|-----------|-----------------------------------|
+> | name                 |   type   | data type |            description            |
+----------------------|----------------------|----------|-----------|-----------------------------------|
 > | jobId                | optional | string    | job id                            |
 > | jobName              | optional | string    | job name                          |
 > | isStartWithSavePoint | optional | string    | if job is started with save point |
+> | format               | optional | string    | config style,json/hocon,default json |
 
 #### Body
 
@@ -421,6 +422,36 @@ When we can't get the job info, the response will be:
     ]
 }
 ```
+```hocon
+env {
+  job.mode = "batch"
+}
+
+source {
+  FakeSource {
+    result_table_name = "fake"
+    row.num = 100
+    schema = {
+      fields {
+        name = "string"
+        age = "int"
+        card = "int"
+      }
+    }
+  }
+}
+
+transform {
+}
+
+sink {
+  Console {
+    source_table_name = "fake"
+  }
+}
+
+```
+
 
 #### Responses
 

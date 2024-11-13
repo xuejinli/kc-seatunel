@@ -380,11 +380,12 @@ seatunnel:
 
 #### 参数
 
-> |         参数名称         |   是否必传   |  参数类型  |               参数描述                |
-> |----------------------|----------|--------|-----------------------------------|
+> |         参数名称         |   是否必传   |  参数类型  | 参数描述                              |
+> |----------------------|----------|-----------------------------------|-----------------------------------|
 > | jobId                | optional | string | job id                            |
 > | jobName              | optional | string | job name                          |
 > | isStartWithSavePoint | optional | string | if job is started with save point |
+> | format               | optional | string    | 配置风格,json/hocon,default json      |
 
 #### 请求体
 
@@ -417,7 +418,35 @@ seatunnel:
     ]
 }
 ```
+```hocon
+env {
+  job.mode = "batch"
+}
 
+source {
+  FakeSource {
+    result_table_name = "fake"
+    row.num = 100
+    schema = {
+      fields {
+        name = "string"
+        age = "int"
+        card = "int"
+      }
+    }
+  }
+}
+
+transform {
+}
+
+sink {
+  Console {
+    source_table_name = "fake"
+  }
+}
+
+```
 #### 响应
 
 ```json
