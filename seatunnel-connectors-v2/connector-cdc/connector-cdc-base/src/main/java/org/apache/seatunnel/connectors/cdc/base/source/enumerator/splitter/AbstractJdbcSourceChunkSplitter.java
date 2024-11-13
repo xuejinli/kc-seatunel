@@ -391,27 +391,27 @@ public abstract class AbstractJdbcSourceChunkSplitter implements JdbcSourceChunk
         try {
             splitColumnsConfig = sourceConfig.getSplitColumn();
         } catch (Exception e) {
-            log.error("Config snapshot.split.column get exception in {}:{}", tableId, e);
+            log.error("Config snapshotSplitColumn get exception in {}:{}", tableId, e);
         }
         String tableSc =
                 splitColumnsConfig.getOrDefault(tableId.catalog() + "." + tableId.table(), null);
 
         if (StringUtils.isNotEmpty(tableSc)) {
-            boolean isUniqueKey = dialect.isUniqueKey(jdbc, tableId, tableSc);
+            boolean isUniqueKey = dialect.getUniqueKeys(jdbc, tableId).contains(tableSc);
             if (isUniqueKey) {
                 Column column = table.columnWithName(tableSc);
                 if (isEvenlySplitColumn(column)) {
                     return column;
                 } else {
                     log.warn(
-                            "Config snapshot.split.column type in {} is not TINYINT、SMALLINT、INT、BIGINT、DECIMAL、STRING",
+                            "Config snapshotSplitColumn type in {} is not TINYINT、SMALLINT、INT、BIGINT、DECIMAL、STRING",
                             tableId);
                 }
             } else {
-                log.warn("Config snapshot.split.column not unique key for table {}", tableId);
+                log.warn("Config snapshotSplitColumn not unique key for table {}", tableId);
             }
         } else {
-            log.info("Config snapshot.split.column not exists for table {}", tableId);
+            log.info("Config snapshotSplitColumn not exists for table {}", tableId);
         }
 
         Optional<PrimaryKey> primaryKey = dialect.getPrimaryKey(jdbc, tableId);
