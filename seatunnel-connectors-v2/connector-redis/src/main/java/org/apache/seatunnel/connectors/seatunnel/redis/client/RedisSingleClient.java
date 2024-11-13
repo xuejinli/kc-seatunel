@@ -148,7 +148,7 @@ public class RedisSingleClient extends RedisClient {
             RowKind rowKind = rowKinds.get(i);
             String key = keys.get(i);
             String value = values.get(i);
-            if (rowKind == RowKind.DELETE) {
+            if (rowKind == RowKind.DELETE || rowKind == RowKind.UPDATE_BEFORE) {
                 pipelined.del(key);
             } else {
                 pipelined.set(key, value);
@@ -169,7 +169,7 @@ public class RedisSingleClient extends RedisClient {
             RowKind rowKind = rowKinds.get(i);
             String key = keys.get(i);
             String value = values.get(i);
-            if (rowKind == RowKind.DELETE) {
+            if (rowKind == RowKind.DELETE || rowKind == RowKind.UPDATE_BEFORE) {
                 pipelined.lrem(key, 1, value);
             } else {
                 pipelined.lpush(key, value);
@@ -190,7 +190,7 @@ public class RedisSingleClient extends RedisClient {
             RowKind rowKind = rowKinds.get(i);
             String key = keys.get(i);
             String value = values.get(i);
-            if (rowKind == RowKind.DELETE) {
+            if (rowKind == RowKind.DELETE || rowKind == RowKind.UPDATE_BEFORE) {
                 pipelined.srem(key, value);
             } else {
                 pipelined.sadd(key, value);
@@ -212,7 +212,7 @@ public class RedisSingleClient extends RedisClient {
             String key = keys.get(i);
             String value = values.get(i);
             Map<String, String> fieldsMap = JsonUtils.toMap(value);
-            if (rowKind == RowKind.DELETE) {
+            if (rowKind == RowKind.DELETE || rowKind == RowKind.UPDATE_BEFORE) {
                 for (Map.Entry<String, String> entry : fieldsMap.entrySet()) {
                     pipelined.hdel(key, entry.getKey());
                 }
@@ -235,7 +235,7 @@ public class RedisSingleClient extends RedisClient {
             RowKind rowKind = rowKinds.get(i);
             String key = keys.get(i);
             String value = values.get(i);
-            if (rowKind == RowKind.DELETE) {
+            if (rowKind == RowKind.DELETE || rowKind == RowKind.UPDATE_BEFORE) {
                 pipelined.zrem(key, value);
             } else {
                 pipelined.zadd(key, 1, value);

@@ -102,7 +102,7 @@ public class RedisClusterClient extends RedisClient {
             List<RowKind> rowKinds, List<String> keys, List<String> values, long expireSeconds) {
         int size = keys.size();
         for (int i = 0; i < size; i++) {
-            if (rowKinds.get(i) == RowKind.DELETE) {
+            if (rowKinds.get(i) == RowKind.DELETE || rowKinds.get(i) == RowKind.UPDATE_BEFORE) {
                 RedisDataType.STRING.del(this, keys.get(i), values.get(i));
             } else {
                 RedisDataType.STRING.set(this, keys.get(i), values.get(i), expireSeconds);
@@ -115,7 +115,7 @@ public class RedisClusterClient extends RedisClient {
             List<RowKind> rowKinds, List<String> keys, List<String> values, long expireSeconds) {
         int size = keys.size();
         for (int i = 0; i < size; i++) {
-            if (rowKinds.get(i) == RowKind.DELETE) {
+            if (rowKinds.get(i) == RowKind.DELETE || rowKinds.get(i) == RowKind.UPDATE_BEFORE) {
                 RedisDataType.LIST.del(this, keys.get(i), values.get(i));
             } else {
                 RedisDataType.LIST.set(this, keys.get(i), values.get(i), expireSeconds);
@@ -128,7 +128,7 @@ public class RedisClusterClient extends RedisClient {
             List<RowKind> rowKinds, List<String> keys, List<String> values, long expireSeconds) {
         int size = keys.size();
         for (int i = 0; i < size; i++) {
-            if (rowKinds.get(i) == RowKind.DELETE) {
+            if (rowKinds.get(i) == RowKind.DELETE || rowKinds.get(i) == RowKind.UPDATE_BEFORE) {
                 RedisDataType.SET.del(this, keys.get(i), values.get(i));
             } else {
                 RedisDataType.SET.set(this, keys.get(i), values.get(i), expireSeconds);
@@ -141,7 +141,7 @@ public class RedisClusterClient extends RedisClient {
             List<RowKind> rowKinds, List<String> keys, List<String> values, long expireSeconds) {
         int size = keys.size();
         for (int i = 0; i < size; i++) {
-            if (rowKinds.get(i) == RowKind.DELETE) {
+            if (rowKinds.get(i) == RowKind.DELETE || rowKinds.get(i) == RowKind.UPDATE_BEFORE) {
                 RedisDataType.HASH.del(this, keys.get(i), values.get(i));
             } else {
                 RedisDataType.HASH.set(this, keys.get(i), values.get(i), expireSeconds);
@@ -154,7 +154,7 @@ public class RedisClusterClient extends RedisClient {
             List<RowKind> rowKinds, List<String> keys, List<String> values, long expireSeconds) {
         int size = keys.size();
         for (int i = 0; i < size; i++) {
-            if (rowKinds.get(i) == RowKind.DELETE) {
+            if (rowKinds.get(i) == RowKind.DELETE || rowKinds.get(i) == RowKind.UPDATE_BEFORE) {
                 RedisDataType.ZSET.del(this, keys.get(i), values.get(i));
             } else {
                 RedisDataType.ZSET.set(this, keys.get(i), values.get(i), expireSeconds);
