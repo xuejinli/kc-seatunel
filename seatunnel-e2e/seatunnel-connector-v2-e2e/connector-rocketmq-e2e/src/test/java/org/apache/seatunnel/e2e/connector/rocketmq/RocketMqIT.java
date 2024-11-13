@@ -311,7 +311,7 @@ public class RocketMqIT extends TestSuiteBase implements TestResource {
                 container.executeJob("/rocketmq-sink_fake_to_rocketmq_message_tag.conf");
         Assertions.assertEquals(0, execResult.getExitCode(), execResult.getStderr());
 
-        String topicName = "test_topic";
+        String topicName = "test_topic_message_tag";
         String tag = "test_tag";
         Map<String, RocketMqConsumerMessage> data = getRocketMqConsumerData(topicName);
         ObjectMapper objectMapper = new ObjectMapper();
