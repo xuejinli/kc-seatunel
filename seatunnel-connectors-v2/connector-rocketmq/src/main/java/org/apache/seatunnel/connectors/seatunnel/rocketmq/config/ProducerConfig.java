@@ -36,7 +36,7 @@ public class ProducerConfig extends Config {
             Options.key("tag")
                     .stringType()
                     .noDefaultValue()
-                    .withDescription("RocketMq message tag. ");
+                    .withDescription("RocketMq message tag.");
 
     public static final Option<String> PRODUCER_GROUP =
             Options.key("producer.group")
