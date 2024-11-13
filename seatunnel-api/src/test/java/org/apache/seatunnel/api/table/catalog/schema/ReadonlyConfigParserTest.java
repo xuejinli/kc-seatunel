@@ -99,6 +99,7 @@ class ReadonlyConfigParserTest extends BaseConfigParserTest {
 
         Assertions.assertEquals("string", columns.get(4).getName());
         Assertions.assertEquals("string", columns.get(4).getDataType().toString().toLowerCase());
+        Assertions.assertEquals(4294967295L, columns.get(4).getColumnLength());
 
         Assertions.assertEquals("row", columns.get(18).getName());
         Assertions.assertEquals(SqlType.ROW, columns.get(18).getDataType().getSqlType());
