@@ -1321,7 +1321,7 @@ jobs:
           cache: 'maven'
       - name: free disk space
         run: tools/github/free_disk_space.sh
-      - name: run paimon connector integration test
+      - name: run file local connector integration test
         run: |
           ./mvnw -B -T 1 verify -DskipUT=true -DskipIT=false -D"license.skipAddThirdParty"=true --no-snapshot-updates -pl :connector-file-local-e2e -am -Pci
         env:
@@ -1346,7 +1346,7 @@ jobs:
           cache: 'maven'
       - name: free disk space
         run: tools/github/free_disk_space.sh
-      - name: run paimon connector integration test
+      - name: run file sftp connector integration test
         run: |
           ./mvnw -B -T 1 verify -DskipUT=true -DskipIT=false -D"license.skipAddThirdParty"=true --no-snapshot-updates -pl :connector-file-sftp-e2e -am -Pci
         env:
@@ -1371,7 +1371,7 @@ jobs:
           cache: 'maven'
       - name: free disk space
         run: tools/github/free_disk_space.sh
-      - name: run paimon connector integration test
+      - name: run redis connector integration test
         run: |
           ./mvnw -B -T 1 verify -DskipUT=true -DskipIT=false -D"license.skipAddThirdParty"=true --no-snapshot-updates -pl :connector-redis-e2e -am -Pci
         env:
