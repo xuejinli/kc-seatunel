@@ -60,7 +60,7 @@ import static org.awaitility.Awaitility.await;
 public class MysqlCDC9IT extends TestSuiteBase implements TestResource {
 
     // mysql
-    private static final String MYSQL_HOST = "mysql_cdc_e2e";
+    private static final String MYSQL_HOST = "mysql9_cdc_e2e";
     private static final String MYSQL_USER_NAME = "mysqluser";
     private static final String MYSQL_USER_PASSWORD = "mysqlpw";
     private static final String MYSQL_DATABASE = "mysql_cdc";
