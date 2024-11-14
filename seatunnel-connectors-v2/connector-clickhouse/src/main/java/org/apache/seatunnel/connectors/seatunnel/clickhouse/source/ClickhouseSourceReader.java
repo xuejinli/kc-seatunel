@@ -75,29 +75,30 @@ public class ClickhouseSourceReader implements SourceReader<SeaTunnelRow, Clickh
     @Override
     public void pollNext(Collector<SeaTunnelRow> output) throws Exception {
         ClickhouseSourceSplit split;
-
         synchronized (output.getCheckpointLock()) {
             split = splits.poll();
         }
-
         if (split != null) {
             TablePath tablePath = split.getTablePath();
             ClickhouseCatalogConfig catalogConfig = split.getClickhouseCatalogConfig();
             String sql = catalogConfig.getSql();
-            SeaTunnelRowType rowType = catalogConfig.getCatalogTable().getSeaTunnelRowType();
-
             try (ClickHouseResponse response = this.request.query(sql).executeAndWait()) {
-                Object[] values = new Object[rowType.getFieldNames().length];
                 response.stream()
                         .forEach(
                                 record -> {
+                                    SeaTunnelRowType rowTypeInfo =
+                                            catalogConfig.getCatalogTable().getSeaTunnelRowType();
+                                    Object[] values =
+                                            new Object[rowTypeInfo.getFieldNames().length];
                                     for (int i = 0; i < record.size(); i++) {
-                                        values[i] =
-                                                record.getValue(i).isNullOrEmpty()
-                                                        ? null
-                                                        : TypeConvertUtil.valueUnwrap(
-                                                                rowType.getFieldType(i),
-                                                                record.getValue(i));
+                                        if (record.getValue(i).isNullOrEmpty()) {
+                                            values[i] = null;
+                                        } else {
+                                            values[i] =
+                                                    TypeConvertUtil.valueUnwrap(
+                                                            rowTypeInfo.getFieldType(i),
+                                                            record.getValue(i));
+                                        }
                                     }
                                     SeaTunnelRow seaTunnelRow = new SeaTunnelRow(values);
                                     seaTunnelRow.setTableId(String.valueOf(tablePath));
