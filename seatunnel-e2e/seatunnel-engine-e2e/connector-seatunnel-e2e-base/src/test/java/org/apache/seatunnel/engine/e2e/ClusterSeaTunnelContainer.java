@@ -915,7 +915,7 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
         if (isStartWithSavePoint) {
             parameters = parameters + "&isStartWithSavePoint=true";
         }
-        parameters = parameters + "&configStyle=hocon";
+        parameters = parameters + "&format=hocon";
         Response response =
                 given().body(requestBody)
                         .header("Content-Type", "text/plain; charset=utf-8")
