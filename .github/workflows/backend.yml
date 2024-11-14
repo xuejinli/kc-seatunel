@@ -1352,7 +1352,7 @@ jobs:
         env:
           MAVEN_OPTS: -Xmx4096m
 
-  connector-redis-e2e-it:
+  connector-redis-it:
     needs: [ changes, sanity-check ]
     if: needs.changes.outputs.api == 'true' || contains(needs.changes.outputs.it-modules, 'connector-redis-e2e')
     runs-on: ${{ matrix.os }}
