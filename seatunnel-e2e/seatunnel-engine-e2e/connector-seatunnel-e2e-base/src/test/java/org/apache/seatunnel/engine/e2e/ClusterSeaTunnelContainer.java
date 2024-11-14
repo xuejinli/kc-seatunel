@@ -93,11 +93,11 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
                         () -> {
                             Response response =
                                     given().get(
-                                            http
-                                                    + server.getHost()
-                                                    + colon
-                                                    + server.getFirstMappedPort()
-                                                    + "/hazelcast/rest/cluster");
+                                                    http
+                                                            + server.getHost()
+                                                            + colon
+                                                            + server.getFirstMappedPort()
+                                                            + "/hazelcast/rest/cluster");
                             response.then().statusCode(200);
                             Assertions.assertEquals(
                                     2, response.jsonPath().getList("members").size());
@@ -249,12 +249,12 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
                             Tuple3<Integer, String, Long> task = tasks.get(0);
                             String jobId =
                                     submitJob(
-                                            container,
-                                            task._1(),
-                                            task._2(),
-                                            "STREAMING",
-                                            jobName,
-                                            paramJobName)
+                                                    container,
+                                                    task._1(),
+                                                    task._2(),
+                                                    "STREAMING",
+                                                    jobName,
+                                                    paramJobName)
                                             .getBody()
                                             .jsonPath()
                                             .getString("jobId");
@@ -270,7 +270,7 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
                                                                             + task._1()
                                                                             + task._2()
                                                                             + RestConstant
-                                                                            .RUNNING_JOB_URL
+                                                                                    .RUNNING_JOB_URL
                                                                             + "/"
                                                                             + jobId)
                                                             .then()
@@ -307,7 +307,7 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
                                                                             + task._1()
                                                                             + task._2()
                                                                             + RestConstant
-                                                                            .FINISHED_JOBS_INFO
+                                                                                    .FINISHED_JOBS_INFO
                                                                             + "/SAVEPOINT_DONE")
                                                             .then()
                                                             .statusCode(200)
@@ -317,12 +317,12 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
 
                             String jobId2 =
                                     submitJob(
-                                            container,
-                                            task._1(),
-                                            task._2(),
-                                            "STREAMING",
-                                            jobName,
-                                            paramJobName)
+                                                    container,
+                                                    task._1(),
+                                                    task._2(),
+                                                    "STREAMING",
+                                                    jobName,
+                                                    paramJobName)
                                             .getBody()
                                             .jsonPath()
                                             .getString("jobId");
@@ -338,7 +338,7 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
                                                                             + task._1()
                                                                             + task._2()
                                                                             + RestConstant
-                                                                            .RUNNING_JOB_URL
+                                                                                    .RUNNING_JOB_URL
                                                                             + "/"
                                                                             + jobId2)
                                                             .then()
@@ -374,7 +374,7 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
                                                                             + task._1()
                                                                             + task._2()
                                                                             + RestConstant
-                                                                            .FINISHED_JOBS_INFO
+                                                                                    .FINISHED_JOBS_INFO
                                                                             + "/CANCELED")
                                                             .then()
                                                             .statusCode(200)
@@ -395,12 +395,12 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
                             Tuple3<Integer, String, Long> task = tasks.get(1);
                             String jobId =
                                     submitJob(
-                                            container,
-                                            task._1(),
-                                            task._2(),
-                                            "STREAMING",
-                                            jobName,
-                                            paramJobName)
+                                                    container,
+                                                    task._1(),
+                                                    task._2(),
+                                                    "STREAMING",
+                                                    jobName,
+                                                    paramJobName)
                                             .getBody()
                                             .jsonPath()
                                             .getString("jobId");
@@ -416,7 +416,7 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
                                                                             + task._1()
                                                                             + task._2()
                                                                             + RestConstant
-                                                                            .RUNNING_JOB_URL
+                                                                                    .RUNNING_JOB_URL
                                                                             + "/"
                                                                             + jobId)
                                                             .then()
@@ -453,7 +453,7 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
                                                                             + task._1()
                                                                             + task._2()
                                                                             + RestConstant
-                                                                            .FINISHED_JOBS_INFO
+                                                                                    .FINISHED_JOBS_INFO
                                                                             + "/SAVEPOINT_DONE")
                                                             .then()
                                                             .statusCode(200)
@@ -463,12 +463,12 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
 
                             String jobId2 =
                                     submitJob(
-                                            container,
-                                            task._1(),
-                                            task._2(),
-                                            "STREAMING",
-                                            jobName,
-                                            paramJobName)
+                                                    container,
+                                                    task._1(),
+                                                    task._2(),
+                                                    "STREAMING",
+                                                    jobName,
+                                                    paramJobName)
                                             .getBody()
                                             .jsonPath()
                                             .getString("jobId");
@@ -484,7 +484,7 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
                                                                             + task._1()
                                                                             + task._2()
                                                                             + RestConstant
-                                                                            .RUNNING_JOB_URL
+                                                                                    .RUNNING_JOB_URL
                                                                             + "/"
                                                                             + jobId2)
                                                             .then()
@@ -520,7 +520,7 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
                                                                             + task._1()
                                                                             + task._2()
                                                                             + RestConstant
-                                                                            .FINISHED_JOBS_INFO
+                                                                                    .FINISHED_JOBS_INFO
                                                                             + "/CANCELED")
                                                             .then()
                                                             .statusCode(200)
@@ -578,7 +578,7 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
                                         .body("[1].jobId", equalTo(task._3() - 1));
                                 String[] jobIds =
                                         new String[] {
-                                                String.valueOf(task._3() - 1), String.valueOf(task._3())
+                                            String.valueOf(task._3() - 1), String.valueOf(task._3())
                                         };
 
                                 Awaitility.await()
@@ -588,12 +588,12 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
                                                         given().get(
                                                                         http
                                                                                 + container
-                                                                                .getHost()
+                                                                                        .getHost()
                                                                                 + colon
                                                                                 + task._1()
                                                                                 + task._2()
                                                                                 + RestConstant
-                                                                                .FINISHED_JOBS_INFO
+                                                                                        .FINISHED_JOBS_INFO
                                                                                 + "/CANCELED")
                                                                 .then()
                                                                 .statusCode(200)
@@ -643,7 +643,7 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
 
                                 String[] jobIds =
                                         new String[] {
-                                                String.valueOf(task._3() - 1), String.valueOf(task._3())
+                                            String.valueOf(task._3() - 1), String.valueOf(task._3())
                                         };
                                 Awaitility.await()
                                         .atMost(2, TimeUnit.MINUTES)
@@ -652,12 +652,12 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
                                                         given().get(
                                                                         http
                                                                                 + container
-                                                                                .getHost()
+                                                                                        .getHost()
                                                                                 + colon
                                                                                 + task._1()
                                                                                 + task._2()
                                                                                 + RestConstant
-                                                                                .FINISHED_JOBS_INFO
+                                                                                        .FINISHED_JOBS_INFO
                                                                                 + "/CANCELED")
                                                                 .then()
                                                                 .statusCode(200)
@@ -852,19 +852,19 @@ public class ClusterSeaTunnelContainer extends SeaTunnelContainer {
                         .post(
                                 parameters == null
                                         ? http
-                                        + container.getHost()
-                                        + colon
-                                        + port
-                                        + contextPath
-                                        + RestConstant.SUBMIT_JOB_URL
+                                                + container.getHost()
+                                                + colon
+                                                + port
+                                                + contextPath
+                                                + RestConstant.SUBMIT_JOB_URL
                                         : http
-                                        + container.getHost()
-                                        + colon
-                                        + port
-                                        + contextPath
-                                        + RestConstant.SUBMIT_JOB_URL
-                                        + "?"
-                                        + parameters);
+                                                + container.getHost()
+                                                + colon
+                                                + port
+                                                + contextPath
+                                                + RestConstant.SUBMIT_JOB_URL
+                                                + "?"
+                                                + parameters);
         return response;
     }
 
