@@ -390,7 +390,7 @@ public class MysqlCDCIT extends TestSuiteBase implements TestResource {
                         () ->
                                 Assertions.assertTrue(
                                         query(getSourceQuerySQL(MYSQL_DATABASE2, SOURCE_TABLE_1))
-                                                .size()
+                                                        .size()
                                                 > 1));
 
         // Restore job with snapshot read phase
@@ -555,8 +555,8 @@ public class MysqlCDCIT extends TestSuiteBase implements TestResource {
 
     private List<List<Object>> query(String sql) {
         try (Connection connection = getJdbcConnection();
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(sql)) {
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery(sql)) {
             List<List<Object>> result = new ArrayList<>();
             int columnCount = resultSet.getMetaData().getColumnCount();
             while (resultSet.next()) {

@@ -17,7 +17,6 @@
 
 package org.apache.seatunnel.connectors.seatunnel.cdc.mysql;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.seatunnel.connectors.seatunnel.cdc.mysql.testutils.MySqlContainer;
 import org.apache.seatunnel.connectors.seatunnel.cdc.mysql.testutils.MySqlVersion;
 import org.apache.seatunnel.connectors.seatunnel.cdc.mysql.testutils.UniqueDatabase;
@@ -28,7 +27,7 @@ import org.apache.seatunnel.e2e.common.container.EngineType;
 import org.apache.seatunnel.e2e.common.container.TestContainer;
 import org.apache.seatunnel.e2e.common.junit.DisabledOnContainer;
 import org.apache.seatunnel.e2e.common.junit.TestContainerExtension;
-import org.apache.seatunnel.e2e.common.util.JobIdGenerator;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -38,7 +37,8 @@ import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.utility.DockerLoggerFactory;
 
-import java.io.IOException;
+import lombok.extern.slf4j.Slf4j;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -131,8 +131,6 @@ public class MysqlCDC9IT extends TestSuiteBase implements TestResource {
         inventoryDatabase.createAndInitialize();
         log.info("Mysql ddl execution is complete");
     }
-
-
 
     @TestTemplate
     public void testMysqlCdcCheckDataE2eOnMysqlHighVersion(TestContainer container) {
