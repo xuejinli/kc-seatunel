@@ -190,11 +190,11 @@ def get_sub_update_it_modules(modules, total_num, current_num):
     if "connector-cdc-oracle-e2e" in module_list:
         module_list.remove("connector-cdc-oracle-e2e")
     if "connector-file-local-e2e" in module_list:
-            module_list.remove("connector-file-local-e2e")
+        module_list.remove("connector-file-local-e2e")
     if "connector-file-sftp-e2e" in module_list:
         module_list.remove("connector-file-sftp-e2e")
     if "connector-redis-e2e" in module_list:
-            module_list.remove("connector-redis-e2e")
+        module_list.remove("connector-redis-e2e")
     for i, module in enumerate(module_list):
         if len(module) > 0 and i % int(total_num) == int(current_num):
             final_modules.append(":" + module)
