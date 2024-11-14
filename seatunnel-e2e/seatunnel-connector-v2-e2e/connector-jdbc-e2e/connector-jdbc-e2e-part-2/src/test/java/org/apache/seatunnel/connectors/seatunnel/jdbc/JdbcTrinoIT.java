@@ -85,7 +85,7 @@ public class JdbcTrinoIT extends TestSuiteBase implements TestResource {
     }
 
     private void initializeJdbcTable() {
-        // no thing
+        // no things
     }
 
     @AfterAll
