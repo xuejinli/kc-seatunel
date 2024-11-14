@@ -17,7 +17,6 @@
 
 package mongodb.sender;
 
-import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.seatunnel.api.table.catalog.CatalogTable;
 import org.apache.seatunnel.api.table.catalog.PhysicalColumn;
 import org.apache.seatunnel.api.table.catalog.TableIdentifier;
@@ -29,6 +28,9 @@ import org.apache.seatunnel.api.table.type.SeaTunnelDataType;
 import org.apache.seatunnel.connectors.seatunnel.cdc.mongodb.exception.MongodbConnectorException;
 import org.apache.seatunnel.connectors.seatunnel.cdc.mongodb.sender.MongoDBConnectorDeserializationSchema;
 import org.apache.seatunnel.connectors.seatunnel.cdc.mongodb.utils.MongodbRecordUtils;
+
+import org.apache.kafka.connect.source.SourceRecord;
+
 import org.bson.BsonDateTime;
 import org.bson.BsonDecimal128;
 import org.bson.BsonDocument;
