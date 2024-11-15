@@ -17,18 +17,20 @@
 
 package org.apache.seatunnel.connectors.seatunnel.jdbc.sink;
 
+import org.apache.seatunnel.api.event.EventType;
 import org.apache.seatunnel.api.sink.SinkWriter;
 import org.apache.seatunnel.api.sink.SupportMultiTableSinkWriter;
+import org.apache.seatunnel.api.sink.SupportSchemaEvolutionSinkWriter;
 import org.apache.seatunnel.api.table.catalog.Column;
 import org.apache.seatunnel.api.table.catalog.TablePath;
 import org.apache.seatunnel.api.table.catalog.TableSchema;
-import org.apache.seatunnel.api.table.event.AlterTableAddColumnEvent;
-import org.apache.seatunnel.api.table.event.AlterTableChangeColumnEvent;
-import org.apache.seatunnel.api.table.event.AlterTableColumnEvent;
-import org.apache.seatunnel.api.table.event.AlterTableColumnsEvent;
-import org.apache.seatunnel.api.table.event.AlterTableDropColumnEvent;
-import org.apache.seatunnel.api.table.event.AlterTableModifyColumnEvent;
-import org.apache.seatunnel.api.table.event.SchemaChangeEvent;
+import org.apache.seatunnel.api.table.schema.event.AlterTableAddColumnEvent;
+import org.apache.seatunnel.api.table.schema.event.AlterTableChangeColumnEvent;
+import org.apache.seatunnel.api.table.schema.event.AlterTableColumnEvent;
+import org.apache.seatunnel.api.table.schema.event.AlterTableColumnsEvent;
+import org.apache.seatunnel.api.table.schema.event.AlterTableDropColumnEvent;
+import org.apache.seatunnel.api.table.schema.event.AlterTableModifyColumnEvent;
+import org.apache.seatunnel.api.table.schema.event.SchemaChangeEvent;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.common.utils.SeaTunnelException;
 import org.apache.seatunnel.connectors.seatunnel.jdbc.config.JdbcSinkConfig;
@@ -48,12 +50,14 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 public abstract class AbstractJdbcSinkWriter<ResourceT>
         implements SinkWriter<SeaTunnelRow, XidInfo, JdbcSinkState>,
-                SupportMultiTableSinkWriter<ResourceT> {
+                SupportMultiTableSinkWriter<ResourceT>,
+                SupportSchemaEvolutionSinkWriter {
 
     protected JdbcDialect dialect;
     protected TablePath sinkTablePath;
@@ -83,8 +87,7 @@ public abstract class AbstractJdbcSinkWriter<ResourceT>
     }
 
     protected void processSchemaChangeEvent(AlterTableColumnEvent event) throws IOException {
-        TableSchema newTableSchema = this.tableSchema.copy();
-        List<Column> columns = newTableSchema.getColumns();
+        List<Column> columns = new ArrayList<>(tableSchema.getColumns());
         switch (event.getEventType()) {
             case SCHEMA_CHANGE_ADD_COLUMN:
                 Column addColumn = ((AlterTableAddColumnEvent) event).getColumn();
@@ -96,20 +99,26 @@ public abstract class AbstractJdbcSinkWriter<ResourceT>
                 break;
             case SCHEMA_CHANGE_MODIFY_COLUMN:
                 Column modifyColumn = ((AlterTableModifyColumnEvent) event).getColumn();
-                replaceColumnByIndex(columns, modifyColumn.getName(), modifyColumn);
+                replaceColumnByIndex(
+                        event.getEventType(), columns, modifyColumn.getName(), modifyColumn);
                 break;
             case SCHEMA_CHANGE_CHANGE_COLUMN:
                 AlterTableChangeColumnEvent alterTableChangeColumnEvent =
                         (AlterTableChangeColumnEvent) event;
                 Column changeColumn = alterTableChangeColumnEvent.getColumn();
                 String oldColumnName = alterTableChangeColumnEvent.getOldColumn();
-                replaceColumnByIndex(columns, oldColumnName, changeColumn);
+                replaceColumnByIndex(event.getEventType(), columns, oldColumnName, changeColumn);
                 break;
             default:
                 throw new SeaTunnelException(
                         "Unsupported schemaChangeEvent for event type: " + event.getEventType());
         }
-        this.tableSchema = newTableSchema;
+        this.tableSchema =
+                TableSchema.builder()
+                        .columns(columns)
+                        .primaryKey(tableSchema.getPrimaryKey())
+                        .constraintKey(tableSchema.getConstraintKeys())
+                        .build();
         reOpenOutputFormat(event);
     }
 
@@ -132,10 +141,17 @@ public abstract class AbstractJdbcSinkWriter<ResourceT>
     }
 
     protected void replaceColumnByIndex(
-            List<Column> columns, String oldColumnName, Column newColumn) {
+            EventType eventType, List<Column> columns, String oldColumnName, Column newColumn) {
         for (int i = 0; i < columns.size(); i++) {
-            if (columns.get(i).getName().equalsIgnoreCase(oldColumnName)) {
-                columns.set(i, newColumn);
+            Column column = columns.get(i);
+            if (column.getName().equalsIgnoreCase(oldColumnName)) {
+                // rename ...... to ......  which just has column name
+                if (eventType.equals(EventType.SCHEMA_CHANGE_CHANGE_COLUMN)
+                        && newColumn.getDataType() == null) {
+                    columns.set(i, column.rename(newColumn.getName()));
+                } else {
+                    columns.set(i, newColumn);
+                }
             }
         }
     }

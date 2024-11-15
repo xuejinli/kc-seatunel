@@ -173,7 +173,7 @@ seatunnel:
 This configuration mainly solves the problem of resource leakage caused by continuously creating and attempting to destroy class loaders.
 If you encounter an exception related to metaspace space overflow, you can try to enable this configuration.
 In order to reduce the frequency of creating class loaders, after enabling this configuration, SeaTunnel will not try to release the corresponding class loader when the job is completed, so that it can be used by subsequent jobs, that is to say, when not too many types of Source/Sink connector are used in the running job, it is more effective.
-The default value is false.
+The default value is true.
 Example
 
 ```yaml
@@ -279,6 +279,23 @@ netty-buffer-4.1.89.Final.jar
 netty-common-4.1.89.Final.jar
 seatunnel-hadoop3-3.1.4-uber.jar
 ```
+
+### 4.7 Job Scheduling Strategy
+
+When resources are insufficient, the job scheduling strategy can be configured in the following two modes:
+
+1. `WAIT`: Wait for resources to be available.
+
+2. `REJECT`: Reject the job, default value.
+
+Example
+
+```yaml
+seatunnel:
+  engine:
+    job-schedule-strategy: WAIT
+```
+When `dynamic-slot: true` is used, the `job-schedule-strategy: WAIT` configuration will become invalid and will be forcibly changed to `job-schedule-strategy: REJECT`, because this parameter is meaningless in dynamic slots.
 
 ## 5. Configuring SeaTunnel Engine Network Services
 
