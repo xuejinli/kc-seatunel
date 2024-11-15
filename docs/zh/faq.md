@@ -47,7 +47,7 @@ SeaTunnel 支持增量数据同步。例如通过 CDC 连接器实现对数据�
 - **`CREATE_SCHEMA_WHEN_NOT_EXIST`**：当表不存在时会创建，若表已存在则跳过创建。
 - **`ERROR_WHEN_SCHEMA_NOT_EXIST`**：当表不存在时会报错。
 - **`IGNORE`**：忽略对表的处理。
-  目前很多 connector 已经支持了自动建表，请参考对应的 connector 文档，这里拿 Jdbc 举例，请参考 [Jdbc sink](https://seatunnel.apache.org/docs/2.3.8/connector-v2/sink/Jdbc#schema_save_mode-enum)
+  目前很多 connector 已经支持了自动建表，请参考对应的 connector 文档，这里拿 Jdbc 举例，请参考 [Jdbc sink](https://seatunnel.apache.org/docs/connector-v2/sink/Jdbc#schema_save_mode-enum)
 
 ## SeaTunnel 是否支持数据同步任务开始前对已有数据进行处理？
 在同步任务启动之前，可以为目标端已有的数据选择不同的处理方案。是通过 `data_save_mode` 参数来控制的。
@@ -56,7 +56,7 @@ SeaTunnel 支持增量数据同步。例如通过 CDC 连接器实现对数据�
 - **`APPEND_DATA`**：保留数据库结构，保留数据。
 - **`CUSTOM_PROCESSING`**：用户自定义处理。
 - **`ERROR_WHEN_DATA_EXISTS`**：当存在数据时，报错。
-  目前很多 connector 已经支持了对已有数据进行处理，请参考对应的 connector 文档，这里拿 Jdbc 举例，请参考 [Jdbc sink](https://seatunnel.apache.org/docs/2.3.8/connector-v2/sink/Jdbc#data_save_mode-enum)
+  目前很多 connector 已经支持了对已有数据进行处理，请参考对应的 connector 文档，这里拿 Jdbc 举例，请参考 [Jdbc sink](https://seatunnel.apache.org/docs/connector-v2/sink/Jdbc#data_save_mode-enum)
 
 ## SeaTunnel 是否支持精确一致性管理？
 SeaTunnel 支持一部分数据源的精确一致性，例如支持 MySQL、PostgreSQL 等数据库的事务写入，确保数据在同步过程中的一致性，另外精确一致性也要看数据库本身是否可以支持
@@ -117,14 +117,11 @@ your string 1
 
 请参阅：[lightbend/config#456](https://github.com/lightbend/config/issues/456)。
 
-## 如何配置 SeaTunnel-E2E Test 的日志记录相关参数？
-`seatunnel-e2e` 的 log4j 配置文件位于 `seatunnel-e2e/seatunnel-e2e-common/src/test/resources/log4j2.properties` 中。 您可以直接在配置文件中修改日志记录相关参数。
-例如，如果您想输出更详细的E2E Test日志，只需将配置文件中的“rootLogger.level”降级即可。
 
 ## 如果想学习 SeaTunnel 的源代码，应该从哪里开始？
 SeaTunnel 拥有完全抽象、结构化的非常优秀的架构设计和代码实现，很多用户都选择 SeaTunnel 作为学习大数据架构的方式。 您可以从`seatunnel-examples`模块开始了解和调试源代码：SeaTunnelEngineLocalExample.java
 具体参考：https://seatunnel.apache.org/docs/contribution/setup
-针对中国用户，如果有伙伴想贡献自己的一份力量让 SeaTunnel 更好，特别欢迎加入社区贡献者种子群，欢迎添加微信：davidzollo，添加时请注明 "参与开源共建"。
+针对中国用户，如果有伙伴想贡献自己的一份力量让 SeaTunnel 更好，特别欢迎加入社区贡献者种子群，欢迎添加微信：davidzollo，添加时请注明 "参与开源共建", 群仅仅用于技术交流, 重要的事情讨论还请发到 dev@seatunnel.apache.org 邮件里进行讨论。
 
 ## 如果想开发自己的 source、sink、transform 时，是否需要了解 SeaTunnel 所有源代码？
 不需要，您只需要关注 source、sink、transform 对应的接口即可。
