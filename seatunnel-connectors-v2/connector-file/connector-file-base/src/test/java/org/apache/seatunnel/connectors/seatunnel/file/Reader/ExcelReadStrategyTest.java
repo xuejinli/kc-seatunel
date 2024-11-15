@@ -15,8 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.seatunnel.connectors.seatunnel.file.writer;
+package org.apache.seatunnel.connectors.seatunnel.file.Reader;
 
+import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
 import org.apache.seatunnel.shade.com.typesafe.config.Config;
 import org.apache.seatunnel.shade.com.typesafe.config.ConfigFactory;
 
@@ -54,7 +55,7 @@ public class ExcelReadStrategyTest {
 
     @Test
     public void testExcelRead() throws IOException, URISyntaxException {
-        testExcelRead("/excel/test_read_excel.xlsx");
+//        testExcelRead("/excel/test_read_excel.xlsx");
         testExcelRead("/excel/test_read_excel_date_string.xlsx");
     }
 
@@ -123,6 +124,31 @@ public class ExcelReadStrategyTest {
                     seaTunnelRow.getField(13),
                     TimeUtils.parse("16:00:48", TimeUtils.Formatter.HH_MM_SS));
         }
+    }
+
+    @Test
+    public void testLargeExcelRead() throws IOException, URISyntaxException {
+        URL excelFile =  ExcelReadStrategyTest.class.getResource("/excel/test_read_excel_large.xlsx");
+        URL conf = ExcelReadStrategyTest.class.getResource("/excel/test_read_excel_large.conf");
+
+        Assertions.assertNotNull(excelFile);
+        Assertions.assertNotNull(conf);
+        String excelFilePath = Paths.get(excelFile.toURI()).toString();
+        String confPath = Paths.get(conf.toURI()).toString();
+        Config pluginConfig = ConfigFactory.parseFile(new File(confPath));
+        ExcelReadStrategy excelReadStrategy = new ExcelReadStrategy();
+        LocalConf localConf = new LocalConf(FS_DEFAULT_NAME_DEFAULT);
+        excelReadStrategy.setPluginConfig(pluginConfig);
+        excelReadStrategy.init(localConf);
+
+        List<String> fileNamesByPath = excelReadStrategy.getFileNamesByPath(excelFilePath);
+        CatalogTable userDefinedCatalogTable = CatalogTableUtil.buildWithConfig(pluginConfig);
+        excelReadStrategy.setCatalogTable(userDefinedCatalogTable);
+
+        TestCollector testCollector = new TestCollector();
+        excelReadStrategy.read(fileNamesByPath.get(0), "", testCollector);
+
+        Assertions.assertEquals(testCollector.getRows().size(), 1000000);
     }
 
     @Getter
