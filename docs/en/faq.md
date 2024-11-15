@@ -113,8 +113,6 @@ your string 1
 
 For more details, see: [lightbend/config#456](https://github.com/lightbend/config/issues/456).
 
-## How do I configure logging parameters for SeaTunnel E2E Tests?
-The log4j configuration file for `seatunnel-e2e` is located at `seatunnel-e2e/seatunnel-e2e-common/src/test/resources/log4j2.properties`. You can directly modify logging-related parameters in this configuration file. For example, to produce more detailed E2E Test logs, lower the `rootLogger.level` in the configuration file.
 
 ## Where should I start if I want to learn SeaTunnel source code?
 SeaTunnel features a highly abstracted and well-structured architecture, making it an excellent choice for learning big data architecture. You can start by exploring and debugging the `seatunnel-examples` module: `SeaTunnelEngineLocalExample.java`. For more details, refer to the [SeaTunnel Contribution Guide](https://seatunnel.apache.org/docs/contribution/setup).
