@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.math.BigDecimal.ROUND_CEILING;
 import static org.apache.seatunnel.connectors.cdc.base.utils.ObjectUtils.doubleCompare;
@@ -397,8 +398,20 @@ public abstract class AbstractJdbcSourceChunkSplitter implements JdbcSourceChunk
                 splitColumnsConfig.getOrDefault(tableId.catalog() + "." + tableId.table(), null);
 
         if (StringUtils.isNotEmpty(tableSc)) {
-            boolean isUniqueKey = dialect.getUniqueKeys(jdbc, tableId).contains(tableSc);
-            if (isUniqueKey) {
+            // Is tableSc（table split column） the unique key
+            AtomicBoolean isUniqueKey = new AtomicBoolean(false);
+            dialect.getUniqueKeys(jdbc, tableId)
+                    .forEach(
+                            ck ->
+                                    ck.getColumnNames()
+                                            .forEach(
+                                                    ckc -> {
+                                                        if (tableSc.equals(ckc.getColumnName())) {
+                                                            isUniqueKey.set(true);
+                                                        }
+                                                    }));
+
+            if (isUniqueKey.get()) {
                 Column column = table.columnWithName(tableSc);
                 if (isEvenlySplitColumn(column)) {
                     return column;
