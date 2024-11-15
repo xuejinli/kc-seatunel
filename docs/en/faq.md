@@ -57,7 +57,7 @@ Yes, you can specify different processing schemes for existing data on the targe
 SeaTunnel supports exactly-once consistency for some data sources, such as MySQL and PostgreSQL, ensuring data consistency during integration. Note that exactly-once consistency depends on the capabilities of the underlying database.
 
 ## Can SeaTunnel execute scheduled tasks?
-You can use Linux cron jobs to achieve periodic data integration, or leverage scheduling tools like DolphinScheduler to manage complex scheduled tasks.
+You can use Linux cron jobs to achieve periodic data integration, or leverage scheduling tools like Apache DolphinScheduler or Apache Airflow to manage complex scheduled tasks.
 
 ## I encountered an issue with SeaTunnel that I cannot resolve. What should I do?
 If you encounter issues with SeaTunnel, here are a few ways to get help:
