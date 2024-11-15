@@ -32,11 +32,6 @@ Yes, SeaTunnel supports CDC from MySQL replicas by subscribing to binlog logs, w
 ## Does SeaTunnel support CDC integration for tables without primary keys?
 SeaTunnel does not support CDC integration for tables without primary keys. The reason is that if two identical records exist in the upstream and one is deleted or modified, the downstream cannot determine which record to delete or modify, leading to potential issues. Primary keys are essential to ensure data uniqueness.
 
-## How does SeaTunnel handle changes in data sources (source) or data destinations (sink)?
-When the structure of a data source or destination changes, SeaTunnel provides various mechanisms to adapt, such as automatically detecting and updating the schema or configuring data mapping rules. You can adjust the `schema_save_mode` or `data_save_mode` parameters to control how these changes are handled based on your needs.
-
-For more details, refer to the answers on `schema_save_mode` and `data_save_mode` below.
-
 ## Does SeaTunnel support automatic table creation?
 Before starting an integration task, you can select different handling schemes for existing table structures on the target side, controlled via the `schema_save_mode` parameter. Available options include:
 - **`RECREATE_SCHEMA`**: Creates the table if it does not exist; if the table exists, it is deleted and recreated.
