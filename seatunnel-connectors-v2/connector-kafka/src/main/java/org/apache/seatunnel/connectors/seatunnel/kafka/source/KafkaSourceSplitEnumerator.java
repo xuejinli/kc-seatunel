@@ -37,7 +37,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -89,7 +88,7 @@ public class KafkaSourceSplitEnumerator
     }
 
     @VisibleForTesting
-    protected KafkaSourceSplitEnumerator(
+    public KafkaSourceSplitEnumerator(
             AdminClient adminClient,
             Map<TopicPartition, KafkaSourceSplit> pendingSplit,
             Map<TopicPartition, KafkaSourceSplit> assignedSplit) {
@@ -100,6 +99,16 @@ public class KafkaSourceSplitEnumerator
         this.kafkaSourceConfig = null;
         this.pendingSplit = pendingSplit;
         this.assignedSplit = assignedSplit;
+    }
+
+    @VisibleForTesting
+    public KafkaSourceSplitEnumerator(
+            AdminClient adminClient,
+            Map<TopicPartition, KafkaSourceSplit> pendingSplit,
+            Map<TopicPartition, KafkaSourceSplit> assignedSplit,
+            boolean isStreamingMode) {
+        this(adminClient, pendingSplit, assignedSplit);
+        this.isStreamingMode = isStreamingMode;
     }
 
     @Override
@@ -209,7 +218,7 @@ public class KafkaSourceSplitEnumerator
     private Map<TopicPartition, ? extends KafkaSourceSplit> convertToNextSplit(
             List<KafkaSourceSplit> splits) {
         try {
-            Map<TopicPartition, Long> listOffsets =
+            Map<TopicPartition, Long> latestOffsets =
                     listOffsets(
                             splits.stream()
                                     .map(KafkaSourceSplit::getTopicPartition)
@@ -219,7 +228,10 @@ public class KafkaSourceSplitEnumerator
             splits.forEach(
                     split -> {
                         split.setStartOffset(split.getEndOffset() + 1);
-                        split.setEndOffset(listOffsets.get(split.getTopicPartition()));
+                        split.setEndOffset(
+                                isStreamingMode
+                                        ? Long.MAX_VALUE
+                                        : latestOffsets.get(split.getTopicPartition()));
                     });
             return splits.stream()
                     .collect(Collectors.toMap(KafkaSourceSplit::getTopicPartition, split -> split));
@@ -311,8 +323,9 @@ public class KafkaSourceSplitEnumerator
                             TablePath tablePath = topicMappingTablePathMap.get(partition.topic());
                             KafkaSourceSplit split = new KafkaSourceSplit(tablePath, partition);
                             split.setEndOffset(
-                                    latestOffsets.getOrDefault(
-                                            split.getTopicPartition(), Long.MAX_VALUE));
+                                    isStreamingMode
+                                            ? Long.MAX_VALUE
+                                            : latestOffsets.get(partition));
                             return split;
                         })
                 .collect(Collectors.toSet());
@@ -351,10 +364,6 @@ public class KafkaSourceSplitEnumerator
     private Map<TopicPartition, Long> listOffsets(
             Collection<TopicPartition> partitions, OffsetSpec offsetSpec)
             throws ExecutionException, InterruptedException {
-
-        if (isStreamingMode) {
-            return Collections.emptyMap();
-        }
 
         Map<TopicPartition, OffsetSpec> topicPartitionOffsets =
                 partitions.stream()
@@ -403,7 +412,8 @@ public class KafkaSourceSplitEnumerator
         assignSplit();
     }
 
-    private void fetchPendingPartitionSplit() throws ExecutionException, InterruptedException {
+    @VisibleForTesting
+    public void fetchPendingPartitionSplit() throws ExecutionException, InterruptedException {
         getTopicInfo()
                 .forEach(
                         split -> {
