@@ -114,10 +114,10 @@ public class DruidIT extends TestSuiteBase implements TestResource {
                             String expectedDataRow4 =
                                     "\"c_boolean\":\"false\",\"c_timestamp\":\"2014-04-28T09:13:27\",\"c_string\":\"CCC\",\"c_tinyint\":1,\"c_smallint\":1,\"c_int\":271,\"c_bigint\":683221,\"c_float\":4.8,\"c_double\":4.45271,\"c_decimal\":79277.68219012";
                             Assertions.assertFalse(responseBody.contains("errorMessage"));
-                            Assertions.assertEquals(responseBody.contains(expectedDataRow1), true);
-                            Assertions.assertEquals(responseBody.contains(expectedDataRow2), true);
-                            Assertions.assertEquals(responseBody.contains(expectedDataRow3), true);
-                            Assertions.assertEquals(responseBody.contains(expectedDataRow4), true);
+                            Assertions.assertTrue(responseBody.contains(expectedDataRow1));
+                            Assertions.assertTrue(responseBody.contains(expectedDataRow2));
+                            Assertions.assertTrue(responseBody.contains(expectedDataRow3));
+                            Assertions.assertTrue(responseBody.contains(expectedDataRow4));
                         });
     }
 
@@ -141,7 +141,7 @@ public class DruidIT extends TestSuiteBase implements TestResource {
                             String expectedDataRow =
                                     "\"id\":1,\"val_bool\":\"true\",\"val_tinyint\":1,\"val_smallint\":2,\"val_int\":3,\"val_bigint\":4,\"val_float\":4.3,\"val_double\":5.3,\"val_decimal\":6.3,\"val_string\":\"NEW\"";
                             Assertions.assertFalse(responseBody.contains("errorMessage"));
-                            Assertions.assertEquals(responseBody.contains(expectedDataRow), true);
+                            Assertions.assertTrue(responseBody.contains(expectedDataRow));
                         });
 
         // Check multi sink table 2
@@ -155,7 +155,7 @@ public class DruidIT extends TestSuiteBase implements TestResource {
                             String expectedDataRow =
                                     "\"id\":1,\"val_bool\":\"true\",\"val_tinyint\":1,\"val_smallint\":2,\"val_int\":3,\"val_bigint\":4,\"val_float\":4.3,\"val_double\":5.3,\"val_decimal\":6.3";
                             Assertions.assertFalse(responseBody.contains("errorMessage"));
-                            Assertions.assertEquals(responseBody.contains(expectedDataRow), true);
+                            Assertions.assertTrue(responseBody.contains(expectedDataRow));
                         });
     }
 
@@ -192,8 +192,7 @@ public class DruidIT extends TestSuiteBase implements TestResource {
             entity.setContentType("application/json");
             request.setEntity(entity);
             HttpResponse response = client.execute(request);
-            String responseBody = EntityUtils.toString(response.getEntity());
-            return responseBody;
+            return EntityUtils.toString(response.getEntity());
         }
     }
 }
