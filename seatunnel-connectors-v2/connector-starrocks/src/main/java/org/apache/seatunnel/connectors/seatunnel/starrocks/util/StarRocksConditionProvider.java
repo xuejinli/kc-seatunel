@@ -22,6 +22,6 @@ public class StarRocksConditionProvider {
     public static final String TABLE_SCHEMA_QUERY =
             "SELECT * "
                     + "FROM information_schema.columns "
-                    + "WHERE TABLE_CATALOG = 'internal' AND TABLE_SCHEMA = ? AND TABLE_NAME = ? "
+                    + "WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? "
                     + "ORDER BY ORDINAL_POSITION";
 }

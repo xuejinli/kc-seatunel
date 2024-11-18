@@ -299,7 +299,7 @@ public class StarRocksCatalog implements Catalog {
     private Map<String, String> buildConnectorOptions(TablePath tablePath) {
         Map<String, String> options = new HashMap<>(8);
         options.put("connector", "starrocks");
-        options.put("url", baseUrl + tablePath.getDatabaseName());
+        options.put("url", baseUrl + "/" + tablePath.getDatabaseName());
         options.put("table-name", tablePath.getFullName());
         options.put("username", username);
         options.put("password", pwd);
