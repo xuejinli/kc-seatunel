@@ -92,15 +92,19 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import static org.awaitility.Awaitility.await;
 
 @Slf4j
 public class KafkaIT extends TestSuiteBase implements TestResource {
@@ -753,22 +757,45 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
     }
 
     @TestTemplate
-    public void testKafkaToKafkaExactlyOnce(TestContainer container) throws Exception {
-        TextSerializationSchema serializer =
-                TextSerializationSchema.builder()
-                        .seaTunnelRowType(SEATUNNEL_ROW_TYPE)
-                        .delimiter(",")
-                        .build();
-        generateTestData(
-                row ->
-                        new ProducerRecord<>(
-                                "kafka_topic_exactly_once", null, serializer.serialize(row)),
-                0,
-                10);
-        container.executeJob("/kafka/fake_to_kafka_exactly_once.conf");
+    public void testKafkaToKafkaExactlyOnce(TestContainer container) {
         String topicName = "kafka_topic_exactly_once";
+        String sourceData = "{\"key\":\"SeaTunnel\",\"value\":\"kafka\"}";
+        for (int i = 0; i < 10; i++) {
+            ProducerRecord<byte[], byte[]> record =
+                    new ProducerRecord<>(topicName, null, sourceData.getBytes());
+            producer.send(record);
+        }
+        // async execute
+        CompletableFuture.supplyAsync(
+                () -> {
+                    try {
+                        container.executeJob("/kafka/kafka_to_kafka_exactly_once.conf");
+                    } catch (Exception e) {
+                        log.error("Commit task exception :" + e.getMessage());
+                        throw new RuntimeException(e);
+                    }
+                    return null;
+                });
+
+        // wait for data written to kafka
+        await().atMost(300000, TimeUnit.MILLISECONDS)
+                .pollInterval(5000, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> Assertions.assertTrue(checkData(topicName)));
+    }
+    // Compare the values of data fields obtained from consumers
+    private boolean checkData(String topicName) {
         Map<String, String> data = getKafkaConsumerData(topicName);
-        Assertions.assertEquals(10, data.size());
+        if (data.isEmpty() || data.size() != 10) {
+            return false;
+        }
+        Collection<String> values = data.values();
+        for (String value : values) {
+            Map<String, String> node = JsonUtils.toMap(value);
+            if (!"SeaTunnel".equals(node.get("key")) || !"kafka".equals(node.get("value"))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private @NotNull DefaultSeaTunnelRowSerializer getDefaultSeaTunnelRowSerializer(
