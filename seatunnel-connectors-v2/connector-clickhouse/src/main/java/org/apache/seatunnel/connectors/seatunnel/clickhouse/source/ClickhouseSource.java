@@ -17,10 +17,6 @@
 
 package org.apache.seatunnel.connectors.seatunnel.clickhouse.source;
 
-import org.apache.seatunnel.shade.com.typesafe.config.Config;
-import org.apache.seatunnel.shade.com.typesafe.config.ConfigFactory;
-
-import org.apache.seatunnel.api.common.PrepareFailException;
 import org.apache.seatunnel.api.common.SeaTunnelAPIErrorCode;
 import org.apache.seatunnel.api.configuration.ReadonlyConfig;
 import org.apache.seatunnel.api.source.Boundedness;
@@ -38,7 +34,6 @@ import org.apache.seatunnel.api.table.catalog.TableSchema;
 import org.apache.seatunnel.api.table.type.SeaTunnelDataType;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
-import org.apache.seatunnel.common.config.CheckConfigUtil;
 import org.apache.seatunnel.common.constants.PluginType;
 import org.apache.seatunnel.common.utils.ExceptionUtils;
 import org.apache.seatunnel.connectors.seatunnel.clickhouse.config.ClickhouseCatalogConfig;
@@ -89,36 +84,23 @@ public class ClickhouseSource
         return "Clickhouse";
     }
 
-    @Override
-    public void prepare(Config config) throws PrepareFailException {
-        config =
-                config.withFallback(
-                        ConfigFactory.parseMap(
-                                Collections.singletonMap(
-                                        SERVER_TIME_ZONE.key(), SERVER_TIME_ZONE.defaultValue())));
+    public ClickhouseSource(ReadonlyConfig readonlyConfig) {
+        initClickhouseSource(readonlyConfig);
+    }
 
+    private void initClickhouseSource(ReadonlyConfig readonlyConfig) {
         Map<String, String> customConfig =
-                CheckConfigUtil.isValidParam(config, CLICKHOUSE_CONFIG.key())
-                        ? config.getObject(CLICKHOUSE_CONFIG.key()).entrySet().stream()
-                                .collect(
-                                        Collectors.toMap(
-                                                Map.Entry::getKey,
-                                                entry -> entry.getValue().unwrapped().toString()))
-                        : null;
-
+                readonlyConfig.getOptional(CLICKHOUSE_CONFIG).orElse(null);
         servers =
                 ClickhouseUtil.createNodes(
-                        config.getString(HOST.key()),
-                        config.getString(DATABASE.key()),
-                        config.getString(SERVER_TIME_ZONE.key()),
-                        config.getString(USERNAME.key()),
-                        config.getString(PASSWORD.key()),
+                        readonlyConfig.get(HOST),
+                        readonlyConfig.get(DATABASE),
+                        readonlyConfig.get(SERVER_TIME_ZONE),
+                        readonlyConfig.get(USERNAME),
+                        readonlyConfig.get(PASSWORD),
                         customConfig);
-
         ClickHouseNode currentServer =
                 servers.get(ThreadLocalRandom.current().nextInt(servers.size()));
-
-        ReadonlyConfig readonlyConfig = ReadonlyConfig.fromConfig(config);
         String sql = readonlyConfig.getOptional(SQL).orElse(null);
 
         if (readonlyConfig.getOptional(TABLE_LIST).isPresent()) {
