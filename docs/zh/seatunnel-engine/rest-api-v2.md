@@ -385,7 +385,7 @@ seatunnel:
 > | jobId                | optional | string | job id                            |
 > | jobName              | optional | string | job name                          |
 > | isStartWithSavePoint | optional | string | if job is started with save point |
-> | format               | optional | string    | 配置风格,json/hocon,default json      |
+> | format               | optional | string    | 配置风格,支持json和hocon,默认 json         |
 
 #### 请求体
 

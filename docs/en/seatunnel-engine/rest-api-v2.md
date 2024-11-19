@@ -389,7 +389,7 @@ When we can't get the job info, the response will be:
 > | jobId                | optional | string    | job id                            |
 > | jobName              | optional | string    | job name                          |
 > | isStartWithSavePoint | optional | string    | if job is started with save point |
-> | format               | optional | string    | config style,json/hocon,default json |
+> | format               | optional | string    | config format, support json and hocon, default json |
 
 #### Body
 
