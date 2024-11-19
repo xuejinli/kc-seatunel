@@ -21,7 +21,6 @@ import org.apache.seatunnel.common.utils.JsonUtils;
 import org.apache.seatunnel.e2e.common.TestSuiteBase;
 import org.apache.seatunnel.e2e.common.container.EngineType;
 import org.apache.seatunnel.e2e.common.container.TestContainer;
-import org.apache.seatunnel.e2e.common.container.TestContainerId;
 import org.apache.seatunnel.e2e.common.container.flink.AbstractTestFlinkContainer;
 import org.apache.seatunnel.e2e.common.junit.DisabledOnContainer;
 import org.apache.seatunnel.e2e.common.util.JobIdGenerator;
@@ -200,7 +199,7 @@ public class CheckpointEnableIT extends TestSuiteBase {
 
     @TestTemplate
     @DisabledOnContainer(
-            value = {TestContainerId.FLINK_1_17, TestContainerId.FLINK_1_18},
+            value = {},
             type = {EngineType.SEATUNNEL, EngineType.SPARK},
             disabledReason =
                     "depending on the engine, the logic for determining whether a checkpoint is enabled is different")
