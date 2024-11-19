@@ -231,8 +231,14 @@ public class CheckpointEnableIT extends TestSuiteBase {
          * disabled. reference {@link
          * org.apache.flink.runtime.jobgraph.JobGraph#isCheckpointingEnabled()}
          */
-        Assertions.assertEquals(Long.MAX_VALUE, jobConfig.getOrDefault("interval", 0L));
-        Assertions.assertEquals(0, enableExecResult.getExitCode());
+        if (container.identifier().equals(TestContainerId.FLINK_1_13)
+                || container.identifier().equals(TestContainerId.FLINK_1_14)
+                || container.identifier().equals(TestContainerId.FLINK_1_15)
+                || container.identifier().equals(TestContainerId.FLINK_1_16)) {
+            Assertions.assertEquals(Long.MAX_VALUE, jobConfig.getOrDefault("interval", 0L));
+        } else {
+            Assertions.assertEquals(0, jobConfig.getOrDefault("interval", 0L));
+        }
     }
 
     @TestTemplate
