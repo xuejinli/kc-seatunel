@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -125,8 +126,7 @@ public class StarRocksSinkWriter extends AbstractSinkWriter<SeaTunnelRow, Void> 
     }
 
     protected void processSchemaChangeEvent(AlterTableColumnEvent event) throws IOException {
-        TableSchema newTableSchema = this.tableSchema.copy();
-        List<Column> columns = newTableSchema.getColumns();
+        List<Column> columns = new ArrayList<>(tableSchema.getColumns());
         switch (event.getEventType()) {
             case SCHEMA_CHANGE_ADD_COLUMN:
                 AlterTableAddColumnEvent alterTableAddColumnEvent =
@@ -171,10 +171,15 @@ public class StarRocksSinkWriter extends AbstractSinkWriter<SeaTunnelRow, Void> 
                 throw new SeaTunnelException(
                         "Unsupported schemaChangeEvent for event type: " + event.getEventType());
         }
-        this.tableSchema = newTableSchema;
-        SeaTunnelRowType seaTunnelRowType = newTableSchema.toPhysicalRowDataType();
+        this.tableSchema =
+                TableSchema.builder()
+                        .columns(columns)
+                        .primaryKey(tableSchema.getPrimaryKey())
+                        .constraintKey(tableSchema.getConstraintKeys())
+                        .build();
+        SeaTunnelRowType seaTunnelRowType = tableSchema.toPhysicalRowDataType();
         this.serializer = createSerializer(sinkConfig, seaTunnelRowType);
-        this.manager = new StarRocksSinkManager(sinkConfig, newTableSchema);
+        this.manager = new StarRocksSinkManager(sinkConfig, tableSchema);
     }
 
     @SneakyThrows
