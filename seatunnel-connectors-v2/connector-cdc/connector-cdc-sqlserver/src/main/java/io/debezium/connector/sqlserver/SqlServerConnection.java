@@ -495,10 +495,10 @@ public class SqlServerConnection extends JdbcConnection {
     /** Overridden to make sure the prepared statement is closed after the query is executed. */
     @Override
     public JdbcConnection prepareQuery(
-        String[] multiQuery,
-        StatementPreparer[] preparers,
-        BlockingMultiResultSetConsumer resultConsumer)
-        throws SQLException, InterruptedException {
+            String[] multiQuery,
+            StatementPreparer[] preparers,
+            BlockingMultiResultSetConsumer resultConsumer)
+            throws SQLException, InterruptedException {
         final ResultSet[] resultSets = new ResultSet[multiQuery.length];
         final PreparedStatement[] preparedStatements = new PreparedStatement[multiQuery.length];
 
