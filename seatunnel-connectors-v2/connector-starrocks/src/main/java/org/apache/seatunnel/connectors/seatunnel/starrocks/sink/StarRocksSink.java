@@ -17,7 +17,6 @@
 
 package org.apache.seatunnel.connectors.seatunnel.starrocks.sink;
 
-import org.apache.seatunnel.api.configuration.ReadonlyConfig;
 import org.apache.seatunnel.api.sink.DataSaveMode;
 import org.apache.seatunnel.api.sink.DefaultSaveModeHandler;
 import org.apache.seatunnel.api.sink.SaveModeHandler;
@@ -27,8 +26,8 @@ import org.apache.seatunnel.api.sink.SupportSaveMode;
 import org.apache.seatunnel.api.table.catalog.Catalog;
 import org.apache.seatunnel.api.table.catalog.CatalogTable;
 import org.apache.seatunnel.api.table.catalog.TablePath;
+import org.apache.seatunnel.api.table.catalog.TableSchema;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
-import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
 import org.apache.seatunnel.connectors.seatunnel.common.sink.AbstractSimpleSink;
 import org.apache.seatunnel.connectors.seatunnel.common.sink.AbstractSinkWriter;
 import org.apache.seatunnel.connectors.seatunnel.starrocks.catalog.StarRocksCatalog;
@@ -40,16 +39,15 @@ import java.util.Optional;
 public class StarRocksSink extends AbstractSimpleSink<SeaTunnelRow, Void>
         implements SupportSaveMode {
 
-    private final SeaTunnelRowType seaTunnelRowType;
+    private final TableSchema tableSchema;
     private final SinkConfig sinkConfig;
     private final DataSaveMode dataSaveMode;
     private final SchemaSaveMode schemaSaveMode;
     private final CatalogTable catalogTable;
 
-    public StarRocksSink(
-            SinkConfig sinkConfig, CatalogTable catalogTable, ReadonlyConfig readonlyConfig) {
+    public StarRocksSink(SinkConfig sinkConfig, CatalogTable catalogTable) {
         this.sinkConfig = sinkConfig;
-        this.seaTunnelRowType = catalogTable.getTableSchema().toPhysicalRowDataType();
+        this.tableSchema = catalogTable.getTableSchema();
         this.catalogTable = catalogTable;
         this.dataSaveMode = sinkConfig.getDataSaveMode();
         this.schemaSaveMode = sinkConfig.getSchemaSaveMode();
@@ -62,7 +60,8 @@ public class StarRocksSink extends AbstractSimpleSink<SeaTunnelRow, Void>
 
     @Override
     public AbstractSinkWriter<SeaTunnelRow, Void> createWriter(SinkWriter.Context context) {
-        return new StarRocksSinkWriter(sinkConfig, seaTunnelRowType);
+        TablePath sinkTablePath = catalogTable.getTablePath();
+        return new StarRocksSinkWriter(sinkConfig, tableSchema, sinkTablePath);
     }
 
     @Override
