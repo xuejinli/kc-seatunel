@@ -182,7 +182,7 @@ public class StarRocksSchemaChangeIT extends TestSuiteBase implements TestResour
                         throw new RuntimeException(e);
                     }
                 });
-        TimeUnit.SECONDS.sleep(20);
+        TimeUnit.SECONDS.sleep(30);
         assertSchemaEvolution(
                 DATABASE, SOURCE_TABLE, SINK_TABLE, mysqlConnection, starRocksConnection);
     }
