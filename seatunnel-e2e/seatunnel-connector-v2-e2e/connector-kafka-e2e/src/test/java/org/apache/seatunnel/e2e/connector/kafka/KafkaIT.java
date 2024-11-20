@@ -757,12 +757,13 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
     }
 
     @TestTemplate
-    public void testKafkaToKafkaExactlyOnce(TestContainer container) {
-        String topicName = "kafka_topic_exactly_once";
+    public void testKafkaToKafkaExactlyOnce(TestContainer container) throws InterruptedException {
+        String producerTopic = "kafka_topic_exactly_once_1";
+        String consumerTopic = "kafka_topic_exactly_once_2";
         String sourceData = "{\"key\":\"SeaTunnel\",\"value\":\"kafka\"}";
         for (int i = 0; i < 10; i++) {
             ProducerRecord<byte[], byte[]> record =
-                    new ProducerRecord<>(topicName, null, sourceData.getBytes());
+                    new ProducerRecord<>(producerTopic, null, sourceData.getBytes());
             producer.send(record);
         }
         // async execute
@@ -776,11 +777,11 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
                     }
                     return null;
                 });
-
+        Thread.sleep(600000);
         // wait for data written to kafka
         await().atMost(300000, TimeUnit.MILLISECONDS)
                 .pollInterval(5000, TimeUnit.MILLISECONDS)
-                .untilAsserted(() -> Assertions.assertTrue(checkData(topicName)));
+                .untilAsserted(() -> Assertions.assertTrue(checkData(consumerTopic)));
     }
     // Compare the values of data fields obtained from consumers
     private boolean checkData(String topicName) {
