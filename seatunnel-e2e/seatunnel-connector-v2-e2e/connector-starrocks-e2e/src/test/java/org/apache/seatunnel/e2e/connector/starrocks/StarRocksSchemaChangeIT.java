@@ -361,7 +361,7 @@ public class StarRocksSchemaChangeIT extends TestSuiteBase implements TestResour
                     }
                     objects.add(resultSet.getObject(i));
                 }
-                log.debug(String.format("Print query, sql: %s, data: %s", sql, objects));
+                log.info(String.format("Print query, sql: %s, data: %s", sql, objects));
                 result.add(objects);
             }
             return result;
