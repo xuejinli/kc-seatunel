@@ -25,7 +25,8 @@ public enum MySqlVersion {
     V_8_1("8.1"),
     V_8_2("8.2"),
     V_8_3("8.3"),
-    V_8_4("8.4");
+    V_8_4("8.4"),
+    V_9("9.0");
 
     private final String versionPrefix;
 
