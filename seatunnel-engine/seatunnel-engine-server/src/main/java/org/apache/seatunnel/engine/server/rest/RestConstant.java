@@ -27,7 +27,7 @@ public class RestConstant {
 
     public static final String IS_STOP_WITH_SAVE_POINT = "isStopWithSavePoint";
 
-    public static final String ENV_CONFIG_STYLE = "format";
+    public static final String CONFIG_FORMAT = "format";
 
     public static final String JOB_STATUS = "jobStatus";
 

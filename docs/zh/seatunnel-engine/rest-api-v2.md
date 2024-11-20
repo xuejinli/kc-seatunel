@@ -389,7 +389,8 @@ seatunnel:
 
 #### 请求体
 
-```json
+你可以选择用json或者hocon的方式来传递请求体。示例如下：
+```json 示例
 {
     "env": {
         "job.mode": "batch"
@@ -418,7 +419,8 @@ seatunnel:
     ]
 }
 ```
-```hocon
+
+```hocon示例
 env {
   job.mode = "batch"
 }

@@ -44,7 +44,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.seatunnel.engine.server.rest.RestConstant.ENV_CONFIG_STYLE;
+import static org.apache.seatunnel.engine.server.rest.RestConstant.CONFIG_FORMAT;
 import static org.apache.seatunnel.engine.server.rest.RestConstant.HOCON;
 
 public class JobInfoService extends BaseService {
@@ -163,7 +163,7 @@ public class JobInfoService extends BaseService {
             throw new IllegalArgumentException("Please provide jobId when start with save point.");
         }
         Config config;
-        if (HOCON.equalsIgnoreCase(requestParams.get(ENV_CONFIG_STYLE))) {
+        if (HOCON.equalsIgnoreCase(requestParams.get(CONFIG_FORMAT))) {
             String requestBodyStr = new String(requestBody, StandardCharsets.UTF_8);
             config = ConfigFactory.parseString(requestBodyStr);
         } else {
