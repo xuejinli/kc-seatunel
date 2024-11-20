@@ -75,7 +75,7 @@ public class StarRocksSchemaChangeIT extends TestSuiteBase implements TestResour
     private static final String MYSQL_USER_NAME = "mysqluser";
     private static final String MYSQL_USER_PASSWORD = "mysqlpw";
 
-    private static final String DOCKER_IMAGE = "starrocks/allin1-ubuntu";
+    private static final String DOCKER_IMAGE = "starrocks/allin1-ubuntu:3.3.4";
     private static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
     private static final String HOST = "starrocks_cdc_e2e";
     private static final int SR_PROXY_PORT = 8080;
@@ -153,7 +153,6 @@ public class StarRocksSchemaChangeIT extends TestSuiteBase implements TestResour
                 new GenericContainer<>(DOCKER_IMAGE)
                         .withNetwork(NETWORK)
                         .withNetworkAliases(HOST)
-                        .withExposedPorts(SR_PROXY_PORT)
                         .withLogConsumer(
                                 new Slf4jLogConsumer(DockerLoggerFactory.getLogger(DOCKER_IMAGE)));
         starRocksServer.setPortBindings(
@@ -361,7 +360,7 @@ public class StarRocksSchemaChangeIT extends TestSuiteBase implements TestResour
                     }
                     objects.add(resultSet.getObject(i));
                 }
-                log.info(String.format("Print query, sql: %s, data: %s", sql, objects));
+                log.debug(String.format("Print query, sql: %s, data: %s", sql, objects));
                 result.add(objects);
             }
             return result;
