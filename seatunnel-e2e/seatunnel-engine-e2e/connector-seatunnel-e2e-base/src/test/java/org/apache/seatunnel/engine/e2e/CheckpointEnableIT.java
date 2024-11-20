@@ -238,7 +238,7 @@ public class CheckpointEnableIT extends TestSuiteBase {
                 || container.identifier().equals(TestContainerId.FLINK_1_16)) {
             Assertions.assertEquals(Long.MAX_VALUE, jobConfig.getOrDefault("interval", 0L));
         } else {
-            Assertions.assertEquals(0, jobConfig.getOrDefault("interval", 0L));
+            Assertions.assertEquals(0, jobConfig.getOrDefault("interval", 0));
         }
     }
 
