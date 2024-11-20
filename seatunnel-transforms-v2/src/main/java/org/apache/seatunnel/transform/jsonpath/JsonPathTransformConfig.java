@@ -27,8 +27,8 @@ import org.apache.seatunnel.api.table.catalog.PhysicalColumn;
 import org.apache.seatunnel.api.table.catalog.SeaTunnelDataTypeConvertorUtil;
 import org.apache.seatunnel.api.table.type.SeaTunnelDataType;
 import org.apache.seatunnel.transform.common.ErrorHandleWay;
-import org.apache.seatunnel.transform.exception.TransformCommonError;
 import org.apache.seatunnel.transform.common.TransformCommonOptions;
+import org.apache.seatunnel.transform.exception.TransformCommonError;
 import org.apache.seatunnel.transform.exception.TransformException;
 
 import org.apache.commons.lang3.StringUtils;
