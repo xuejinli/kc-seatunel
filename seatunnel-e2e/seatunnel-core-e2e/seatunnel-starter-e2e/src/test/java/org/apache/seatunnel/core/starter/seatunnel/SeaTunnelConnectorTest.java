@@ -169,7 +169,7 @@ public class SeaTunnelConnectorTest extends TestSuiteBase implements TestResourc
                         Arrays.stream(requiredOptions.split(StringUtils.LF))
                                 .map(String::trim)
                                 // remove empty string with time
-                                .filter(s -> !s.endsWith("Z"))
+                                .filter(s -> !s.isEmpty())
                                 .count());
         Assertions.assertEquals(
                 optionRule.getOptionalOptions().size(),
