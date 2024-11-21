@@ -385,7 +385,7 @@ When we can't get the job info, the response will be:
 #### Parameters
 
 > | name                 |   type   | data type |            description            |
-----------------------|----------------------|----------|-----------|-----------------------------------|
+> |----------------------|----------|-----------|-----------------------------------|
 > | jobId                | optional | string    | job id                            |
 > | jobName              | optional | string    | job name                          |
 > | isStartWithSavePoint | optional | string    | if job is started with save point |
