@@ -48,7 +48,7 @@ import static org.awaitility.Awaitility.given;
 @Slf4j
 public class JdbcTrinoIT extends TestSuiteBase implements TestResource {
 
-    private static final String DOCKER_IMAGE = "trinodb/trino";
+    private static final String DOCKER_IMAGE = "trinodb/trino:445";
     private static final String DRIVER_CLASS = "io.trino.jdbc.TrinoDriver";
     private static final String HOST = "e2e_tino";
     private static final String URL = "jdbc:trino://%s:5236";
