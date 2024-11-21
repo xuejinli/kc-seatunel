@@ -394,7 +394,8 @@ When we can't get the job info, the response will be:
 #### Body
 
 You can choose json or hocon to pass request body.Examples are as follows:
-``` json example
+The json format example:
+``` json
 {
     "env": {
         "job.mode": "batch"
