@@ -393,7 +393,7 @@ When we can't get the job info, the response will be:
 
 #### Body
 
-You can choose json or hocon to pass request body.Examples are as follows:
+You can choose json or hocon to pass request body.
 The json format example:
 ``` json
 {
