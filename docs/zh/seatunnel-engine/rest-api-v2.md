@@ -389,8 +389,9 @@ seatunnel:
 
 #### 请求体
 
-你可以选择用json或者hocon的方式来传递请求体。示例如下：
-```json 示例
+你可以选择用json或者hocon的方式来传递请求体。
+Json请求示例：
+```json
 {
     "env": {
         "job.mode": "batch"
