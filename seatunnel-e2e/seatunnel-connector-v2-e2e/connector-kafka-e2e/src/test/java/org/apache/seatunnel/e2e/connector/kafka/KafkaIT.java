@@ -777,16 +777,15 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
                     }
                     return null;
                 });
-        Thread.sleep(600000);
         // wait for data written to kafka
-        await().atMost(300000, TimeUnit.MILLISECONDS)
-                .pollInterval(5000, TimeUnit.MILLISECONDS)
+        await().atMost(60000, TimeUnit.MILLISECONDS)
+                .pollInterval(1000, TimeUnit.MILLISECONDS)
                 .untilAsserted(() -> Assertions.assertTrue(checkData(consumerTopic)));
     }
 
     // Compare the values of data fields obtained from consumers
     private boolean checkData(String topicName) {
-        Map<String, String> data = getConsumerDataByKafka(topicName);
+        Map<String, String> data = getKafkaConsumerData(topicName);
         if (data.isEmpty() || data.size() != 10) {
             return false;
         }
@@ -798,18 +797,6 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
             }
         }
         return true;
-    }
-    // get kafka data
-    private Map getConsumerDataByKafka(String topicName) {
-        Map<String, String> data = new HashMap<>();
-        try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(kafkaConsumerConfig())) {
-            consumer.subscribe(Arrays.asList(topicName));
-            ConsumerRecords<String, String> kafkaData = consumer.poll(5000);
-            for (ConsumerRecord<String, String> record : kafkaData) {
-                data.put(record.key(), record.value());
-            }
-        }
-        return data;
     }
 
     private @NotNull DefaultSeaTunnelRowSerializer getDefaultSeaTunnelRowSerializer(
