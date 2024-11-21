@@ -424,7 +424,8 @@ The json format example:
     ]
 }
 ```
-``` hocon example
+The hocon format example:
+``` hocon
 env {
   job.mode = "batch"
 }
