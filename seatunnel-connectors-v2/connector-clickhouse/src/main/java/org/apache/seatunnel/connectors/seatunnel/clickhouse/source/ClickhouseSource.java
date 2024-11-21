@@ -74,7 +74,7 @@ public class ClickhouseSource
                 SupportColumnProjection {
 
     private List<ClickHouseNode> servers;
-    private Map<TablePath, ClickhouseCatalogConfig> tableClickhouseCatalogConfigMap =
+    private HashedMap<TablePath, ClickhouseCatalogConfig> tableClickhouseCatalogConfigMap =
             new HashedMap<>();
 
     private static final String defaultTablePath = "default";
