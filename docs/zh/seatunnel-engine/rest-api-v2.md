@@ -421,7 +421,8 @@ Json请求示例：
 }
 ```
 
-```hocon示例
+Hocon请求示例：
+```hocon
 env {
   job.mode = "batch"
 }
