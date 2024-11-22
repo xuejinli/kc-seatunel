@@ -40,7 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Disabled
+@Disabled("due to the driver cannot be downloaded")
 public class JdbcGBase8aIT extends AbstractJdbcIT {
 
     private static final String GBASE_IMAGE = "shihd/gbase8a:1.0";
