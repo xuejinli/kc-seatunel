@@ -7,7 +7,9 @@ sidebar_position: 1
 > This is a process of intermediate conversion between the source and sink terminals,You can use sql statements to smoothly complete the conversion process
 
 :::warn
+
 The old configuration name `source_table_name`/`result_table_name` is deprecated, please migrate to the new name `plugin_input`/`plugin_output` as soon as possible.
+
 :::
 
 | Name          | Type   | Required | Default | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |

@@ -7,7 +7,9 @@ sidebar_position: 3
 > Common parameters of source connectors
 
 :::warn
+
 The old configuration name `result_table_name` is deprecated, please migrate to the new name `plugin_output` as soon as possible.
+
 :::
 
 | Name          | Type   | Required | Default | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
