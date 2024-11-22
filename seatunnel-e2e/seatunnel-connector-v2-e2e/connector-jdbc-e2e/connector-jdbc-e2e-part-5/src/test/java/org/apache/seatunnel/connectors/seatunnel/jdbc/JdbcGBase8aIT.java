@@ -23,7 +23,6 @@ import org.apache.seatunnel.common.exception.SeaTunnelRuntimeException;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerLoggerFactory;
@@ -40,7 +39,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Disabled("due to the driver cannot be downloaded")
 public class JdbcGBase8aIT extends AbstractJdbcIT {
 
     private static final String GBASE_IMAGE = "shihd/gbase8a:1.0";
