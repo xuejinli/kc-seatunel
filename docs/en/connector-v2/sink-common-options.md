@@ -6,8 +6,12 @@ sidebar_position: 4
 
 > Common parameters of sink connectors
 
-|       Name        |  Type  | Required | Default |                                                                                                                                     Description                                                                                                                                      |
-|-------------------|--------|----------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+:::tip
+The old configuration name `source_table_name` is deprecated, please migrate to the new name `plugin_input` as soon as possible.
+:::
+
+| Name         | Type   | Required | Default | Description                                                                                                                                                                                                                                                                |
+|--------------|--------|----------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | plugin_input | String | No       | -       | When `plugin_input` is not specified, the current plug-in processes the data set `dataset` output by the previous plugin in the configuration file <br/> When `plugin_input` is specified, the current plug-in is processing the data set corresponding to this parameter. |
 
 # Important note

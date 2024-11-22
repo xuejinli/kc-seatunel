@@ -2,10 +2,14 @@
 
 > 源端连接器的常见参数
 
-|       参数名称        |  参数类型  | 是否必须 | 默认值 |
-|-------------------|--------|------|-----|
+:::tip
+旧的配置名称 `result_table_name`/`source_table_name` 已经过时，请尽快迁移到新名称 `plugin_output`/`plugin_input`。
+:::
+
+| 参数名称          | 参数类型   | 是否必须 | 默认值 |
+|---------------|--------|------|-----|
 | plugin_output | string | no   | -   |
-| plugin_input | string | no   | -   |
+| plugin_input  | string | no   | -   |
 
 ### plugin_input [string]
 
