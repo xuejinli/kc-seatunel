@@ -98,13 +98,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
-import static org.awaitility.Awaitility.await;
 
 @Slf4j
 public class KafkaIT extends TestSuiteBase implements TestResource {
@@ -757,30 +755,28 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
     }
 
     @TestTemplate
-    public void testKafkaToKafkaExactlyOnce(TestContainer container) throws InterruptedException {
+    public void testKafkaToKafkaExactlyOnce(TestContainer container)
+            throws InterruptedException, IOException {
         String producerTopic = "kafka_topic_exactly_once_1";
         String consumerTopic = "kafka_topic_exactly_once_2";
         String sourceData = "{\"key\":\"SeaTunnel\",\"value\":\"kafka\"}";
         for (int i = 0; i < 10; i++) {
             ProducerRecord<byte[], byte[]> record =
                     new ProducerRecord<>(producerTopic, null, sourceData.getBytes());
-            producer.send(record);
+            try {
+                producer.send(record).get(1, TimeUnit.SECONDS);
+            } catch (ExecutionException e) {
+                log.error("testKafkaToKafkaExactlyOnce  method is ExecutionException");
+                throw new RuntimeException(e);
+            } catch (TimeoutException e) {
+                log.error("testKafkaToKafkaExactlyOnce  method is TimeoutException");
+                throw new RuntimeException(e);
+            }
         }
-        // async execute
-        CompletableFuture.supplyAsync(
-                () -> {
-                    try {
-                        container.executeJob("/kafka/kafka_to_kafka_exactly_once.conf");
-                    } catch (Exception e) {
-                        log.error("Commit task exception :" + e.getMessage());
-                        throw new RuntimeException(e);
-                    }
-                    return null;
-                });
-        // wait for data written to kafka
-        await().atMost(60000, TimeUnit.MILLISECONDS)
-                .pollInterval(1000, TimeUnit.MILLISECONDS)
-                .untilAsserted(() -> Assertions.assertTrue(checkData(consumerTopic)));
+        Container.ExecResult execResult =
+                container.executeJob("/kafka/kafka_to_kafka_exactly_once.conf");
+        Assertions.assertEquals(0, execResult.getExitCode(), execResult.getStderr());
+        Assertions.assertEquals(true, checkData(consumerTopic));
     }
 
     // Compare the values of data fields obtained from consumers
