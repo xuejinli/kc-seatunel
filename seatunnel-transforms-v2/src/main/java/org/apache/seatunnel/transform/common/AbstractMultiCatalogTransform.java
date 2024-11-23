@@ -32,6 +32,10 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * Abstract class for multi-table transform. It is used to split the input data into multiple table
+ * transforms.
+ */
 public abstract class AbstractMultiCatalogTransform implements SeaTunnelTransform<SeaTunnelRow> {
 
     protected List<CatalogTable> inputCatalogTables;

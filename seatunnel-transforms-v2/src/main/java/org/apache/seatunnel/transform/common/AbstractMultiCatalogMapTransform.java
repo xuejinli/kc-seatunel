@@ -24,6 +24,7 @@ import org.apache.seatunnel.api.transform.SeaTunnelMapTransform;
 
 import java.util.List;
 
+/** Abstract class for multi-table map transform. */
 public abstract class AbstractMultiCatalogMapTransform extends AbstractMultiCatalogTransform
         implements SeaTunnelMapTransform<SeaTunnelRow> {
 

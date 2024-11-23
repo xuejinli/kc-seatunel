@@ -96,10 +96,20 @@ public class TransformFlowLifeCycle<T> extends ActionFlowLifeCycle
             }
             SchemaChangeEvent event = (SchemaChangeEvent) record.getData();
             for (SeaTunnelTransform<T> t : transform) {
-                event = t.mapSchemaChangeEvent(event);
+                SchemaChangeEvent eventBefore = event;
+                event = t.mapSchemaChangeEvent(eventBefore);
                 if (event == null) {
+                    log.info(
+                            "Transform[{}] filtered schema change event {}",
+                            t.getPluginName(),
+                            eventBefore);
                     break;
                 }
+                log.info(
+                        "Transform[{}] input schema change event {} and output schema change event {}",
+                        t.getPluginName(),
+                        eventBefore,
+                        event);
             }
             if (event != null) {
                 collector.collect(new Record<>(event));
