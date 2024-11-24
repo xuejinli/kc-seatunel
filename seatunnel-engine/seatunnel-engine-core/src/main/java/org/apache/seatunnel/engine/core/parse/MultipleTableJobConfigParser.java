@@ -377,7 +377,7 @@ public class MultipleTableJobConfigParser {
         final ReadonlyConfig readonlyConfig = ReadonlyConfig.fromConfig(sourceConfig);
         final String factoryId = getFactoryId(readonlyConfig);
         final String tableId =
-                readonlyConfig.getOptional(CommonOptions.RESULT_TABLE_NAME).orElse(DEFAULT_ID);
+                readonlyConfig.getOptional(CommonOptions.PLUGIN_OUTPUT).orElse(DEFAULT_ID);
 
         final int parallelism = getParallelism(readonlyConfig);
 
@@ -468,7 +468,7 @@ public class MultipleTableJobConfigParser {
         }
 
         final String tableId =
-                readonlyConfig.getOptional(CommonOptions.RESULT_TABLE_NAME).orElse(DEFAULT_ID);
+                readonlyConfig.getOptional(CommonOptions.PLUGIN_OUTPUT).orElse(DEFAULT_ID);
 
         Set<Action> inputActions =
                 inputs.stream()
