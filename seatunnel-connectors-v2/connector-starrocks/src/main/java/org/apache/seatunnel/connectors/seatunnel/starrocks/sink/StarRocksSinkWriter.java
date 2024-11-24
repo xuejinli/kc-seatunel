@@ -18,13 +18,11 @@
 package org.apache.seatunnel.connectors.seatunnel.starrocks.sink;
 
 import org.apache.seatunnel.api.event.EventType;
-import org.apache.seatunnel.api.sink.SupportSchemaEvolutionSink;
 import org.apache.seatunnel.api.sink.SupportSchemaEvolutionSinkWriter;
 import org.apache.seatunnel.api.table.catalog.Column;
 import org.apache.seatunnel.api.table.catalog.TablePath;
 import org.apache.seatunnel.api.table.catalog.TableSchema;
 import org.apache.seatunnel.api.table.catalog.exception.CatalogException;
-import org.apache.seatunnel.api.table.schema.SchemaChangeType;
 import org.apache.seatunnel.api.table.schema.event.AlterTableAddColumnEvent;
 import org.apache.seatunnel.api.table.schema.event.AlterTableChangeColumnEvent;
 import org.apache.seatunnel.api.table.schema.event.AlterTableColumnEvent;
@@ -55,13 +53,12 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 @Slf4j
 public class StarRocksSinkWriter extends AbstractSinkWriter<SeaTunnelRow, Void>
-        implements SupportSchemaEvolutionSinkWriter, SupportSchemaEvolutionSink {
+        implements SupportSchemaEvolutionSinkWriter {
 
     private StarRocksISerializer serializer;
     private StarRocksSinkManager manager;
@@ -238,14 +235,5 @@ public class StarRocksSinkWriter extends AbstractSinkWriter<SeaTunnelRow, Void>
                 }
             }
         }
-    }
-
-    @Override
-    public List<SchemaChangeType> supports() {
-        return Arrays.asList(
-                SchemaChangeType.ADD_COLUMN,
-                SchemaChangeType.DROP_COLUMN,
-                SchemaChangeType.RENAME_COLUMN,
-                SchemaChangeType.UPDATE_COLUMN);
     }
 }
