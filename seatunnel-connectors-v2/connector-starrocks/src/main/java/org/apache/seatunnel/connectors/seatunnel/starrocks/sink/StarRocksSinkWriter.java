@@ -17,19 +17,14 @@
 
 package org.apache.seatunnel.connectors.seatunnel.starrocks.sink;
 
-import org.apache.seatunnel.api.event.EventType;
 import org.apache.seatunnel.api.sink.SupportSchemaEvolutionSinkWriter;
-import org.apache.seatunnel.api.table.catalog.Column;
 import org.apache.seatunnel.api.table.catalog.TablePath;
 import org.apache.seatunnel.api.table.catalog.TableSchema;
 import org.apache.seatunnel.api.table.catalog.exception.CatalogException;
-import org.apache.seatunnel.api.table.schema.event.AlterTableAddColumnEvent;
-import org.apache.seatunnel.api.table.schema.event.AlterTableChangeColumnEvent;
 import org.apache.seatunnel.api.table.schema.event.AlterTableColumnEvent;
 import org.apache.seatunnel.api.table.schema.event.AlterTableColumnsEvent;
-import org.apache.seatunnel.api.table.schema.event.AlterTableDropColumnEvent;
-import org.apache.seatunnel.api.table.schema.event.AlterTableModifyColumnEvent;
 import org.apache.seatunnel.api.table.schema.event.SchemaChangeEvent;
+import org.apache.seatunnel.api.table.schema.handler.TableSchemaChangeEventDispatcher;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
 import org.apache.seatunnel.common.exception.CommonErrorCodeDeprecated;
@@ -52,7 +47,6 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -65,6 +59,8 @@ public class StarRocksSinkWriter extends AbstractSinkWriter<SeaTunnelRow, Void>
     private TableSchema tableSchema;
     private final SinkConfig sinkConfig;
     private TablePath sinkTablePath;
+    private final TableSchemaChangeEventDispatcher tableSchemaChangeEventDispatcher =
+            new TableSchemaChangeEventDispatcher();
 
     public StarRocksSinkWriter(
             SinkConfig sinkConfig, TableSchema tableSchema, TablePath tablePath) {
@@ -91,7 +87,7 @@ public class StarRocksSinkWriter extends AbstractSinkWriter<SeaTunnelRow, Void>
     }
 
     @Override
-    public void applySchemaChange(SchemaChangeEvent event) throws IOException {
+    public void applySchemaChange(SchemaChangeEvent event) {
         if (event instanceof AlterTableColumnsEvent) {
             AlterTableColumnsEvent alterTableColumnsEvent = (AlterTableColumnsEvent) event;
             List<AlterTableColumnEvent> events = alterTableColumnsEvent.getEvents();
@@ -127,58 +123,8 @@ public class StarRocksSinkWriter extends AbstractSinkWriter<SeaTunnelRow, Void>
         }
     }
 
-    protected void processSchemaChangeEvent(AlterTableColumnEvent event) throws IOException {
-        List<Column> columns = new ArrayList<>(tableSchema.getColumns());
-        switch (event.getEventType()) {
-            case SCHEMA_CHANGE_ADD_COLUMN:
-                AlterTableAddColumnEvent alterTableAddColumnEvent =
-                        (AlterTableAddColumnEvent) event;
-                Column addColumn = alterTableAddColumnEvent.getColumn();
-                String afterColumn = alterTableAddColumnEvent.getAfterColumn();
-                if (StringUtils.isNotBlank(afterColumn)) {
-                    Optional<Column> columnOptional =
-                            columns.stream()
-                                    .filter(column -> afterColumn.equals(column.getName()))
-                                    .findFirst();
-                    if (!columnOptional.isPresent()) {
-                        columns.add(addColumn);
-                        break;
-                    }
-                    columnOptional.ifPresent(
-                            column -> {
-                                int index = columns.indexOf(column);
-                                columns.add(index + 1, addColumn);
-                            });
-                } else {
-                    columns.add(addColumn);
-                }
-                break;
-            case SCHEMA_CHANGE_DROP_COLUMN:
-                String dropColumn = ((AlterTableDropColumnEvent) event).getColumn();
-                columns.removeIf(column -> column.getName().equalsIgnoreCase(dropColumn));
-                break;
-            case SCHEMA_CHANGE_MODIFY_COLUMN:
-                Column modifyColumn = ((AlterTableModifyColumnEvent) event).getColumn();
-                replaceColumnByIndex(
-                        event.getEventType(), columns, modifyColumn.getName(), modifyColumn);
-                break;
-            case SCHEMA_CHANGE_CHANGE_COLUMN:
-                AlterTableChangeColumnEvent alterTableChangeColumnEvent =
-                        (AlterTableChangeColumnEvent) event;
-                Column changeColumn = alterTableChangeColumnEvent.getColumn();
-                String oldColumnName = alterTableChangeColumnEvent.getOldColumn();
-                replaceColumnByIndex(event.getEventType(), columns, oldColumnName, changeColumn);
-                break;
-            default:
-                throw new SeaTunnelException(
-                        "Unsupported schemaChangeEvent for event type: " + event.getEventType());
-        }
-        this.tableSchema =
-                TableSchema.builder()
-                        .columns(columns)
-                        .primaryKey(tableSchema.getPrimaryKey())
-                        .constraintKey(tableSchema.getConstraintKeys())
-                        .build();
+    protected void processSchemaChangeEvent(AlterTableColumnEvent event) {
+        this.tableSchema = tableSchemaChangeEventDispatcher.reset(tableSchema).apply(event);
         SeaTunnelRowType seaTunnelRowType = tableSchema.toPhysicalRowDataType();
         this.serializer = createSerializer(sinkConfig, seaTunnelRowType);
         this.manager = new StarRocksSinkManager(sinkConfig, tableSchema);
@@ -219,21 +165,5 @@ public class StarRocksSinkWriter extends AbstractSinkWriter<SeaTunnelRow, Void>
         throw new StarRocksConnectorException(
                 CommonErrorCodeDeprecated.ILLEGAL_ARGUMENT,
                 "Failed to create row serializer, unsupported `format` from stream load properties.");
-    }
-
-    protected void replaceColumnByIndex(
-            EventType eventType, List<Column> columns, String oldColumnName, Column newColumn) {
-        for (int i = 0; i < columns.size(); i++) {
-            Column column = columns.get(i);
-            if (column.getName().equalsIgnoreCase(oldColumnName)) {
-                // rename ...... to ......  which just has column name
-                if (eventType.equals(EventType.SCHEMA_CHANGE_CHANGE_COLUMN)
-                        && newColumn.getDataType() == null) {
-                    columns.set(i, column.rename(newColumn.getName()));
-                } else {
-                    columns.set(i, newColumn);
-                }
-            }
-        }
     }
 }
