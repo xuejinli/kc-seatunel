@@ -17,7 +17,6 @@
 
 package org.apache.seatunnel.connectors.doris.source.reader;
 
-import org.apache.seatunnel.api.arrow.reader.Arrow2SeatunnelRowReader;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
 import org.apache.seatunnel.connectors.doris.backend.BackendClient;
@@ -29,6 +28,7 @@ import org.apache.seatunnel.connectors.doris.rest.models.Schema;
 import org.apache.seatunnel.connectors.doris.source.DorisSourceTable;
 import org.apache.seatunnel.connectors.doris.source.serialization.Routing;
 import org.apache.seatunnel.connectors.doris.util.SchemaUtils;
+import org.apache.seatunnel.connectors.seatunnel.common.source.arrow.reader.Arrow2SeatunnelRowReader;
 
 import org.apache.doris.sdk.thrift.TScanBatchResult;
 import org.apache.doris.sdk.thrift.TScanCloseParams;

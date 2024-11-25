@@ -17,9 +17,9 @@
 
 package org.apache.seatunnel.connectors.seatunnel.starrocks.client.source;
 
-import org.apache.seatunnel.api.arrow.reader.Arrow2SeatunnelRowReader;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
+import org.apache.seatunnel.connectors.seatunnel.common.source.arrow.reader.Arrow2SeatunnelRowReader;
 import org.apache.seatunnel.connectors.seatunnel.starrocks.client.source.model.QueryPartition;
 import org.apache.seatunnel.connectors.seatunnel.starrocks.config.SourceConfig;
 import org.apache.seatunnel.connectors.seatunnel.starrocks.exception.StarRocksConnectorErrorCode;
