@@ -17,7 +17,6 @@
 
 package org.apache.seatunnel.engine.server;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.seatunnel.engine.common.Constant;
 import org.apache.seatunnel.engine.common.config.ConfigProvider;
 import org.apache.seatunnel.engine.common.config.SeaTunnelConfig;
@@ -34,6 +33,7 @@ import org.junitpioneer.jupiter.SetEnvironmentVariable;
 
 import com.hazelcast.instance.impl.HazelcastInstanceImpl;
 import com.hazelcast.internal.serialization.Data;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
