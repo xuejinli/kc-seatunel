@@ -293,4 +293,13 @@ public class CommonError {
         params.put("methodName", methodName);
         return new SeaTunnelRuntimeException(CommonErrorCode.UNSUPPORTED_METHOD, params);
     }
+
+    public static SeaTunnelRuntimeException unsupportedTrinoType(
+            String identifier, String dataType, String field) {
+        Map<String, String> params = new HashMap<>();
+        params.put("identifier", identifier);
+        params.put("dataType", dataType);
+        params.put("field", field);
+        return new SeaTunnelRuntimeException(CommonErrorCode.UNSUPPORTED_OPERATION, params);
+    }
 }

@@ -54,6 +54,7 @@
         <iris.jdbc.version>3.0.0</iris.jdbc.version>
         <tikv.version>3.2.0</tikv.version>
         <opengauss.jdbc.version>5.1.0-og</opengauss.jdbc.version>
+        <trino.version>445</trino.version>
     </properties>
 
     <dependencyManagement>
@@ -215,6 +216,12 @@
                 <version>${opengauss.jdbc.version}</version>
                 <scope>provided</scope>
             </dependency>
+            <dependency>
+                <groupId>io.trino</groupId>
+                <artifactId>trino-jdbc</artifactId>
+                <version>${trino.version}</version>
+                <scope>provided</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -316,6 +323,10 @@
             <groupId>com.oceanbase</groupId>
             <artifactId>oceanbase-client</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.trino</groupId>
+            <artifactId>trino-jdbc</artifactId>
+        </dependency>
         <!-- Notice: The jar in maven is an empty jar. Issue Link:https://community.intersystems.com/comment/260011  -->
         <dependency>
             <groupId>com.intersystems</groupId>
@@ -368,6 +379,7 @@
                     </execution>
                 </executions>
             </plugin>
+
         </plugins>
     </build>
 </project>
