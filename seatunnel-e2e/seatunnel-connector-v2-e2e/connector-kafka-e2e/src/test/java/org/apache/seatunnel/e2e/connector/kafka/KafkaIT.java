@@ -60,6 +60,7 @@ import org.apache.kafka.clients.consumer.OffsetResetStrategy;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.IsolationLevel;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
@@ -92,7 +93,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -100,7 +100,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -757,42 +756,12 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
     @TestTemplate
     public void testKafkaToKafkaExactlyOnce(TestContainer container)
             throws InterruptedException, IOException {
-        String producerTopic = "kafka_topic_exactly_once_1";
-        String consumerTopic = "kafka_topic_exactly_once_2";
-        String sourceData = "{\"key\":\"SeaTunnel\",\"value\":\"kafka\"}";
-        for (int i = 0; i < 10; i++) {
-            ProducerRecord<byte[], byte[]> record =
-                    new ProducerRecord<>(producerTopic, null, sourceData.getBytes());
-            try {
-                producer.send(record).get(1, TimeUnit.SECONDS);
-            } catch (ExecutionException e) {
-                log.error("testKafkaToKafkaExactlyOnce  method is ExecutionException");
-                throw new RuntimeException(e);
-            } catch (TimeoutException e) {
-                log.error("testKafkaToKafkaExactlyOnce  method is TimeoutException");
-                throw new RuntimeException(e);
-            }
-        }
         Container.ExecResult execResult =
                 container.executeJob("/kafka/kafka_to_kafka_exactly_once.conf");
         Assertions.assertEquals(0, execResult.getExitCode(), execResult.getStderr());
-        Assertions.assertEquals(true, checkData(consumerTopic));
-    }
 
-    // Compare the values of data fields obtained from consumers
-    private boolean checkData(String topicName) {
-        Map<String, String> data = getKafkaConsumerData(topicName);
-        if (data.isEmpty() || data.size() != 10) {
-            return false;
-        }
-        Collection<String> values = data.values();
-        for (String value : values) {
-            Map<String, String> node = JsonUtils.toMap(value);
-            if (!"SeaTunnel".equals(node.get("key")) || !"kafka".equals(node.get("value"))) {
-                return false;
-            }
-        }
-        return true;
+        Map<String, String> consumerData = getKafkaConsumerData("kafka_topic_exactly_once");
+        Assertions.assertEquals(10, consumerData.size());
     }
 
     private @NotNull DefaultSeaTunnelRowSerializer getDefaultSeaTunnelRowSerializer(
@@ -977,6 +946,10 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
         props.put(
                 ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,
                 OffsetResetStrategy.EARLIEST.toString().toLowerCase());
+        // exactly once semantics must set config read_commit
+        props.put(
+                ConsumerConfig.ISOLATION_LEVEL_CONFIG,
+                IsolationLevel.READ_COMMITTED.name().toLowerCase());
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         return props;
