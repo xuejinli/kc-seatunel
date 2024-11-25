@@ -20,8 +20,8 @@ package org.apache.seatunnel.api.sink.multitablesink;
 import org.apache.seatunnel.api.sink.MultiTableResourceManager;
 import org.apache.seatunnel.api.sink.SinkWriter;
 import org.apache.seatunnel.api.sink.SupportMultiTableSinkWriter;
-import org.apache.seatunnel.api.sink.event.WriterCloseEvent;
-import org.apache.seatunnel.api.table.event.SchemaChangeEvent;
+import org.apache.seatunnel.api.sink.SupportSchemaEvolutionSinkWriter;
+import org.apache.seatunnel.api.table.schema.event.SchemaChangeEvent;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.api.tracing.MDCTracer;
 
@@ -46,7 +46,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 public class MultiTableSinkWriter
-        implements SinkWriter<SeaTunnelRow, MultiTableCommitInfo, MultiTableState> {
+        implements SinkWriter<SeaTunnelRow, MultiTableCommitInfo, MultiTableState>,
+                SupportSchemaEvolutionSinkWriter {
 
     private final Map<SinkIdentifier, SinkWriter<SeaTunnelRow, ?, ?>> sinkWriters;
     private final Map<SinkIdentifier, SinkWriter.Context> sinkWritersContext;
@@ -153,7 +154,14 @@ public class MultiTableSinkWriter
                             sinkWriterEntry.getKey().getTableIdentifier(),
                             sinkWriterEntry.getKey().getIndex());
                     synchronized (runnable.get(i)) {
-                        sinkWriterEntry.getValue().applySchemaChange(event);
+                        if (sinkWriterEntry.getValue()
+                                instanceof SupportSchemaEvolutionSinkWriter) {
+                            ((SupportSchemaEvolutionSinkWriter) sinkWriterEntry.getValue())
+                                    .applySchemaChange(event);
+                        } else {
+                            // TODO remove deprecated method
+                            sinkWriterEntry.getValue().applySchemaChange(event);
+                        }
                     }
                     log.info(
                             "Finish apply schema change for table {} sub-writer {}",
@@ -318,10 +326,6 @@ public class MultiTableSinkWriter
                         (identifier, sinkWriter) -> {
                             try {
                                 sinkWriter.close();
-                                sinkWritersContext
-                                        .get(identifier)
-                                        .getEventListener()
-                                        .onEvent(new WriterCloseEvent());
                             } catch (Throwable e) {
                                 if (firstE[0] == null) {
                                     firstE[0] = e;
