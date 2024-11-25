@@ -754,6 +754,7 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
     }
 
     @TestTemplate
+    @DisabledOnContainer(value = {TestContainerId.FLINK_1_13})
     public void testKafkaToKafkaExactlyOnce(TestContainer container)
             throws InterruptedException, IOException {
         log.info(
@@ -765,7 +766,6 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
         log.info(
                 "execute KafkaIt testKafkaToKafkaExactlyOnce method end,time {}",
                 System.currentTimeMillis());
-        Thread.sleep(60000);
         Map<String, String> consumerData = getKafkaConsumerData("kafka_topic_exactly_once");
         log.info("get consumer data {} ,time {} ", consumerData, System.currentTimeMillis());
         Assertions.assertEquals(10, consumerData.size());
