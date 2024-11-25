@@ -17,6 +17,7 @@
 
 package org.apache.seatunnel.engine.server;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.seatunnel.engine.common.Constant;
 import org.apache.seatunnel.engine.common.config.ConfigProvider;
 import org.apache.seatunnel.engine.common.config.SeaTunnelConfig;
@@ -39,6 +40,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.awaitility.Awaitility.await;
 
+@Slf4j
 public class CoordinatorServiceTest {
     @Test
     public void testMasterNodeActive() {
@@ -96,10 +98,8 @@ public class CoordinatorServiceTest {
         CoordinatorService coordinatorService = server1.getCoordinatorService();
         Assertions.assertTrue(coordinatorService.isCoordinatorActive());
 
-        Long jobId =
-                coordinatorServiceTest
-                        .getFlakeIdGenerator(Constant.SEATUNNEL_ID_GENERATOR_NAME)
-                        .newId();
+        Long jobId = System.currentTimeMillis();
+        log.info("jobId: {}", jobId);
         LogicalDag testLogicalDag =
                 TestUtils.createTestLogicalPlan(
                         "stream_fake_to_console.conf", "test_clear_coordinator_service", jobId);
@@ -107,7 +107,7 @@ public class CoordinatorServiceTest {
         JobImmutableInformation jobImmutableInformation =
                 new JobImmutableInformation(
                         jobId,
-                        "Test",
+                        "test_clear_coordinator_service",
                         coordinatorServiceTest.getSerializationService().toData(testLogicalDag),
                         testLogicalDag.getJobConfig(),
                         Collections.emptyList(),
@@ -115,7 +115,7 @@ public class CoordinatorServiceTest {
 
         Data data =
                 coordinatorServiceTest.getSerializationService().toData(jobImmutableInformation);
-
+        log.info("Start submit job.");
         coordinatorService
                 .submitJob(jobId, data, jobImmutableInformation.isStartWithSavePoint())
                 .join();
