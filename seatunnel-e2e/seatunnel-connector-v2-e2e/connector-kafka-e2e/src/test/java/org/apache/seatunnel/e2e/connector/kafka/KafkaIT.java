@@ -756,11 +756,17 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
     @TestTemplate
     public void testKafkaToKafkaExactlyOnce(TestContainer container)
             throws InterruptedException, IOException {
+        log.info(
+                "execute KafkaIt testKafkaToKafkaExactlyOnce method start,time {}",
+                System.currentTimeMillis());
         Container.ExecResult execResult =
                 container.executeJob("/kafka/kafka_to_kafka_exactly_once.conf");
         Assertions.assertEquals(0, execResult.getExitCode(), execResult.getStderr());
-
+        log.info(
+                "execute KafkaIt testKafkaToKafkaExactlyOnce method end,time {}",
+                System.currentTimeMillis());
         Map<String, String> consumerData = getKafkaConsumerData("kafka_topic_exactly_once");
+        log.info("get consumer data {} ,time {} ", consumerData, System.currentTimeMillis());
         Assertions.assertEquals(10, consumerData.size());
     }
 
