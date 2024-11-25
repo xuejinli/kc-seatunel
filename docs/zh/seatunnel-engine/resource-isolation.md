@@ -47,34 +47,34 @@ SeaTunnel支持对每个实例添加`tag`, 然后在提交任务时可以在配�
 
 2. 在任务的配置中添加`tag_filter`来选择你需要运行该任务的节点
 
-    ```hacon
-    env {
-      parallelism = 1
-      job.mode = "BATCH"
-      tag_filter {
-        group = "platform"
-        team = "team1"
+```hacon
+env {
+  parallelism = 1
+  job.mode = "BATCH"
+  tag_filter {
+    group = "platform"
+    team = "team1"
+  }
+}
+source {
+  FakeSource {
+    plugin_output = "fake"
+    parallelism = 1
+    schema = {
+      fields {
+        name = "string"
       }
     }
-    source {
-      FakeSource {
-        result_table_name = "fake"
-        parallelism = 1
-        schema = {
-          fields {
-            name = "string"
-          }
-        }
-      }
-    }
-    transform {
-    }
-    sink {
-      console {
-        source_table_name="fake"
-      }
-    }
-    ```
+  }
+}
+transform {
+}
+sink {
+  console {
+    plugin_input="fake"
+  }
+}
+```
 
     **注意:**
    - 当在任务的配置中, 没有添加`tag_filter`时, 会从所有节点中随机选择节点来运行任务.

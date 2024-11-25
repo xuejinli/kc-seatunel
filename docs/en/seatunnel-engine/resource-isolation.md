@@ -47,34 +47,34 @@ SeaTunnel can add `tag` to each worker node, when you submit job you can use `ta
 
 2. add `tag_filter` to your job config
 
-    ```hacon
-    env {
-      parallelism = 1
-      job.mode = "BATCH"
-      tag_filter {
-        group = "platform"
-        team = "team1"
+```hacon
+env {
+  parallelism = 1
+  job.mode = "BATCH"
+  tag_filter {
+    group = "platform"
+    team = "team1"
+  }
+}
+source {
+  FakeSource {
+    plugin_output = "fake"
+    parallelism = 1
+    schema = {
+      fields {
+        name = "string"
       }
     }
-    source {
-      FakeSource {
-        result_table_name = "fake"
-        parallelism = 1
-        schema = {
-          fields {
-            name = "string"
-          }
-        }
-      }
-    }
-    transform {
-    }
-    sink {
-      console {
-        source_table_name="fake"
-      }
-    }
-    ```
+  }
+}
+transform {
+}
+sink {
+  console {
+    plugin_input="fake"
+  }
+}
+```
 
     **Notice:**
    - If not set `tag_filter` in job config, it will random choose the node in all active nodes.
