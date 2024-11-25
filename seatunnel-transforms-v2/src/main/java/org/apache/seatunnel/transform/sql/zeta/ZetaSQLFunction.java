@@ -19,7 +19,6 @@ package org.apache.seatunnel.transform.sql.zeta;
 
 import org.apache.seatunnel.api.table.catalog.PhysicalColumn;
 import org.apache.seatunnel.api.table.type.ArrayType;
-import org.apache.seatunnel.api.table.type.BasicType;
 import org.apache.seatunnel.api.table.type.DecimalType;
 import org.apache.seatunnel.api.table.type.MapType;
 import org.apache.seatunnel.api.table.type.SeaTunnelDataType;
@@ -29,6 +28,7 @@ import org.apache.seatunnel.api.table.type.SqlType;
 import org.apache.seatunnel.common.exception.CommonErrorCodeDeprecated;
 import org.apache.seatunnel.common.exception.SeaTunnelRuntimeException;
 import org.apache.seatunnel.transform.exception.TransformException;
+import org.apache.seatunnel.transform.sql.zeta.functions.ArrayFunction;
 import org.apache.seatunnel.transform.sql.zeta.functions.DateTimeFunction;
 import org.apache.seatunnel.transform.sql.zeta.functions.NumericFunction;
 import org.apache.seatunnel.transform.sql.zeta.functions.StringFunction;
@@ -552,7 +552,7 @@ public class ZetaSQLFunction {
             case NULLIF:
                 return SystemFunction.nullif(args);
             case ARRAY:
-                return SystemFunction.array(args);
+                return ArrayFunction.array(args);
             case UUID:
                 return randomUUID().toString();
             default:
@@ -743,8 +743,7 @@ public class ZetaSQLFunction {
                             next,
                             aliasFieldIndex,
                             row,
-                            expression,
-                            true);
+                            expression);
                 }
                 seaTunnelRows = next;
             } else if (expression instanceof Function) {
@@ -758,8 +757,7 @@ public class ZetaSQLFunction {
                             next,
                             aliasFieldIndex,
                             row,
-                            expression,
-                            false);
+                            expression);
                 }
                 seaTunnelRows = next;
             }
@@ -774,8 +772,7 @@ public class ZetaSQLFunction {
             List<SeaTunnelRow> next,
             int aliasFieldIndex,
             SeaTunnelRow row,
-            Expression expression,
-            boolean keepValueType) {
+            Expression expression) {
         if (splitFieldValue == null) {
             if (isUsingOuter) {
                 next.add(
@@ -798,13 +795,9 @@ public class ZetaSQLFunction {
                 if (!isUsingOuter && fieldValue == null) {
                     continue;
                 }
-                Object value =
-                        fieldValue == null
-                                ? null
-                                : (keepValueType ? fieldValue : String.valueOf(fieldValue));
                 next.add(
                         copySeaTunnelRowWithNewValue(
-                                outRowType.getTotalFields(), row, aliasFieldIndex, value));
+                                outRowType.getTotalFields(), row, aliasFieldIndex, fieldValue));
             }
         } else {
             throw new SeaTunnelRuntimeException(
@@ -865,10 +858,18 @@ public class ZetaSQLFunction {
                             seaTunnelDataTypes[columnIndex] = seaTunnelDataType;
                         }
                     } else {
-                        // default string type
+
+                        ArrayType arrayType = (ArrayType) zetaSQLType.getExpressionType(expression);
                         SeaTunnelDataType seaTunnelDataType =
-                                PhysicalColumn.of(alias, BasicType.STRING_TYPE, 10L, true, "", "")
+                                PhysicalColumn.of(
+                                                alias,
+                                                arrayType.getElementType(),
+                                                200,
+                                                true,
+                                                "",
+                                                "")
                                         .getDataType();
+
                         if (aliasIndex == -1) {
                             fieldNames = ArrayUtils.add(fieldNames, alias);
                             seaTunnelDataTypes =
