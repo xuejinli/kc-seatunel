@@ -29,6 +29,15 @@
     <artifactId>connector-common</artifactId>
     <name>SeaTunnel : Connectors V2 : Common</name>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.seatunnel</groupId>
+            <artifactId>seatunnel-arrow</artifactId>
+            <version>${project.version}</version>
+            <classifier>optional</classifier>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>
