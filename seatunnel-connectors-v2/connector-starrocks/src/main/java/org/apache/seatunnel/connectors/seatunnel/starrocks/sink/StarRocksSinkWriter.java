@@ -58,7 +58,7 @@ public class StarRocksSinkWriter extends AbstractSinkWriter<SeaTunnelRow, Void>
     private StarRocksSinkManager manager;
     private TableSchema tableSchema;
     private final SinkConfig sinkConfig;
-    private TablePath sinkTablePath;
+    private final TablePath sinkTablePath;
     private final TableSchemaChangeEventDispatcher tableSchemaChangeEventDispatcher =
             new TableSchemaChangeEventDispatcher();
 

@@ -31,7 +31,6 @@ import org.apache.seatunnel.api.table.catalog.TableSchema;
 import org.apache.seatunnel.api.table.schema.SchemaChangeType;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.connectors.seatunnel.common.sink.AbstractSimpleSink;
-import org.apache.seatunnel.connectors.seatunnel.common.sink.AbstractSinkWriter;
 import org.apache.seatunnel.connectors.seatunnel.starrocks.catalog.StarRocksCatalog;
 import org.apache.seatunnel.connectors.seatunnel.starrocks.catalog.StarRocksCatalogFactory;
 import org.apache.seatunnel.connectors.seatunnel.starrocks.config.SinkConfig;
@@ -63,7 +62,7 @@ public class StarRocksSink extends AbstractSimpleSink<SeaTunnelRow, Void>
     }
 
     @Override
-    public AbstractSinkWriter<SeaTunnelRow, Void> createWriter(SinkWriter.Context context) {
+    public StarRocksSinkWriter createWriter(SinkWriter.Context context) {
         TablePath sinkTablePath = catalogTable.getTablePath();
         return new StarRocksSinkWriter(sinkConfig, tableSchema, sinkTablePath);
     }
