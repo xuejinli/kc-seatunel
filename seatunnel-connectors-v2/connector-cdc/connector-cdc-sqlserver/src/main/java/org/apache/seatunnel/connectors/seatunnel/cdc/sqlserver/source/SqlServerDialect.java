@@ -105,14 +105,20 @@ public class SqlServerDialect implements JdbcDataSourceDialect {
     @Override
     public void checkAllTablesEnabledCapture(JdbcConnection jdbcConnection, List<TableId> tableIds)
             throws SQLException {
-        Set<TableId> tables =
-                ((SqlServerConnection) jdbcConnection)
-                        .listOfChangeTables().stream()
-                                .map(SqlServerChangeTable::getSourceTableId)
-                                .collect(Collectors.toSet());
-        for (TableId tableId : tableIds) {
-            if (!tables.contains(tableId)) {
-                throw new SeaTunnelException("Table " + tableId + " is not enabled for capture");
+        Map<String, List<TableId>> databases =
+                tableIds.stream()
+                        .collect(Collectors.groupingBy(TableId::catalog, Collectors.toList()));
+        for (String database : databases.keySet()) {
+            Set<TableId> tables =
+                    ((SqlServerConnection) jdbcConnection)
+                            .getChangeTables(database).stream()
+                                    .map(SqlServerChangeTable::getSourceTableId)
+                                    .collect(Collectors.toSet());
+            for (TableId tableId : databases.get(database)) {
+                if (!tables.contains(tableId)) {
+                    throw new SeaTunnelException(
+                            "Table " + tableId + " is not enabled for capture");
+                }
             }
         }
     }
