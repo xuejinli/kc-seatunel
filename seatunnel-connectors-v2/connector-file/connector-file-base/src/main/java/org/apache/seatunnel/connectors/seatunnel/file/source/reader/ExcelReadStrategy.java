@@ -38,7 +38,6 @@ import org.apache.seatunnel.connectors.seatunnel.file.exception.FileConnectorExc
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -172,6 +171,16 @@ public class ExcelReadStrategy extends AbstractReadStrategy {
                                 seaTunnelRow.setTableId(tableId);
                                 output.collect(seaTunnelRow);
                             });
+        }
+    }
+
+    @Override
+    public void setCatalogTable(CatalogTable catalogTable) {
+        SeaTunnelRowType rowType = catalogTable.getSeaTunnelRowType();
+        if (isNullOrEmpty(rowType.getFieldNames()) || isNullOrEmpty(rowType.getFieldTypes())) {
+            throw new FileConnectorException(
+                    CommonErrorCodeDeprecated.UNSUPPORTED_OPERATION,
+                    "Schema information is not set or incorrect Schema settings");
         }
         SeaTunnelRowType userDefinedRowTypeWithPartition =
                 mergePartitionTypes(fileNames.get(0), rowType);
