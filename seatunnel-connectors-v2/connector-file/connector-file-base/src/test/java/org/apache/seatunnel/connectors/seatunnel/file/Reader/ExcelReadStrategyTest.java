@@ -54,16 +54,13 @@ public class ExcelReadStrategyTest {
 
     @Test
     public void testExcelRead() throws IOException, URISyntaxException {
-        testExcelRead("/excel/test_read_excel.xlsx", "/excel/test_read_excel.conf");
-        testExcelRead(
-                "/excel/test_read_excel_date_string.xlsx",
-                "/excel/test_read_excel_data_string.conf");
+        testExcelRead("/excel/test_read_excel.xlsx");
+        testExcelRead("/excel/test_read_excel_date_string.xlsx");
     }
 
-    private void testExcelRead(String filePath, String configPath)
-            throws IOException, URISyntaxException {
+    private void testExcelRead(String filePath) throws IOException, URISyntaxException {
         URL excelFile = ExcelReadStrategyTest.class.getResource(filePath);
-        URL conf = ExcelReadStrategyTest.class.getResource(configPath);
+        URL conf = ExcelReadStrategyTest.class.getResource("/excel/test_read_excel.conf");
         Assertions.assertNotNull(excelFile);
         Assertions.assertNotNull(conf);
         String excelFilePath = Paths.get(excelFile.toURI()).toString();

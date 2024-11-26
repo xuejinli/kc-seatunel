@@ -64,15 +64,16 @@ import static org.apache.seatunnel.common.utils.DateTimeUtils.Formatter.YYYY_MM_
 
 public class ExcelReadStrategy extends AbstractReadStrategy {
 
-    private int[] indexes;
-    private int cellCount;
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
     private final DateUtils.Formatter dateFormat = DateUtils.Formatter.YYYY_MM_DD;
 
     private final DateTimeUtils.Formatter datetimeFormat = YYYY_MM_DD_HH_MM_SS;
     private final TimeUtils.Formatter timeFormat = TimeUtils.Formatter.HH_MM_SS;
+
+    private int[] indexes;
+
+    private int cellCount;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @SneakyThrows
     @Override
@@ -172,98 +173,6 @@ public class ExcelReadStrategy extends AbstractReadStrategy {
                                 output.collect(seaTunnelRow);
                             });
         }
-    }
-
-    private Object getCellValue(CellType cellType, Cell cell) {
-        switch (cellType) {
-            case STRING:
-                return cell.getStringCellValue();
-            case BOOLEAN:
-                return cell.getBooleanCellValue();
-            case NUMERIC:
-                if (DateUtil.isCellDateFormatted(cell)) {
-                    DataFormatter formatter = new DataFormatter();
-                    return formatter.formatCellValue(cell);
-                }
-                return cell.getNumericCellValue();
-            case ERROR:
-                break;
-            default:
-                throw new FileConnectorException(
-                        CommonErrorCodeDeprecated.UNSUPPORTED_DATA_TYPE,
-                        String.format("[%s] type not support ", cellType));
-        }
-        return null;
-    }
-
-    @SneakyThrows
-    private Object convert(Object field, SeaTunnelDataType<?> fieldType) {
-        if (field == null) {
-            return "";
-        }
-        SqlType sqlType = fieldType.getSqlType();
-        switch (sqlType) {
-            case MAP:
-            case ARRAY:
-                return objectMapper.readValue((String) field, fieldType.getTypeClass());
-            case STRING:
-                return field;
-            case DOUBLE:
-                return Double.parseDouble(field.toString());
-            case BOOLEAN:
-                return Boolean.parseBoolean(field.toString());
-            case FLOAT:
-                return (float) Double.parseDouble(field.toString());
-            case BIGINT:
-                return (long) Double.parseDouble(field.toString());
-            case INT:
-                return (int) Double.parseDouble(field.toString());
-            case TINYINT:
-                return (byte) Double.parseDouble(field.toString());
-            case SMALLINT:
-                return (short) Double.parseDouble(field.toString());
-            case DECIMAL:
-                return BigDecimal.valueOf(Double.parseDouble(field.toString()));
-            case DATE:
-                return LocalDate.parse(
-                        (String) field, DateTimeFormatter.ofPattern(dateFormat.getValue()));
-            case TIME:
-                return LocalTime.parse(
-                        (String) field, DateTimeFormatter.ofPattern(timeFormat.getValue()));
-            case TIMESTAMP:
-                return LocalDateTime.parse(
-                        (String) field, DateTimeFormatter.ofPattern(datetimeFormat.getValue()));
-            case NULL:
-                return "";
-            case BYTES:
-                return field.toString().getBytes(StandardCharsets.UTF_8);
-            case ROW:
-                String delimiter =
-                        ReadonlyConfig.fromConfig(pluginConfig)
-                                .get(BaseSourceConfigOptions.FIELD_DELIMITER);
-                String[] context = field.toString().split(delimiter);
-                SeaTunnelRowType ft = (SeaTunnelRowType) fieldType;
-                int length = context.length;
-                SeaTunnelRow seaTunnelRow = new SeaTunnelRow(length);
-                for (int j = 0; j < length; j++) {
-                    seaTunnelRow.setField(j, convert(context[j], ft.getFieldType(j)));
-                }
-                return seaTunnelRow;
-            default:
-                throw new FileConnectorException(
-                        CommonErrorCodeDeprecated.UNSUPPORTED_DATA_TYPE,
-                        "User defined schema validation failed");
-        }
-    }
-
-    @Override
-    public void setCatalogTable(CatalogTable catalogTable) {
-        SeaTunnelRowType rowType = catalogTable.getSeaTunnelRowType();
-        if (isNullOrEmpty(rowType.getFieldNames()) || isNullOrEmpty(rowType.getFieldTypes())) {
-            throw new FileConnectorException(
-                    CommonErrorCodeDeprecated.UNSUPPORTED_OPERATION,
-                    "Schema information is not set or incorrect Schema settings");
-        }
         SeaTunnelRowType userDefinedRowTypeWithPartition =
                 mergePartitionTypes(fileNames.get(0), rowType);
         // column projection
@@ -291,6 +200,109 @@ public class ExcelReadStrategy extends AbstractReadStrategy {
         throw new FileConnectorException(
                 CommonErrorCodeDeprecated.UNSUPPORTED_OPERATION,
                 "User must defined schema for json file type");
+    }
+
+    private Object getCellValue(CellType cellType, Cell cell) {
+        switch (cellType) {
+            case STRING:
+                return cell.getStringCellValue();
+            case BOOLEAN:
+                return cell.getBooleanCellValue();
+            case NUMERIC:
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    return cell.getLocalDateTimeCellValue();
+                }
+                return cell.getNumericCellValue();
+            case BLANK:
+                return "";
+            case ERROR:
+                break;
+            default:
+                throw new FileConnectorException(
+                        CommonErrorCodeDeprecated.UNSUPPORTED_DATA_TYPE,
+                        String.format("[%s] type not support ", cellType));
+        }
+        return null;
+    }
+
+    @SneakyThrows
+    private Object convert(Object field, SeaTunnelDataType<?> fieldType) {
+        if (field == null) {
+            return null;
+        }
+
+        SqlType sqlType = fieldType.getSqlType();
+        if (!(SqlType.STRING.equals(sqlType)) && "".equals(field)) {
+            return null;
+        }
+        switch (sqlType) {
+            case MAP:
+            case ARRAY:
+                return objectMapper.readValue((String) field, fieldType.getTypeClass());
+            case STRING:
+                if (field instanceof Double) {
+                    String stringValue = field.toString();
+                    if (stringValue.endsWith(".0")) {
+                        return stringValue.substring(0, stringValue.length() - 2);
+                    }
+                    return stringValue;
+                }
+                return String.valueOf(field);
+            case DOUBLE:
+                return Double.parseDouble(field.toString());
+            case BOOLEAN:
+                return Boolean.parseBoolean(field.toString());
+            case FLOAT:
+                return (float) Double.parseDouble(field.toString());
+            case BIGINT:
+                return (long) Double.parseDouble(field.toString());
+            case INT:
+                return (int) Double.parseDouble(field.toString());
+            case TINYINT:
+                return (byte) Double.parseDouble(field.toString());
+            case SMALLINT:
+                return (short) Double.parseDouble(field.toString());
+            case DECIMAL:
+                return BigDecimal.valueOf(Double.parseDouble(field.toString()));
+            case DATE:
+                if (field instanceof LocalDateTime) {
+                    return ((LocalDateTime) field).toLocalDate();
+                }
+                return LocalDate.parse(
+                        (String) field, DateTimeFormatter.ofPattern(dateFormat.getValue()));
+            case TIME:
+                if (field instanceof LocalDateTime) {
+                    return ((LocalDateTime) field).toLocalTime();
+                }
+                return LocalTime.parse(
+                        (String) field, DateTimeFormatter.ofPattern(timeFormat.getValue()));
+            case TIMESTAMP:
+                if (field instanceof LocalDateTime) {
+                    return field;
+                }
+                return LocalDateTime.parse(
+                        (String) field, DateTimeFormatter.ofPattern(datetimeFormat.getValue()));
+            case NULL:
+                return null;
+            case BYTES:
+                return field.toString().getBytes(StandardCharsets.UTF_8);
+            case ROW:
+                String delimiter =
+                        ReadonlyConfig.fromConfig(pluginConfig)
+                                .get(BaseSourceConfigOptions.FIELD_DELIMITER);
+                String[] context = field.toString().split(delimiter);
+                SeaTunnelRowType ft = (SeaTunnelRowType) fieldType;
+                int length = context.length;
+                SeaTunnelRow seaTunnelRow = new SeaTunnelRow(length);
+                for (int j = 0; j < length; j++) {
+                    seaTunnelRow.setField(j, convert(context[j], ft.getFieldType(j)));
+                }
+                return seaTunnelRow;
+            default:
+                throw new FileConnectorException(
+                        CommonErrorCodeDeprecated.UNSUPPORTED_DATA_TYPE,
+                        "User defined schema validation failed");
+        }
     }
 
     private <T> boolean isNullOrEmpty(T[] arr) {
