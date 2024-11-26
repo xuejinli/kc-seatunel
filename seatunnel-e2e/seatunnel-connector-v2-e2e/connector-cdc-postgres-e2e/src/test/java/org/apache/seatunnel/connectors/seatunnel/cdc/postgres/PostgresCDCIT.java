@@ -609,7 +609,8 @@ public class PostgresCDCIT extends TestSuiteBase implements TestResource {
                         .hostname(POSTGRES_HOST)
                         .port(5432)
                         .username("postgres")
-                        .password("postgres");
+                        .password("postgres")
+                        .databaseList(POSTGRESQL_DATABASE);
         PostgresDialect dialect =
                 new PostgresDialect((PostgresSourceConfigFactory) factory, Collections.emptyList());
         try (JdbcConnection connection = dialect.openJdbcConnection(factory.create(0))) {

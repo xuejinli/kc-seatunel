@@ -362,7 +362,8 @@ public class SqlServerCDCIT extends TestSuiteBase implements TestResource {
                         .hostname(HOST)
                         .port(PORT)
                         .username("sa")
-                        .password("Password!");
+                        .password("Password!")
+                        .databaseList("column_type_test");
         SqlServerDialect dialect =
                 new SqlServerDialect(
                         (SqlServerSourceConfigFactory) factory, Collections.emptyList());
