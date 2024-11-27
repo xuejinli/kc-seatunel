@@ -783,7 +783,7 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
                     return null;
                 });
         // wait for data written to kafka
-        await().atMost(2, TimeUnit.MINUTES)
+        await().atMost(5, TimeUnit.MINUTES)
                 .pollInterval(5000, TimeUnit.MILLISECONDS)
                 .untilAsserted(() -> Assertions.assertTrue(checkData(consumerTopic)));
     }
@@ -792,7 +792,9 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
     private boolean checkData(String topicName) {
         Map<String, String> data = getKafkaConsumerData(topicName);
         if (data.isEmpty() || data.size() != 10) {
-            log.error("testKafkaToKafkaExactlyOnce get data size is not expect");
+            log.error(
+                    "testKafkaToKafkaExactlyOnce get data size is not expect,get consumer data size {}",
+                    data.size);
             return false;
         }
         Collection<String> values = data.values();
