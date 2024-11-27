@@ -43,7 +43,7 @@ SeaTunnel Engine 基于 [Hazelcast IMDG](https://docs.hazelcast.com/imdg/4.1/) �
 
 `backup count` 是定义同步备份数量的参数。例如，如果设置为 1，则分区的备份将放置在一个其他成员上。如果设置为 2，则将放置在两个其他成员上。
 
-我们建议 `backup-count` 的值为 `min(1, max(5, N/2))`。 `N` 是集群节点的数量。
+我们建议 `backup-count` 的值为 `max(1, min(5, N/2))`。 `N` 是集群节点的数量。
 
 ```yaml
 seatunnel:
@@ -135,6 +135,23 @@ seatunnel:
   engine:
     classloader-cache-mode: true
 ```
+
+### 4.6 作业调度策略
+
+当资源不足时，作业调度策略可以配置为以下两种模式：
+
+1. `WAIT`：等待资源可用。
+2. `REJECT`：拒绝作业，默认值。
+
+示例
+
+```yaml
+seatunnel:
+  engine:
+    job-schedule-strategy: WAIT
+```
+
+当`dynamic-slot: ture`时，`job-schedule-strategy: WAIT` 配置会失效，将被强制修改为`job-schedule-strategy: REJECT`，因为动态Slot时该参数没有意义，可以直接提交。
 
 ## 5. 配置 SeaTunnel Engine 网络服务
 
@@ -305,10 +322,18 @@ mkdir -p $SEATUNNEL_HOME/logs
 
 日志将写入 `$SEATUNNEL_HOME/logs/seatunnel-engine-server.log`
 
-## 8. 安装 SeaTunnel Engine 客户端
+## 8. 提交作业和管理作业
+
+### 8.1 使用 SeaTunnel Engine 客户端提交作业
+
+#### 安装 SeaTunnel Engine 客户端
 
 您只需将 SeaTunnel Engine 节点上的 `$SEATUNNEL_HOME` 目录复制到客户端节点，并像 SeaTunnel Engine 服务器节点一样配置 `SEATUNNEL_HOME`。
 
-## 9. 提交作业和管理作业
+#### 提交作业和管理作业
 
 现在集群部署完成了，您可以通过以下教程完成作业的提交和管理：[提交和管理作业](user-command.md)
+
+### 8.2 使用 REST API 提交作业
+
+SeaTunnel Engine 提供了 REST API 用于提交作业。有关详细信息，请参阅 [REST API V2](rest-api-v2.md)

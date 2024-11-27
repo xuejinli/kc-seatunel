@@ -84,7 +84,7 @@ The principal of kerberos
 
 The keytab path of kerberos
 
-### abort_drop_partition_metadata [list]
+### abort_drop_partition_metadata [boolean]
 
 Flag to decide whether to drop partition metadata from Hive Metastore during an abort operation. Note: this only affects the metadata in the metastore, the data in the partition will always be deleted(data generated during the synchronization process).
 
@@ -181,6 +181,29 @@ sink {
     }
 }
 ```
+
+### example2: Kerberos
+
+```bash
+sink {
+  Hive {
+    table_name = "default.test_hive_sink_on_hdfs_with_kerberos"
+    metastore_uri = "thrift://metastore:9083"
+    hive_site_path = "/tmp/hive-site.xml"
+    kerberos_principal = "hive/metastore.seatunnel@EXAMPLE.COM"
+    kerberos_keytab_path = "/tmp/hive.keytab"
+    krb5_path = "/tmp/krb5.conf"
+  }
+}
+```
+
+Description:
+
+- `hive_site_path`: The path to the `hive-site.xml` file.
+- `kerberos_principal`: The principal for Kerberos authentication.
+- `kerberos_keytab_path`: The keytab file path for Kerberos authentication.
+- `krb5_path`: The path to the `krb5.conf` file used for Kerberos authentication.
+
 
 ## Hive on s3
 

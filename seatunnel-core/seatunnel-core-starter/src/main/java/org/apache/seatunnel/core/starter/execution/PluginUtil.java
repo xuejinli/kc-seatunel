@@ -98,16 +98,10 @@ public class PluginUtil {
             // TODO remove it when all connector use `getProducedCatalogTables`
             SeaTunnelDataType<?> seaTunnelDataType = source.getProducedType();
             final String tableId =
-                    readonlyConfig.getOptional(CommonOptions.RESULT_TABLE_NAME).orElse(DEFAULT_ID);
+                    readonlyConfig.getOptional(CommonOptions.PLUGIN_OUTPUT).orElse(DEFAULT_ID);
             catalogTables =
                     CatalogTableUtil.convertDataTypeToCatalogTables(seaTunnelDataType, tableId);
         }
-
-        //  if (catalogTables.size() != 1) {
-        //      throw new SeaTunnelException(
-        //              String.format("Unsupported table number: %d on flink",
-        // catalogTables.size()));
-        //  }
         return new SourceTableInfo(source, catalogTables);
     }
 
