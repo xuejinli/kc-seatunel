@@ -60,7 +60,7 @@ public class IcebergSinkWriter
     private SeaTunnelRowType rowType;
     private final SinkConfig config;
     private final IcebergTableLoader icebergTableLoader;
-    private RecordWriter writer;
+    private volatile RecordWriter writer;
     private final IcebergFilesCommitter filesCommitter;
     private final List<WriteResult> results = Lists.newArrayList();
     private String commitUser = UUID.randomUUID().toString();
