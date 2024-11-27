@@ -93,15 +93,20 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import static org.awaitility.Awaitility.await;
 
 @Slf4j
 public class KafkaIT extends TestSuiteBase implements TestResource {
@@ -754,21 +759,51 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
     }
 
     @TestTemplate
-    @DisabledOnContainer(value = {TestContainerId.FLINK_1_13})
-    public void testKafkaToKafkaExactlyOnce(TestContainer container)
-            throws InterruptedException, IOException {
-        log.info(
-                "execute KafkaIt testKafkaToKafkaExactlyOnce method start,time {}",
-                System.currentTimeMillis());
-        Container.ExecResult execResult =
-                container.executeJob("/kafka/kafka_to_kafka_exactly_once.conf");
-        Assertions.assertEquals(0, execResult.getExitCode(), execResult.getStderr());
-        log.info(
-                "execute KafkaIt testKafkaToKafkaExactlyOnce method end,time {}",
-                System.currentTimeMillis());
-        Map<String, String> consumerData = getKafkaConsumerData("kafka_topic_exactly_once");
-        log.info("get consumer data {} ,time {} ", consumerData, System.currentTimeMillis());
-        Assertions.assertEquals(10, consumerData.size());
+    public void testKafkaToKafkaExactlyOnce(TestContainer container) throws InterruptedException {
+        String producerTopic = "kafka_topic_exactly_once_1";
+        String consumerTopic = "kafka_topic_exactly_once_2";
+        String sourceData = "{\"key\":\"SeaTunnel\",\"value\":\"kafka\"}";
+        for (int i = 0; i < 10; i++) {
+            ProducerRecord<byte[], byte[]> record =
+                    new ProducerRecord<>(
+                            producerTopic,
+                            UUID.randomUUID().toString().getBytes(),
+                            sourceData.getBytes());
+            producer.send(record);
+        }
+        // async execute
+        CompletableFuture.supplyAsync(
+                () -> {
+                    try {
+                        container.executeJob("/kafka/kafka_to_kafka_exactly_once.conf");
+                    } catch (Exception e) {
+                        log.error("Commit task exception :" + e.getMessage());
+                        throw new RuntimeException(e);
+                    }
+                    return null;
+                });
+        // wait for data written to kafka
+        await().atMost(2, TimeUnit.MINUTES)
+                .pollInterval(5000, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> Assertions.assertTrue(checkData(consumerTopic)));
+    }
+
+    // Compare the values of data fields obtained from consumers
+    private boolean checkData(String topicName) {
+        Map<String, String> data = getKafkaConsumerData(topicName);
+        if (data.isEmpty() || data.size() != 10) {
+            log.error("testKafkaToKafkaExactlyOnce get data size is not expect");
+            return false;
+        }
+        Collection<String> values = data.values();
+        for (String value : values) {
+            Map<String, String> node = JsonUtils.toMap(value);
+            if (!"SeaTunnel".equals(node.get("key")) || !"kafka".equals(node.get("value"))) {
+                log.error("testKafkaToKafkaExactlyOnce get data value is not expect");
+                return false;
+            }
+        }
+        return true;
     }
 
     private @NotNull DefaultSeaTunnelRowSerializer getDefaultSeaTunnelRowSerializer(
