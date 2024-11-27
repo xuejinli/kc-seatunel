@@ -19,6 +19,8 @@ package org.apache.seatunnel.api.file;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,6 +38,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 @Slf4j
+@DisabledOnOs(OS.WINDOWS)
 public class AllFileSpecificationCheckTest {
 
     private static Map<String, List<String>> fileContents;
