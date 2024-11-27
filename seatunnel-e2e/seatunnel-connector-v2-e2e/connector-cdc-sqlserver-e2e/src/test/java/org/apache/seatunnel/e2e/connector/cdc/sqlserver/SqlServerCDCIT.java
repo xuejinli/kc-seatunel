@@ -359,7 +359,7 @@ public class SqlServerCDCIT extends TestSuiteBase implements TestResource {
         initializeSqlServerTable("column_type_test");
         JdbcSourceConfigFactory factory =
                 new SqlServerSourceConfigFactory()
-                        .hostname(HOST)
+                        .hostname(MSSQL_SERVER_CONTAINER.getHost())
                         .port(PORT)
                         .username("sa")
                         .password("Password!")

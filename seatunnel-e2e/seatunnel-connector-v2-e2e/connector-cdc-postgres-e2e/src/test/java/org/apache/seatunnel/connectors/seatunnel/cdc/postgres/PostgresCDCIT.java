@@ -606,7 +606,7 @@ public class PostgresCDCIT extends TestSuiteBase implements TestResource {
     public void testDialectCheckDisabledCDCTable() throws SQLException {
         JdbcSourceConfigFactory factory =
                 new PostgresSourceConfigFactory()
-                        .hostname(POSTGRES_HOST)
+                        .hostname(POSTGRES_CONTAINER.getHost())
                         .port(5432)
                         .username("postgres")
                         .password("postgres")
