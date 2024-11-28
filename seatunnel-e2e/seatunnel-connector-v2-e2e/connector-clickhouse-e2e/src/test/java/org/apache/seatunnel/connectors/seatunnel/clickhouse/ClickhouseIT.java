@@ -119,9 +119,6 @@ public class ClickhouseIT extends TestSuiteBase implements TestResource {
     public void testClickhouseMultiSource(TestContainer container) throws Exception {
         Container.ExecResult execResult = container.executeJob(CLICKHOUSE_MULTI_LIST_TABLE_CONFIG);
         Assertions.assertEquals(0, execResult.getExitCode());
-
-        Thread.sleep(3000);
-
         String query = "SELECT COUNT(*) FROM `default`.t3";
         try (Statement sourceStatement = connection.createStatement();
                 ResultSet sourceResultSet = sourceStatement.executeQuery(query)) {
