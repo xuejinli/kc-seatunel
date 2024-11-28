@@ -93,13 +93,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -765,12 +763,17 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
         String sourceData = "{\"key\":\"SeaTunnel\",\"value\":\"kafka\"}";
         for (int i = 0; i < 10; i++) {
             ProducerRecord<byte[], byte[]> record =
-                    new ProducerRecord<>(
-                            producerTopic,
-                            UUID.randomUUID().toString().getBytes(),
-                            sourceData.getBytes());
+                    new ProducerRecord<>(producerTopic, null, sourceData.getBytes());
             producer.send(record);
         }
+        Long endOffset = 0l;
+        try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(kafkaConsumerConfig())) {
+            consumer.subscribe(Arrays.asList(producerTopic));
+            Map<TopicPartition, Long> offsets =
+                    consumer.endOffsets(Arrays.asList(new TopicPartition(sourceData, 0)));
+            endOffset = offsets.entrySet().iterator().next().getValue();
+        }
+
         // async execute
         CompletableFuture.supplyAsync(
                 () -> {
@@ -783,22 +786,23 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
                     return null;
                 });
         // wait for data written to kafka
+        Long finalEndOffset = endOffset;
         await().atMost(5, TimeUnit.MINUTES)
                 .pollInterval(5000, TimeUnit.MILLISECONDS)
-                .untilAsserted(() -> Assertions.assertTrue(checkData(consumerTopic)));
+                .untilAsserted(
+                        () -> Assertions.assertTrue(checkData(consumerTopic, finalEndOffset)));
     }
 
     // Compare the values of data fields obtained from consumers
-    private boolean checkData(String topicName) {
-        Map<String, String> data = getKafkaConsumerData(topicName);
-        if (data.isEmpty() || data.size() != 10) {
+    private boolean checkData(String topicName, long endOffset) {
+        List<String> listData = getKafkaConsumerListData(topicName, endOffset);
+        if (listData.isEmpty() || listData.size() != 10) {
             log.error(
                     "testKafkaToKafkaExactlyOnce get data size is not expect,get consumer data size {}",
-                    data.size);
+                    listData.size());
             return false;
         }
-        Collection<String> values = data.values();
-        for (String value : values) {
+        for (String value : listData) {
             Map<String, String> node = JsonUtils.toMap(value);
             if (!"SeaTunnel".equals(node.get("key")) || !"kafka".equals(node.get("value"))) {
                 log.error("testKafkaToKafkaExactlyOnce get data value is not expect");
@@ -1114,6 +1118,24 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
             Long endOffset = offsets.entrySet().iterator().next().getValue();
             Long lastProcessedOffset = -1L;
 
+            do {
+                ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+                for (ConsumerRecord<String, String> record : records) {
+                    if (lastProcessedOffset < record.offset()) {
+                        data.add(record.value());
+                    }
+                    lastProcessedOffset = record.offset();
+                }
+            } while (lastProcessedOffset < endOffset - 1);
+        }
+        return data;
+    }
+
+    private List<String> getKafkaConsumerListData(String topicName, long endOffset) {
+        List<String> data = new ArrayList<>();
+        try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(kafkaConsumerConfig())) {
+            consumer.subscribe(Arrays.asList(topicName));
+            Long lastProcessedOffset = -1L;
             do {
                 ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
                 for (ConsumerRecord<String, String> record : records) {
