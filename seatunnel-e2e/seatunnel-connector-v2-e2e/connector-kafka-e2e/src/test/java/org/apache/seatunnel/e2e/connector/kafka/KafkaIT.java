@@ -757,7 +757,10 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
     }
 
     @TestTemplate
-    public void testKafkaToKafkaExactlyOnce(TestContainer container) throws InterruptedException {
+    @DisabledOnContainer(
+            type = EngineType.SPARK,
+            value = {})
+    public void testKafkaToKafkaExactlyOnceOnStreaming(TestContainer container) {
         String producerTopic = "kafka_topic_exactly_once_1";
         String consumerTopic = "kafka_topic_exactly_once_2";
         String sourceData = "Seatunnel Exactly Once Example";
@@ -777,7 +780,7 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
         CompletableFuture.supplyAsync(
                 () -> {
                     try {
-                        container.executeJob("/kafka/kafka_to_kafka_exactly_once.conf");
+                        container.executeJob("/kafka/kafka_to_kafka_exactly_once_streaming.conf");
                     } catch (Exception e) {
                         log.error("Commit task exception :" + e.getMessage());
                         throw new RuntimeException(e);
@@ -792,6 +795,32 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
                         () ->
                                 Assertions.assertTrue(
                                         checkData(consumerTopic, finalEndOffset, sourceData)));
+    }
+
+    @TestTemplate
+    public void testKafkaToKafkaExactlyOnceOnBatch(TestContainer container)
+            throws InterruptedException, IOException {
+        String producerTopic = "kafka_topic_exactly_once_1";
+        String consumerTopic = "kafka_topic_exactly_once_2";
+        String sourceData = "Seatunnel Exactly Once Example";
+        for (int i = 0; i < 10; i++) {
+            ProducerRecord<byte[], byte[]> record =
+                    new ProducerRecord<>(producerTopic, null, sourceData.getBytes());
+            producer.send(record);
+            producer.flush();
+        }
+        Long endOffset = 0l;
+        try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(kafkaConsumerConfig())) {
+            consumer.subscribe(Arrays.asList(producerTopic));
+            Map<TopicPartition, Long> offsets =
+                    consumer.endOffsets(Arrays.asList(new TopicPartition(producerTopic, 0)));
+            endOffset = offsets.entrySet().iterator().next().getValue();
+        }
+        Container.ExecResult execResult =
+                container.executeJob("/kafka/kafka_to_kafka_exactly_once_batch.conf");
+        Assertions.assertEquals(0, execResult.getExitCode());
+        // wait for data written to kafka
+        Assertions.assertTrue(checkData(consumerTopic, endOffset, sourceData));
     }
 
     // Compare the values of data fields obtained from consumers
