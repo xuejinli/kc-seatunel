@@ -30,6 +30,7 @@ import com.github.javaparser.ast.NodeList;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -41,35 +42,44 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static java.nio.file.StandardOpenOption.READ;
+
 @Slf4j
 public class ImportShadeClassCheckTest {
 
     private static Map<String, NodeList<ImportDeclaration>> importsMap = new HashMap<>();
     private final String SEATUNNEL_SHADE_PREFIX = "org.apache.seatunnel.shade.";
-    private final boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("win");
+    public static final boolean isWindows =
+            System.getProperty("os.name").toLowerCase().startsWith("win");
+    private static final String JAVA_FILE_EXTENSION = ".java";
+    private static final JavaParser JAVA_PARSER = new JavaParser();
 
     @BeforeAll
     public static void beforeAll() {
-        Path directoryPath = Paths.get(System.getProperty("user.dir"));
-        log.info("work directory ===>  " + directoryPath);
+        Path directoryPath = Paths.get(System.getProperty("user.dir")).getParent();
+        log.info("work directory parent ===>  " + directoryPath);
         try {
-            Files.walk(directoryPath.getParent())
-                    .filter(path -> path.toString().endsWith(".java"))
+            Files.walk(directoryPath)
+                    .filter(path -> path.toString().endsWith(JAVA_FILE_EXTENSION))
                     .forEach(
                             path -> {
-                                try {
-                                    JavaParser javaParser = new JavaParser();
+                                try (InputStream inputStream = Files.newInputStream(path, READ)) {
                                     ParseResult<CompilationUnit> parseResult =
-                                            javaParser.parse(
-                                                    Files.newInputStream(path.toFile().toPath()));
+                                            JAVA_PARSER.parse(inputStream);
                                     Optional<CompilationUnit> result = parseResult.getResult();
-                                    importsMap.put(path.toString(), result.get().getImports());
-                                } catch (Exception e) {
-                                    e.printStackTrace();
+                                    if (result.isPresent()) {
+                                        importsMap.put(path.toString(), result.get().getImports());
+                                    } else {
+                                        log.error("Failed to parse Java file: " + path);
+                                    }
+                                } catch (IOException e) {
+                                    log.error(
+                                            "IOException occurred while processing file: " + path,
+                                            e);
                                 }
                             });
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to walk through directory", e);
         }
     }
 
