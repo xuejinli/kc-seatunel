@@ -277,11 +277,7 @@ public class SqlServerSourceFetchTaskContext extends JdbcSourceFetchTaskContext 
                         ? LsnOffset.INITIAL_OFFSET
                         : split.asIncrementalSplit().getStartupOffset();
 
-        SqlServerOffsetContext sqlServerOffsetContext = loader.load(offset.getOffset());
-        if (!split.isSnapshotSplit()) {
-            sqlServerOffsetContext.preSnapshotCompletion();
-        }
-        return sqlServerOffsetContext;
+        return loader.load(offset.getOffset());
     }
 
     private void registerDatabaseHistory(SourceSplitBase sourceSplitBase) {

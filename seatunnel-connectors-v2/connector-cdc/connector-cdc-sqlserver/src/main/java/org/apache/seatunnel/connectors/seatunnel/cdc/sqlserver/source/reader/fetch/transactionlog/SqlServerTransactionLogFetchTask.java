@@ -57,6 +57,7 @@ public class SqlServerTransactionLogFetchTask implements FetchTask<SourceSplitBa
     public void execute(FetchTask.Context context) throws Exception {
         SqlServerSourceFetchTaskContext sourceFetchContext =
                 (SqlServerSourceFetchTaskContext) context;
+        sourceFetchContext.getOffsetContext().preSnapshotCompletion();
         taskRunning = true;
 
         TransactionLogSplitReadTask transactionLogSplitReadTask =
