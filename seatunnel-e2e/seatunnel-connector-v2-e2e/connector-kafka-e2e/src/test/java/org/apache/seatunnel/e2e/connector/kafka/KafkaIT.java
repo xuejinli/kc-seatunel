@@ -770,7 +770,7 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
         try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(kafkaConsumerConfig())) {
             consumer.subscribe(Arrays.asList(producerTopic));
             Map<TopicPartition, Long> offsets =
-                    consumer.endOffsets(Arrays.asList(new TopicPartition(sourceData, 0)));
+                    consumer.endOffsets(Arrays.asList(new TopicPartition(producerTopic, 0)));
             endOffset = offsets.entrySet().iterator().next().getValue();
         }
 
