@@ -92,25 +92,15 @@ public class StarRocksSinkWriter extends AbstractSinkWriter<SeaTunnelRow, Void>
             throw new RuntimeException("Failed to load MySQL JDBC driver", e);
         }
 
-        Connection conn = null;
-        try {
-            conn =
-                    DriverManager.getConnection(
-                            sinkConfig.getJdbcUrl(),
-                            sinkConfig.getUsername(),
-                            sinkConfig.getPassword());
+        try (Connection conn =
+                DriverManager.getConnection(
+                        sinkConfig.getJdbcUrl(),
+                        sinkConfig.getUsername(),
+                        sinkConfig.getPassword())) {
             SchemaUtils.applySchemaChange(event, conn, sinkTablePath);
         } catch (SQLException e) {
             throw new CatalogException(
                     String.format("Failed connecting to %s via JDBC.", sinkConfig.getJdbcUrl()), e);
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (SQLException e) {
-                    log.error("Failed to close JDBC connection", e);
-                }
-            }
         }
     }
 
