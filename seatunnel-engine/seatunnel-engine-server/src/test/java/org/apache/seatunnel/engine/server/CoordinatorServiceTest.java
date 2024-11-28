@@ -33,14 +33,12 @@ import org.junitpioneer.jupiter.SetEnvironmentVariable;
 
 import com.hazelcast.instance.impl.HazelcastInstanceImpl;
 import com.hazelcast.internal.serialization.Data;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 import static org.awaitility.Awaitility.await;
 
-@Slf4j
 public class CoordinatorServiceTest {
     @Test
     public void testMasterNodeActive() {
@@ -98,8 +96,10 @@ public class CoordinatorServiceTest {
         CoordinatorService coordinatorService = server1.getCoordinatorService();
         Assertions.assertTrue(coordinatorService.isCoordinatorActive());
 
-        Long jobId = System.currentTimeMillis();
-        log.info("jobId: {}", jobId);
+        Long jobId =
+                coordinatorServiceTest
+                        .getFlakeIdGenerator(Constant.SEATUNNEL_ID_GENERATOR_NAME)
+                        .newId();
         LogicalDag testLogicalDag =
                 TestUtils.createTestLogicalPlan(
                         "stream_fake_to_console.conf", "test_clear_coordinator_service", jobId);
@@ -107,7 +107,7 @@ public class CoordinatorServiceTest {
         JobImmutableInformation jobImmutableInformation =
                 new JobImmutableInformation(
                         jobId,
-                        "test_clear_coordinator_service",
+                        "Test",
                         coordinatorServiceTest.getSerializationService().toData(testLogicalDag),
                         testLogicalDag.getJobConfig(),
                         Collections.emptyList(),
@@ -115,7 +115,7 @@ public class CoordinatorServiceTest {
 
         Data data =
                 coordinatorServiceTest.getSerializationService().toData(jobImmutableInformation);
-        log.info("Start submit job.");
+
         coordinatorService
                 .submitJob(jobId, data, jobImmutableInformation.isStartWithSavePoint())
                 .join();
