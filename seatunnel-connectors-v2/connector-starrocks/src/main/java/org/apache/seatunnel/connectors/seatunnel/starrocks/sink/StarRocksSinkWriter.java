@@ -21,14 +21,11 @@ import org.apache.seatunnel.api.sink.SupportSchemaEvolutionSinkWriter;
 import org.apache.seatunnel.api.table.catalog.TablePath;
 import org.apache.seatunnel.api.table.catalog.TableSchema;
 import org.apache.seatunnel.api.table.catalog.exception.CatalogException;
-import org.apache.seatunnel.api.table.schema.event.AlterTableColumnEvent;
-import org.apache.seatunnel.api.table.schema.event.AlterTableColumnsEvent;
 import org.apache.seatunnel.api.table.schema.event.SchemaChangeEvent;
 import org.apache.seatunnel.api.table.schema.handler.TableSchemaChangeEventDispatcher;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
 import org.apache.seatunnel.common.exception.CommonErrorCodeDeprecated;
-import org.apache.seatunnel.common.utils.SeaTunnelException;
 import org.apache.seatunnel.connectors.seatunnel.common.sink.AbstractSinkWriter;
 import org.apache.seatunnel.connectors.seatunnel.starrocks.client.StarRocksSinkManager;
 import org.apache.seatunnel.connectors.seatunnel.starrocks.config.SinkConfig;
@@ -38,8 +35,6 @@ import org.apache.seatunnel.connectors.seatunnel.starrocks.serialize.StarRocksIS
 import org.apache.seatunnel.connectors.seatunnel.starrocks.serialize.StarRocksJsonSerializer;
 import org.apache.seatunnel.connectors.seatunnel.starrocks.util.SchemaUtils;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -47,13 +42,11 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Optional;
 
 @Slf4j
 public class StarRocksSinkWriter extends AbstractSinkWriter<SeaTunnelRow, Void>
         implements SupportSchemaEvolutionSinkWriter {
-
     private StarRocksISerializer serializer;
     private StarRocksSinkManager manager;
     private TableSchema tableSchema;
@@ -88,30 +81,20 @@ public class StarRocksSinkWriter extends AbstractSinkWriter<SeaTunnelRow, Void>
 
     @Override
     public void applySchemaChange(SchemaChangeEvent event) {
-        if (event instanceof AlterTableColumnsEvent) {
-            AlterTableColumnsEvent alterTableColumnsEvent = (AlterTableColumnsEvent) event;
-            List<AlterTableColumnEvent> events = alterTableColumnsEvent.getEvents();
-            for (AlterTableColumnEvent alterTableColumnEvent : events) {
-                String sourceDialectName = alterTableColumnEvent.getSourceDialectName();
-                if (StringUtils.isBlank(sourceDialectName)) {
-                    throw new SeaTunnelException(
-                            "The sourceDialectName in AlterTableColumnEvent can not be empty. event: "
-                                    + event);
-                }
-                processSchemaChangeEvent(alterTableColumnEvent);
-            }
-        } else {
-            log.warn("We only support AlterTableColumnsEvent, but actual event is " + event);
-        }
+        this.tableSchema = tableSchemaChangeEventDispatcher.reset(tableSchema).apply(event);
+        SeaTunnelRowType seaTunnelRowType = tableSchema.toPhysicalRowDataType();
+        this.serializer = createSerializer(sinkConfig, seaTunnelRowType);
+        this.manager = new StarRocksSinkManager(sinkConfig, tableSchema);
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to load MySQL JDBC driver", e);
         }
 
+        Connection conn = null;
         try {
-            Connection conn =
+            conn =
                     DriverManager.getConnection(
                             sinkConfig.getJdbcUrl(),
                             sinkConfig.getUsername(),
@@ -120,14 +103,15 @@ public class StarRocksSinkWriter extends AbstractSinkWriter<SeaTunnelRow, Void>
         } catch (SQLException e) {
             throw new CatalogException(
                     String.format("Failed connecting to %s via JDBC.", sinkConfig.getJdbcUrl()), e);
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    log.error("Failed to close JDBC connection", e);
+                }
+            }
         }
-    }
-
-    protected void processSchemaChangeEvent(AlterTableColumnEvent event) {
-        this.tableSchema = tableSchemaChangeEventDispatcher.reset(tableSchema).apply(event);
-        SeaTunnelRowType seaTunnelRowType = tableSchema.toPhysicalRowDataType();
-        this.serializer = createSerializer(sinkConfig, seaTunnelRowType);
-        this.manager = new StarRocksSinkManager(sinkConfig, tableSchema);
     }
 
     @SneakyThrows
