@@ -760,7 +760,7 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
     public void testKafkaToKafkaExactlyOnce(TestContainer container) throws InterruptedException {
         String producerTopic = "kafka_topic_exactly_once_1";
         String consumerTopic = "kafka_topic_exactly_once_2";
-        String sourceData = "{\"key\":\"SeaTunnel\",\"value\":\"kafka\"}";
+        String sourceData = "Seatunnel Exactly Once Example";
         for (int i = 0; i < 10; i++) {
             ProducerRecord<byte[], byte[]> record =
                     new ProducerRecord<>(producerTopic, null, sourceData.getBytes());
@@ -773,7 +773,6 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
                     consumer.endOffsets(Arrays.asList(new TopicPartition(producerTopic, 0)));
             endOffset = offsets.entrySet().iterator().next().getValue();
         }
-
         // async execute
         CompletableFuture.supplyAsync(
                 () -> {
@@ -790,21 +789,22 @@ public class KafkaIT extends TestSuiteBase implements TestResource {
         await().atMost(5, TimeUnit.MINUTES)
                 .pollInterval(5000, TimeUnit.MILLISECONDS)
                 .untilAsserted(
-                        () -> Assertions.assertTrue(checkData(consumerTopic, finalEndOffset)));
+                        () ->
+                                Assertions.assertTrue(
+                                        checkData(consumerTopic, finalEndOffset, sourceData)));
     }
 
     // Compare the values of data fields obtained from consumers
-    private boolean checkData(String topicName, long endOffset) {
+    private boolean checkData(String topicName, long endOffset, String data) {
         List<String> listData = getKafkaConsumerListData(topicName, endOffset);
-        if (listData.isEmpty() || listData.size() != 10) {
+        if (listData.isEmpty() || listData.size() != endOffset) {
             log.error(
                     "testKafkaToKafkaExactlyOnce get data size is not expect,get consumer data size {}",
                     listData.size());
             return false;
         }
         for (String value : listData) {
-            Map<String, String> node = JsonUtils.toMap(value);
-            if (!"SeaTunnel".equals(node.get("key")) || !"kafka".equals(node.get("value"))) {
+            if (!value.contains(data)) {
                 log.error("testKafkaToKafkaExactlyOnce get data value is not expect");
                 return false;
             }
