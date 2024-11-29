@@ -17,8 +17,6 @@
 
 package org.apache.seatunnel.e2e.connector.paimon;
 
-import org.apache.paimon.table.source.ScanMode;
-import org.apache.paimon.table.source.snapshot.SnapshotReader;
 import org.apache.seatunnel.common.utils.FileUtils;
 import org.apache.seatunnel.common.utils.SeaTunnelException;
 import org.apache.seatunnel.core.starter.utils.CompressionUtils;
@@ -43,8 +41,10 @@ import org.apache.paimon.reader.RecordReader;
 import org.apache.paimon.table.FileStoreTable;
 import org.apache.paimon.table.Table;
 import org.apache.paimon.table.source.ReadBuilder;
+import org.apache.paimon.table.source.ScanMode;
 import org.apache.paimon.table.source.TableRead;
 import org.apache.paimon.table.source.TableScan;
+import org.apache.paimon.table.source.snapshot.SnapshotReader;
 import org.apache.paimon.types.DataField;
 import org.apache.paimon.types.DateType;
 import org.apache.paimon.types.TimestampType;
@@ -631,7 +631,8 @@ public class PaimonSinkCDCIT extends TestSuiteBase implements TestResource {
                         "[+I, 2, Bb, 90, +U]",
                         "[+I, 3, C, 100, -D]"),
                 actual1);
-        List<PaimonRecord> paimonRecords2 = loadPaimonChangeLog("seatunnel_namespace", "st_test_lookup");
+        List<PaimonRecord> paimonRecords2 =
+                loadPaimonChangeLog("seatunnel_namespace", "st_test_lookup");
         List<String> actual2 =
                 paimonRecords2.stream()
                         .map(PaimonRecord::toChangeLogFull)
@@ -752,10 +753,11 @@ public class PaimonSinkCDCIT extends TestSuiteBase implements TestResource {
         try (RecordReader<InternalRow> reader = tableRead.createReader(plan)) {
             reader.forEachRemaining(
                     row -> {
-                        PaimonRecord paimonRecord = new PaimonRecord(
-                                row.getRowKind(),
-                                row.getLong(0),
-                                row.getString(1).toString());
+                        PaimonRecord paimonRecord =
+                                new PaimonRecord(
+                                        row.getRowKind(),
+                                        row.getLong(0),
+                                        row.getString(1).toString());
                         if (table.schema().fieldNames().contains("score")) {
                             paimonRecord.setScore(row.getInt(2));
                         }
