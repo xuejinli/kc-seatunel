@@ -349,7 +349,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest', 'windows-latest' ]
     timeout-minutes: 60
     steps:
@@ -372,7 +372,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 180
     steps:
@@ -402,7 +402,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 150
     steps:
@@ -432,7 +432,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 120
     steps:
@@ -462,7 +462,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 150
     steps:
@@ -491,7 +491,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 120
     steps:
@@ -520,7 +520,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 120
     steps:
@@ -549,7 +549,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 120
     steps:
@@ -579,7 +579,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 120
     steps:
@@ -609,7 +609,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 120
     steps:
@@ -633,7 +633,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 45
     steps:
@@ -669,7 +669,7 @@ jobs:
       RUN_ZETA_CONTAINER: ${{ needs.changes.outputs.engine }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 120
     steps:
@@ -697,7 +697,7 @@ jobs:
       RUN_ZETA_CONTAINER: ${{ needs.changes.outputs.engine }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 120
     steps:
@@ -725,7 +725,7 @@ jobs:
       RUN_ZETA_CONTAINER: ${{ needs.changes.outputs.engine }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 150
     steps:
@@ -756,7 +756,7 @@ jobs:
       RUN_ZETA_CONTAINER: ${{ needs.changes.outputs.engine }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 150
     steps:
@@ -787,7 +787,7 @@ jobs:
       RUN_ZETA_CONTAINER: ${{ needs.changes.outputs.engine }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 150
     steps:
@@ -818,7 +818,7 @@ jobs:
       RUN_ZETA_CONTAINER: ${{ needs.changes.outputs.engine }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 150
     steps:
@@ -849,7 +849,7 @@ jobs:
       RUN_ZETA_CONTAINER: ${{ needs.changes.outputs.engine }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 150
     steps:
@@ -880,7 +880,7 @@ jobs:
       RUN_ZETA_CONTAINER: ${{ needs.changes.outputs.engine }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 150
     steps:
@@ -911,7 +911,7 @@ jobs:
       RUN_ZETA_CONTAINER: ${{ needs.changes.outputs.engine }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 150
     steps:
@@ -942,7 +942,7 @@ jobs:
       RUN_ZETA_CONTAINER: ${{ needs.changes.outputs.engine }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 120
     steps:
@@ -970,7 +970,7 @@ jobs:
       RUN_ZETA_CONTAINER: ${{ needs.changes.outputs.engine }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 120
     steps:
@@ -998,7 +998,7 @@ jobs:
       RUN_ZETA_CONTAINER: ${{ needs.changes.outputs.engine }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 120
     steps:
@@ -1026,7 +1026,7 @@ jobs:
       RUN_ZETA_CONTAINER: ${{ needs.changes.outputs.engine }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 120
     steps:
@@ -1054,7 +1054,7 @@ jobs:
       RUN_ZETA_CONTAINER: ${{ needs.changes.outputs.engine }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 120
     steps:
@@ -1082,7 +1082,7 @@ jobs:
       RUN_ZETA_CONTAINER: ${{ needs.changes.outputs.engine }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 120
     steps:
@@ -1110,7 +1110,7 @@ jobs:
       RUN_ZETA_CONTAINER: ${{ needs.changes.outputs.engine }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 120
     steps:
@@ -1135,7 +1135,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 30
     steps:
@@ -1160,7 +1160,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 120
     steps:
@@ -1185,7 +1185,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 120
     steps:
@@ -1210,7 +1210,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 120
     steps:
@@ -1236,7 +1236,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 120
     steps:
@@ -1262,7 +1262,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 120
     steps:
@@ -1287,7 +1287,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 120
     steps:
@@ -1310,7 +1310,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 120
     steps:
@@ -1335,7 +1335,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 120
     steps:
@@ -1360,7 +1360,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        java: [ '8', '11' ]
+        java: [ '8', '17' ]
         os: [ 'ubuntu-latest' ]
     timeout-minutes: 120
     steps:
