@@ -43,7 +43,11 @@ import org.apache.seatunnel.engine.core.protocol.codec.SeaTunnelSavePointJobCode
 
 import lombok.NonNull;
 
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class JobClient {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -154,6 +158,7 @@ public class JobClient {
     public JobMetricsRunner.JobMetricsSummary getJobMetricsSummary(Long jobId) {
         long sourceReadCount = 0L;
         long sinkWriteCount = 0L;
+        Map<String, Long> transformCountMap = new HashMap<>();
         String jobMetrics = getJobMetrics(jobId);
         try {
             JsonNode jsonNode = OBJECT_MAPPER.readTree(jobMetrics);
@@ -165,11 +170,34 @@ public class JobClient {
                 sourceReadCount += sourceReader.get("value").asLong();
                 sinkWriteCount += sinkWriter.get("value").asLong();
             }
-            return new JobMetricsRunner.JobMetricsSummary(sourceReadCount, sinkWriteCount);
+            transformCountMap = extractTransformKeys(jsonNode);
+            return new JobMetricsRunner.JobMetricsSummary(
+                    sourceReadCount, sinkWriteCount, transformCountMap);
             // Add NullPointerException because of metrics information can be empty like {}
         } catch (JsonProcessingException | NullPointerException e) {
-            return new JobMetricsRunner.JobMetricsSummary(sourceReadCount, sinkWriteCount);
+            return new JobMetricsRunner.JobMetricsSummary(
+                    sourceReadCount, sinkWriteCount, transformCountMap);
         }
+    }
+
+    private Map<String, Long> extractTransformKeys(JsonNode rootNode) {
+        Map<String, Long> transformCountMap = new TreeMap<>();
+        Iterator<Map.Entry<String, JsonNode>> fields = rootNode.fields();
+        while (fields.hasNext()) {
+            Map.Entry<String, JsonNode> field = fields.next();
+            String key = field.getKey();
+            JsonNode transforms = field.getValue();
+            long transformCount = 0L;
+
+            if (key.startsWith("TransformCount-")) {
+                for (int i = 0; i < transforms.size(); i++) {
+                    JsonNode transform = transforms.get(i);
+                    transformCount += transform.get("value").asLong();
+                }
+                transformCountMap.put(key, transformCount);
+            }
+        }
+        return transformCountMap;
     }
 
     public List<JobPipelineCheckpointData> getCheckpointData(Long jobId) {

@@ -40,6 +40,7 @@ import org.apache.seatunnel.engine.core.job.JobResult;
 import org.apache.seatunnel.engine.core.job.JobStatus;
 import org.apache.seatunnel.engine.server.SeaTunnelNodeContext;
 
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -53,6 +54,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -227,7 +230,8 @@ public class ClientExecuteCommand implements Command<ClientCommandArgs> {
         } finally {
             if (jobMetricsSummary != null) {
                 // print job statistics information when job finished
-                log.info(
+                StringBuilder logMessage = new StringBuilder();
+                logMessage.append(
                         StringFormatUtils.formatTable(
                                 "Job Statistic Information",
                                 "Start Time",
@@ -245,6 +249,25 @@ public class ClientExecuteCommand implements Command<ClientCommandArgs> {
                                 "Total Failed Count",
                                 jobMetricsSummary.getSourceReadCount()
                                         - jobMetricsSummary.getSinkWriteCount()));
+                String[] transformInfos = null;
+                if (MapUtils.isNotEmpty(jobMetricsSummary.getTransformCountMap())) {
+                    transformInfos =
+                            new String
+                                    [jobMetricsSummary.getTransformCountMap().entrySet().size() * 2
+                                            + 1];
+                    transformInfos[0] = "Transform Information";
+                    int index = 0;
+                    for (Map.Entry<String, Long> entry :
+                            jobMetricsSummary.getTransformCountMap().entrySet()) {
+                        transformInfos[++index] = entry.getKey();
+                        transformInfos[++index] = String.valueOf(entry.getValue());
+                    }
+                }
+
+                if (Objects.nonNull(transformInfos)) {
+                    logMessage.append(StringFormatUtils.formatTable(transformInfos));
+                }
+                log.info("{}", logMessage);
             }
             closeClient();
         }

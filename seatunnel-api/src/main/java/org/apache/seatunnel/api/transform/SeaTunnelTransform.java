@@ -18,6 +18,7 @@
 package org.apache.seatunnel.api.transform;
 
 import org.apache.seatunnel.api.common.PluginIdentifierInterface;
+import org.apache.seatunnel.api.common.metrics.MetricsContext;
 import org.apache.seatunnel.api.source.SeaTunnelJobAware;
 import org.apache.seatunnel.api.table.catalog.CatalogTable;
 import org.apache.seatunnel.api.table.schema.event.SchemaChangeEvent;
@@ -54,4 +55,8 @@ public interface SeaTunnelTransform<T>
 
     /** call it when Transformer completed */
     default void close() {}
+
+    void setMetricsContext(MetricsContext metricsContext);
+
+    MetricsContext getMetricsContext();
 }

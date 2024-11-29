@@ -17,6 +17,7 @@
 
 package org.apache.seatunnel.engine.server.task.flow;
 
+import org.apache.seatunnel.api.common.metrics.MetricsContext;
 import org.apache.seatunnel.api.table.schema.event.SchemaChangeEvent;
 import org.apache.seatunnel.api.table.type.Record;
 import org.apache.seatunnel.api.transform.Collector;
@@ -54,11 +55,15 @@ public class TransformFlowLifeCycle<T> extends ActionFlowLifeCycle
             TransformChainAction<T> action,
             SeaTunnelTask runningTask,
             Collector<Record<?>> collector,
-            CompletableFuture<Void> completableFuture) {
+            CompletableFuture<Void> completableFuture,
+            MetricsContext metricsContext) {
         super(action, runningTask, completableFuture);
         this.action = action;
         this.transform = action.getTransforms();
         this.collector = collector;
+        for (SeaTunnelTransform<T> t : transform) {
+            t.setMetricsContext(metricsContext);
+        }
     }
 
     @Override
@@ -173,7 +178,6 @@ public class TransformFlowLifeCycle<T> extends ActionFlowLifeCycle
 
             dataList = nextInputDataList;
         }
-
         return dataList;
     }
 
