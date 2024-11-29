@@ -17,6 +17,7 @@
 
 package org.apache.seatunnel.engine.client.job;
 
+import org.apache.commons.collections4.MapUtils;
 import org.apache.seatunnel.common.utils.DateTimeUtils;
 import org.apache.seatunnel.common.utils.StringFormatUtils;
 import org.apache.seatunnel.engine.client.SeaTunnelClient;
@@ -27,6 +28,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 public class JobMetricsRunner implements Runnable {
@@ -35,6 +39,7 @@ public class JobMetricsRunner implements Runnable {
     private LocalDateTime lastRunTime = LocalDateTime.now();
     private Long lastReadCount = 0L;
     private Long lastWriteCount = 0L;
+    private Map<String, Long> transformCountMap = new HashMap<>();
 
     public JobMetricsRunner(SeaTunnelClient seaTunnelClient, Long jobId) {
         this.seaTunnelClient = seaTunnelClient;
@@ -50,7 +55,8 @@ public class JobMetricsRunner implements Runnable {
             long seconds = Duration.between(lastRunTime, now).getSeconds();
             long averageRead = (jobMetricsSummary.getSourceReadCount() - lastReadCount) / seconds;
             long averageWrite = (jobMetricsSummary.getSinkWriteCount() - lastWriteCount) / seconds;
-            log.info(
+            StringBuilder logMessage = new StringBuilder();
+            logMessage.append(
                     StringFormatUtils.formatTable(
                             "Job Progress Information",
                             "Job Id",
@@ -69,9 +75,31 @@ public class JobMetricsRunner implements Runnable {
                             "Current Statistic Time",
                             DateTimeUtils.toString(
                                     now, DateTimeUtils.Formatter.YYYY_MM_DD_HH_MM_SS)));
+
+            String[] transformInfos = null;
+            if (MapUtils.isNotEmpty(jobMetricsSummary.getTransformCountMap())) {
+                transformInfos =
+                        new String
+                                [jobMetricsSummary.getTransformCountMap().entrySet().size() * 2
+                                        + 1];
+                transformInfos[0] = "Transform Information";
+                int index = 0;
+                for (Map.Entry<String, Long> entry :
+                        jobMetricsSummary.getTransformCountMap().entrySet()) {
+                    transformInfos[++index] = entry.getKey();
+                    transformInfos[++index] = String.valueOf(entry.getValue());
+                }
+            }
+
+            if (Objects.nonNull(transformInfos)) {
+                logMessage.append(StringFormatUtils.formatTable(transformInfos));
+            }
+
+            log.info("{}", logMessage);
             lastRunTime = now;
             lastReadCount = jobMetricsSummary.getSourceReadCount();
             lastWriteCount = jobMetricsSummary.getSinkWriteCount();
+            transformCountMap = jobMetricsSummary.getTransformCountMap();
         } catch (Exception e) {
             log.warn("Failed to get job metrics summary, it maybe first-run");
         }
@@ -82,5 +110,6 @@ public class JobMetricsRunner implements Runnable {
     public static class JobMetricsSummary {
         private long sourceReadCount;
         private long sinkWriteCount;
+        private Map<String, Long> transformCountMap;
     }
 }

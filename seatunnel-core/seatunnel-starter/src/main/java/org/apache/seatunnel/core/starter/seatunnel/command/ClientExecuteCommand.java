@@ -17,6 +17,13 @@
 
 package org.apache.seatunnel.core.starter.seatunnel.command;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.hazelcast.client.config.ClientConfig;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.instance.impl.HazelcastInstanceFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.seatunnel.common.utils.DateTimeUtils;
 import org.apache.seatunnel.common.utils.StringFormatUtils;
 import org.apache.seatunnel.core.starter.command.Command;
@@ -40,19 +47,13 @@ import org.apache.seatunnel.engine.core.job.JobResult;
 import org.apache.seatunnel.engine.core.job.JobStatus;
 import org.apache.seatunnel.engine.server.SeaTunnelNodeContext;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.hazelcast.client.config.ClientConfig;
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.instance.impl.HazelcastInstanceFactory;
-import lombok.extern.slf4j.Slf4j;
-
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -61,7 +62,9 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.seatunnel.core.starter.utils.FileUtils.checkConfigExist;
 
-/** This command is used to execute the SeaTunnel engine job by SeaTunnel API. */
+/**
+ * This command is used to execute the SeaTunnel engine job by SeaTunnel API.
+ */
 @Slf4j
 public class ClientExecuteCommand implements Command<ClientCommandArgs> {
 
@@ -227,24 +230,43 @@ public class ClientExecuteCommand implements Command<ClientCommandArgs> {
         } finally {
             if (jobMetricsSummary != null) {
                 // print job statistics information when job finished
-                log.info(
-                        StringFormatUtils.formatTable(
-                                "Job Statistic Information",
-                                "Start Time",
-                                DateTimeUtils.toString(
-                                        startTime, DateTimeUtils.Formatter.YYYY_MM_DD_HH_MM_SS),
-                                "End Time",
-                                DateTimeUtils.toString(
-                                        endTime, DateTimeUtils.Formatter.YYYY_MM_DD_HH_MM_SS),
-                                "Total Time(s)",
-                                Duration.between(startTime, endTime).getSeconds(),
-                                "Total Read Count",
-                                jobMetricsSummary.getSourceReadCount(),
-                                "Total Write Count",
-                                jobMetricsSummary.getSinkWriteCount(),
-                                "Total Failed Count",
-                                jobMetricsSummary.getSourceReadCount()
-                                        - jobMetricsSummary.getSinkWriteCount()));
+                StringBuilder logMessage = new StringBuilder();
+                logMessage.append(StringFormatUtils.formatTable(
+                        "Job Statistic Information",
+                        "Start Time",
+                        DateTimeUtils.toString(
+                                startTime, DateTimeUtils.Formatter.YYYY_MM_DD_HH_MM_SS),
+                        "End Time",
+                        DateTimeUtils.toString(
+                                endTime, DateTimeUtils.Formatter.YYYY_MM_DD_HH_MM_SS),
+                        "Total Time(s)",
+                        Duration.between(startTime, endTime).getSeconds(),
+                        "Total Read Count",
+                        jobMetricsSummary.getSourceReadCount(),
+                        "Total Write Count",
+                        jobMetricsSummary.getSinkWriteCount(),
+                        "Total Failed Count",
+                        jobMetricsSummary.getSourceReadCount()
+                                - jobMetricsSummary.getSinkWriteCount()));
+                String[] transformInfos = null;
+                if (MapUtils.isNotEmpty(jobMetricsSummary.getTransformCountMap())) {
+                    transformInfos =
+                            new String
+                                    [jobMetricsSummary.getTransformCountMap().entrySet().size() * 2
+                                    + 1];
+                    transformInfos[0] = "Transform Information";
+                    int index = 0;
+                    for (Map.Entry<String, Long> entry :
+                            jobMetricsSummary.getTransformCountMap().entrySet()) {
+                        transformInfos[++index] = entry.getKey();
+                        transformInfos[++index] = String.valueOf(entry.getValue());
+                    }
+                }
+
+                if (Objects.nonNull(transformInfos)) {
+                    logMessage.append(StringFormatUtils.formatTable(transformInfos));
+                }
+                log.info("{}", logMessage);
             }
             closeClient();
         }

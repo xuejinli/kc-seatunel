@@ -17,6 +17,7 @@
 
 package org.apache.seatunnel.transform.common;
 
+import org.apache.seatunnel.api.common.metrics.MetricsContext;
 import org.apache.seatunnel.api.configuration.ReadonlyConfig;
 import org.apache.seatunnel.api.table.catalog.CatalogTable;
 import org.apache.seatunnel.api.table.catalog.TableIdentifier;
@@ -43,6 +44,8 @@ public abstract class AbstractMultiCatalogTransform implements SeaTunnelTransfor
     protected List<CatalogTable> outputCatalogTables;
 
     protected Map<String, SeaTunnelTransform<SeaTunnelRow>> transformMap;
+
+    protected MetricsContext metricsContext;
 
     public AbstractMultiCatalogTransform(
             List<CatalogTable> inputCatalogTables, ReadonlyConfig config) {
@@ -73,7 +76,7 @@ public abstract class AbstractMultiCatalogTransform implements SeaTunnelTransfor
                     if (tableConfig != null) {
                         transformMap.put(tableId, buildTransform(inputCatalogTable, tableConfig));
                     } else {
-                        transformMap.put(tableId, new IdentityTransform(inputCatalogTable));
+                        transformMap.put(tableId, new IdentityTransform(config, inputCatalogTable));
                     }
                 });
 
@@ -86,6 +89,16 @@ public abstract class AbstractMultiCatalogTransform implements SeaTunnelTransfor
                                     return transformMap.get(tableName).getProducedCatalogTable();
                                 })
                         .collect(Collectors.toList());
+    }
+
+    @Override
+    public void setMetricsContext(MetricsContext metricsContext) {
+        this.metricsContext = metricsContext;
+    }
+
+    @Override
+    public MetricsContext getMetricsContext() {
+        return metricsContext;
     }
 
     protected abstract SeaTunnelTransform<SeaTunnelRow> buildTransform(
@@ -112,8 +125,8 @@ public abstract class AbstractMultiCatalogTransform implements SeaTunnelTransfor
             return "Identity";
         }
 
-        public IdentityTransform(CatalogTable catalogTable) {
-            super(catalogTable);
+        public IdentityTransform(ReadonlyConfig config, CatalogTable catalogTable) {
+            super(config, catalogTable);
             this.catalogTable = catalogTable;
         }
 

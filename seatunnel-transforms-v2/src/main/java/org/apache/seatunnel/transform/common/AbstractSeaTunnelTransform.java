@@ -16,15 +16,20 @@
  */
 package org.apache.seatunnel.transform.common;
 
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.groovy.parser.antlr4.util.StringUtils;
+import org.apache.seatunnel.api.common.CommonOptions;
+import org.apache.seatunnel.api.common.metrics.Counter;
+import org.apache.seatunnel.api.common.metrics.MetricNames;
+import org.apache.seatunnel.api.common.metrics.MetricsContext;
+import org.apache.seatunnel.api.configuration.ReadonlyConfig;
 import org.apache.seatunnel.api.table.catalog.CatalogTable;
 import org.apache.seatunnel.api.table.catalog.TableIdentifier;
 import org.apache.seatunnel.api.table.catalog.TableSchema;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.api.transform.SeaTunnelTransform;
 import org.apache.seatunnel.transform.exception.ErrorDataTransformException;
-
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collections;
 import java.util.List;
@@ -37,14 +42,44 @@ public abstract class AbstractSeaTunnelTransform<T, R> implements SeaTunnelTrans
 
     protected volatile CatalogTable outputCatalogTable;
 
-    public AbstractSeaTunnelTransform(@NonNull CatalogTable inputCatalogTable) {
-        this(inputCatalogTable, TransformCommonOptions.ROW_ERROR_HANDLE_WAY_OPTION.defaultValue());
+    protected String inputTableName;
+
+    protected String outTableName;
+
+    protected MetricsContext metricsContext;
+
+    protected volatile Counter counter;
+
+    @Override
+    public void open() {
     }
 
     public AbstractSeaTunnelTransform(
-            @NonNull CatalogTable inputCatalogTable, ErrorHandleWay rowErrorHandleWay) {
-        this.inputCatalogTable = inputCatalogTable;
+            @NonNull ReadonlyConfig config, @NonNull CatalogTable inputCatalogTable) {
+        this(
+                config,
+                inputCatalogTable,
+                TransformCommonOptions.ROW_ERROR_HANDLE_WAY_OPTION.defaultValue());
+    }
+
+    public AbstractSeaTunnelTransform(
+            @NonNull ReadonlyConfig config,
+            @NonNull CatalogTable catalogTable,
+            ErrorHandleWay rowErrorHandleWay) {
+        this.inputCatalogTable = catalogTable;
         this.rowErrorHandleWay = rowErrorHandleWay;
+        List<String> pluginInputIdentifiers = config.get(CommonOptions.PLUGIN_INPUT);
+        String pluginOutIdentifiers = config.get(CommonOptions.PLUGIN_OUTPUT);
+        if (pluginInputIdentifiers != null && !pluginInputIdentifiers.isEmpty()) {
+            this.inputTableName = pluginInputIdentifiers.get(0);
+        } else {
+            this.inputTableName = catalogTable.getTableId().getTableName();
+        }
+        if (!StringUtils.isEmpty(pluginOutIdentifiers)) {
+            this.outTableName = pluginOutIdentifiers;
+        } else {
+            this.outTableName = catalogTable.getTableId().getTableName();
+        }
     }
 
     public CatalogTable getProducedCatalogTable() {
@@ -105,4 +140,39 @@ public abstract class AbstractSeaTunnelTransform<T, R> implements SeaTunnelTrans
     protected abstract TableSchema transformTableSchema();
 
     protected abstract TableIdentifier transformTableIdentifier();
+
+    @Override
+    public void setMetricsContext(MetricsContext metricsContext) {
+        this.metricsContext = metricsContext;
+    }
+
+    @Override
+    public MetricsContext getMetricsContext() {
+        return metricsContext;
+    }
+
+    protected void hazelcastMetric(long size) {
+        if (metricsContext != null) {
+            metricsContext.counter(getTransformMetricName(this)).inc(size);
+        }
+    }
+
+    protected void hazelcastMetric() {
+        if (metricsContext != null) {
+            metricsContext.counter(getTransformMetricName(this)).inc();
+        }
+    }
+
+    protected String getTransformMetricName(SeaTunnelTransform transformer) {
+        StringBuilder metricName = new StringBuilder();
+        metricName
+                .append(MetricNames.TRANSFORM_COUNT)
+                .append("-")
+                .append(transformer.getPluginName())
+                .append("-")
+                .append(inputTableName)
+                .append("-")
+                .append(outTableName);
+        return metricName.toString();
+    }
 }
