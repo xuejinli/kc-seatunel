@@ -17,12 +17,13 @@
 
 package org.apache.seatunnel.transform.common;
 
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.seatunnel.api.configuration.ReadonlyConfig;
 import org.apache.seatunnel.api.table.catalog.CatalogTable;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.api.transform.SeaTunnelMapTransform;
+
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public abstract class AbstractCatalogSupportMapTransform

@@ -16,9 +16,6 @@
  */
 package org.apache.seatunnel.transform.common;
 
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.groovy.parser.antlr4.util.StringUtils;
 import org.apache.seatunnel.api.common.CommonOptions;
 import org.apache.seatunnel.api.common.metrics.Counter;
 import org.apache.seatunnel.api.common.metrics.MetricNames;
@@ -30,6 +27,11 @@ import org.apache.seatunnel.api.table.catalog.TableSchema;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.api.transform.SeaTunnelTransform;
 import org.apache.seatunnel.transform.exception.ErrorDataTransformException;
+
+import org.apache.groovy.parser.antlr4.util.StringUtils;
+
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collections;
 import java.util.List;
@@ -51,8 +53,7 @@ public abstract class AbstractSeaTunnelTransform<T, R> implements SeaTunnelTrans
     protected volatile Counter counter;
 
     @Override
-    public void open() {
-    }
+    public void open() {}
 
     public AbstractSeaTunnelTransform(
             @NonNull ReadonlyConfig config, @NonNull CatalogTable inputCatalogTable) {

@@ -80,7 +80,6 @@ public class SQLTransform extends AbstractCatalogSupportFlatMapTransform {
 
     @Override
     public void open() {
-        super.open();
         sqlEngine = SQLEngineFactory.getSQLEngine(engineType);
         sqlEngine.init(
                 inputTableName,
