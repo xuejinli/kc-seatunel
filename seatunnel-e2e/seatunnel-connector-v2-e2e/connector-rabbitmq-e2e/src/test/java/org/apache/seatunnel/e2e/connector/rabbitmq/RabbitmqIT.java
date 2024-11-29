@@ -77,6 +77,9 @@ public class RabbitmqIT extends TestSuiteBase implements TestResource {
     private static final String SINK_QUEUE_NAME = "test1";
     private static final String USERNAME = "guest";
     private static final String PASSWORD = "guest";
+    private static final Boolean DURABLE = true;
+    private static final Boolean EXCLUSIVE = false;
+    private static final Boolean AUTO_DELETE = false;
 
     private static final Pair<SeaTunnelRowType, List<SeaTunnelRow>> TEST_DATASET =
             generateTestDataSet();
@@ -197,6 +200,9 @@ public class RabbitmqIT extends TestSuiteBase implements TestResource {
             config.setVirtualHost("/");
             config.setUsername(USERNAME);
             config.setPassword(PASSWORD);
+            config.setDurable(DURABLE);
+            config.setExclusive(EXCLUSIVE);
+            config.setAutoDelete(AUTO_DELETE);
             rabbitmqClient = new RabbitmqClient(config);
         } catch (Exception e) {
             throw new RuntimeException("init Rabbitmq error", e);
@@ -213,6 +219,9 @@ public class RabbitmqIT extends TestSuiteBase implements TestResource {
             config.setVirtualHost("/");
             config.setUsername(USERNAME);
             config.setPassword(PASSWORD);
+            config.setDurable(DURABLE);
+            config.setExclusive(EXCLUSIVE);
+            config.setAutoDelete(AUTO_DELETE);
             return new RabbitmqClient(config);
         } catch (Exception e) {
             throw new RuntimeException("init Rabbitmq error", e);

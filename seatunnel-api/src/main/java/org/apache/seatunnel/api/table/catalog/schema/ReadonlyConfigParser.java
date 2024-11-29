@@ -95,7 +95,8 @@ public class ReadonlyConfigParser implements TableSchemaParser<ReadonlyConfig> {
                 String value = entry.getValue();
                 SeaTunnelDataType<?> dataType =
                         SeaTunnelDataTypeConvertorUtil.deserializeSeaTunnelDataType(key, value);
-                PhysicalColumn column = PhysicalColumn.of(key, dataType, 0, true, null, null);
+                PhysicalColumn column =
+                        PhysicalColumn.of(key, dataType, null, null, true, null, null);
                 columns.add(column);
             }
             return columns;
@@ -130,14 +131,12 @@ public class ReadonlyConfigParser implements TableSchemaParser<ReadonlyConfig> {
                                                                 new IllegalArgumentException(
                                                                         "schema.columns.* config need option [type], please correct your config first"));
 
-                                Integer columnLength =
+                                Long columnLength =
                                         columnConfig.get(
                                                 TableSchemaOptions.ColumnOptions.COLUMN_LENGTH);
-
                                 Integer columnScale =
                                         columnConfig.get(
                                                 TableSchemaOptions.ColumnOptions.COLUMN_SCALE);
-
                                 Boolean nullable =
                                         columnConfig.get(TableSchemaOptions.ColumnOptions.NULLABLE);
                                 Object defaultValue =
@@ -148,7 +147,7 @@ public class ReadonlyConfigParser implements TableSchemaParser<ReadonlyConfig> {
                                 return PhysicalColumn.of(
                                         name,
                                         seaTunnelDataType,
-                                        Long.valueOf(columnLength),
+                                        columnLength,
                                         columnScale,
                                         nullable,
                                         defaultValue,

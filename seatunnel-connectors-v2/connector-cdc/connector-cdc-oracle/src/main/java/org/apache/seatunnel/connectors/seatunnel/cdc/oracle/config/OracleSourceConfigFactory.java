@@ -36,8 +36,14 @@ public class OracleSourceConfigFactory extends JdbcSourceConfigFactory {
     private static final String DATABASE_SERVER_NAME = "oracle_logminer";
 
     private static final String DRIVER_CLASS_NAME = "oracle.jdbc.driver.OracleDriver";
+    public static final String SCHEMA_CHANGE_KEY = "include.schema.changes";
+    public static final Boolean SCHEMA_CHANGE_DEFAULT = true;
 
     private List<String> schemaList;
+
+    private Boolean useSelectCount;
+
+    private Boolean skipAnalyze;
     /**
      * An optional list of regular expressions that match schema names to be monitored; any schema
      * name not included in the whitelist will be excluded from monitoring. By default all
@@ -45,6 +51,16 @@ public class OracleSourceConfigFactory extends JdbcSourceConfigFactory {
      */
     public JdbcSourceConfigFactory schemaList(List<String> schemaList) {
         this.schemaList = schemaList;
+        return this;
+    }
+
+    public JdbcSourceConfigFactory useSelectCount(Boolean useSelectCount) {
+        this.useSelectCount = useSelectCount;
+        return this;
+    }
+
+    public JdbcSourceConfigFactory skipAnalyze(Boolean skipAnalyze) {
+        this.skipAnalyze = skipAnalyze;
         return this;
     }
 
@@ -77,6 +93,10 @@ public class OracleSourceConfigFactory extends JdbcSourceConfigFactory {
         props.setProperty("database.history.instance.name", UUID.randomUUID() + "_" + subtask);
         props.setProperty("database.history.skip.unparseable.ddl", String.valueOf(true));
         props.setProperty("database.history.refer.ddl", String.valueOf(true));
+
+        // Some scenarios do not require automatic capture of table structure changes, so the
+        // default setting is true.
+        props.setProperty(SCHEMA_CHANGE_KEY, SCHEMA_CHANGE_DEFAULT.toString());
 
         props.setProperty("connect.timeout.ms", String.valueOf(connectTimeoutMillis));
         // disable tombstones
@@ -123,11 +143,14 @@ public class OracleSourceConfigFactory extends JdbcSourceConfigFactory {
         }
 
         return new OracleSourceConfig(
+                useSelectCount,
+                skipAnalyze,
                 startupConfig,
                 stopConfig,
                 databaseList,
                 tableList,
                 splitSize,
+                splitColumn,
                 distributionFactorUpper,
                 distributionFactorLower,
                 sampleShardingThreshold,

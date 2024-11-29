@@ -22,8 +22,11 @@ import org.apache.seatunnel.api.table.type.SeaTunnelDataType;
 import org.apache.seatunnel.common.exception.CommonErrorCodeDeprecated;
 import org.apache.seatunnel.transform.exception.TransformException;
 
+import org.apache.commons.collections4.CollectionUtils;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -65,6 +68,15 @@ public class SystemFunction {
         return v1;
     }
 
+    public static String[] array(List<Object> args) {
+        if (CollectionUtils.isNotEmpty(args)) {
+            return args.stream()
+                    .map(obj -> obj == null ? null : obj.toString())
+                    .toArray(String[]::new);
+        }
+        return new String[0];
+    }
+
     public static Object castAs(Object arg, SeaTunnelDataType<?> type) {
         final ArrayList<Object> args = new ArrayList<>(4);
         args.add(arg);
@@ -98,6 +110,9 @@ public class SystemFunction {
                 return Long.parseLong(v1.toString());
             case "BYTE":
                 return Byte.parseByte(v1.toString());
+            case "BYTES":
+            case "BINARY":
+                return v1.toString().getBytes(StandardCharsets.UTF_8);
             case "DOUBLE":
                 return Double.parseDouble(v1.toString());
             case "FLOAT":

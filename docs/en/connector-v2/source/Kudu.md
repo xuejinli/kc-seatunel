@@ -58,7 +58,7 @@ The tested kudu version is 1.11.1.
 | filter                                    | Int    | No       | 1024 * 1024                                    | Kudu scan filter expressions,Not supported yet.                                                                                                                                                  |
 | schema                                    | Map    | No       | 1024 * 1024                                    | SeaTunnel Schema.                                                                                                                                                                                |
 | table_list                                | Array  | No       | -                                              | The list of tables to be read. you can use this configuration instead of `table_path` example: ```table_list = [{ table_name = "kudu_source_table_1"},{ table_name = "kudu_source_table_2"}] ``` |
-| common-options                            |        | No       | -                                              | Source plugin common parameters, please refer to [Source Common Options](common-options.md) for details.                                                                                         |
+| common-options                            |        | No       | -                                              | Source plugin common parameters, please refer to [Source Common Options](../source-common-options.md) for details.                                                                               |
 
 ## Task Example
 
@@ -78,7 +78,7 @@ source {
   kudu {
     kudu_masters = "kudu-master:7051"
     table_name = "kudu_source_table"
-    result_table_name = "kudu"
+    plugin_output = "kudu"
     enable_kerberos = true
     kerberos_principal = "xx@xx.COM"
     kerberos_keytab = "xx.keytab"
@@ -90,11 +90,11 @@ transform {
 
 sink {
   console {
-    source_table_name = "kudu"
+    plugin_input = "kudu"
   }
 
   kudu {
-    source_table_name = "kudu"
+    plugin_input = "kudu"
     kudu_masters = "kudu-master:7051"
     table_name = "kudu_sink_table"
     enable_kerberos = true
@@ -125,7 +125,7 @@ source {
     table_name = "kudu_source_table_2"
    }
    ]
-   result_table_name = "kudu"
+   plugin_output = "kudu"
 }
 }
 

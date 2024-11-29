@@ -24,6 +24,7 @@ import org.apache.seatunnel.shade.com.typesafe.config.ConfigResolveOptions;
 import org.apache.seatunnel.api.configuration.ReadonlyConfig;
 import org.apache.seatunnel.api.table.factory.FactoryException;
 import org.apache.seatunnel.common.constants.PluginType;
+import org.apache.seatunnel.e2e.common.container.EngineType;
 import org.apache.seatunnel.e2e.common.container.TestContainer;
 
 import org.apache.commons.lang3.StringUtils;
@@ -54,6 +55,9 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+
+import static org.apache.seatunnel.e2e.common.container.TestContainerId.FLINK_1_18;
+import static org.apache.seatunnel.e2e.common.container.TestContainerId.SPARK_3_3;
 
 @Slf4j
 public final class ContainerUtil {
@@ -195,13 +199,13 @@ public final class ContainerUtil {
                 MountableFile.forHostPath(startJarPath),
                 Paths.get(seatunnelHomeInContainer, "starter", startJarName).toString());
 
-        // copy lib
+        // copy transform
         String transformJar = "seatunnel-transforms-v2.jar";
         Path transformJarPath =
                 Paths.get(PROJECT_ROOT_PATH, "seatunnel-transforms-v2", "target", transformJar);
         container.withCopyFileToContainer(
                 MountableFile.forHostPath(transformJarPath),
-                Paths.get(seatunnelHomeInContainer, "lib", transformJar).toString());
+                Paths.get(seatunnelHomeInContainer, "connectors", transformJar).toString());
 
         // copy bin
         final String startBinPath = startModulePath + File.separator + "src/main/bin/";
@@ -299,7 +303,40 @@ public final class ContainerUtil {
             ServiceLoader.load(TestContainer.class, Thread.currentThread().getContextClassLoader())
                     .iterator()
                     .forEachRemaining(result::add);
-            return result;
+            boolean isTestInPR =
+                    Boolean.parseBoolean(System.getenv().getOrDefault("TEST_IN_PR", "true"));
+            boolean testAllContainer =
+                    Boolean.parseBoolean(System.getenv().getOrDefault("RUN_ALL_CONTAINER", "true"));
+            boolean testZetaContainer =
+                    Boolean.parseBoolean(
+                            System.getenv().getOrDefault("RUN_ZETA_CONTAINER", "true"));
+            log.info(
+                    "Test in PR: {}, Run all container: {}, Run zeta container: {}",
+                    isTestInPR,
+                    testAllContainer,
+                    testZetaContainer);
+            if (isTestInPR) {
+                return result.stream()
+                        .filter(container -> container.identifier().isTestInPR())
+                        .filter(
+                                container -> {
+                                    if (testAllContainer
+                                            || container.identifier().equals(FLINK_1_18)
+                                            || container.identifier().equals(SPARK_3_3)) {
+                                        return true;
+                                    }
+                                    if (testZetaContainer) {
+                                        return container
+                                                .identifier()
+                                                .getEngineType()
+                                                .equals(EngineType.SEATUNNEL);
+                                    }
+                                    return true;
+                                })
+                        .collect(Collectors.toList());
+            } else {
+                return result;
+            }
         } catch (ServiceConfigurationError e) {
             log.error("Could not load service provider for containers.", e);
             throw new FactoryException("Could not load service provider for containers.", e);

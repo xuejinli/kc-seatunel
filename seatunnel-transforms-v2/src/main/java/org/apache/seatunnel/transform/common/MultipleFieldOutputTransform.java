@@ -23,6 +23,7 @@ import org.apache.seatunnel.api.table.catalog.ConstraintKey;
 import org.apache.seatunnel.api.table.catalog.TableIdentifier;
 import org.apache.seatunnel.api.table.catalog.TableSchema;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
+import org.apache.seatunnel.api.table.type.SeaTunnelRowAccessor;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +34,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
-public abstract class MultipleFieldOutputTransform extends AbstractCatalogSupportTransform {
+public abstract class MultipleFieldOutputTransform extends AbstractCatalogSupportMapTransform {
 
     private static final String[] TYPE_ARRAY_STRING = new String[0];
 
@@ -43,6 +44,11 @@ public abstract class MultipleFieldOutputTransform extends AbstractCatalogSuppor
 
     public MultipleFieldOutputTransform(@NonNull CatalogTable inputCatalogTable) {
         super(inputCatalogTable);
+    }
+
+    public MultipleFieldOutputTransform(
+            @NonNull CatalogTable inputCatalogTable, ErrorHandleWay errorHandleWay) {
+        super(inputCatalogTable, errorHandleWay);
     }
 
     @Override

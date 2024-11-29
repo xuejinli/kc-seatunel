@@ -69,15 +69,6 @@ if test ${JvmOption} ;then
     JAVA_OPTS="${JAVA_OPTS} ${JvmOption}"
 fi
 
-for i in "$@"
-do
-  if [[ "${i}" == *"JvmOption"* ]]; then
-    JVM_OPTION="${i}"
-    JAVA_OPTS="${JAVA_OPTS} ${JVM_OPTION#*=}"
-    break
-  fi
-done
-
 JAVA_OPTS="${JAVA_OPTS} -Dhazelcast.client.config=${HAZELCAST_CLIENT_CONFIG}"
 JAVA_OPTS="${JAVA_OPTS} -Dseatunnel.config=${SEATUNNEL_CONFIG}"
 JAVA_OPTS="${JAVA_OPTS} -Dhazelcast.config=${HAZELCAST_CONFIG}"
@@ -89,6 +80,7 @@ JAVA_OPTS="${JAVA_OPTS} -Dhazelcast.config=${HAZELCAST_CONFIG}"
 # JAVA_OPTS="${JAVA_OPTS} -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=5000,suspend=n"
 
 # Log4j2 Config
+JAVA_OPTS="${JAVA_OPTS} -Dlog4j2.isThreadContextMapInheritable=true"
 if [ -e "${CONF_DIR}/log4j2_client.properties" ]; then
   JAVA_OPTS="${JAVA_OPTS} -Dhazelcast.logging.type=log4j2 -Dlog4j2.configurationFile=${CONF_DIR}/log4j2_client.properties"
   JAVA_OPTS="${JAVA_OPTS} -Dseatunnel.logs.path=${APP_DIR}/logs"
@@ -107,5 +99,15 @@ while IFS= read -r line || [[ -n "$line" ]]; do
         JAVA_OPTS="$JAVA_OPTS $line"
     fi
 done < ${APP_DIR}/config/jvm_client_options
+
+# Parse JvmOption from command line, it should be parsed after jvm_client_options
+for i in "$@"
+do
+  if [[ "${i}" == *"JvmOption"* ]]; then
+    JVM_OPTION="${i}"
+    JAVA_OPTS="${JAVA_OPTS} ${JVM_OPTION#*=}"
+    break
+  fi
+done
 
 java ${JAVA_OPTS} -cp ${CLASS_PATH} ${APP_MAIN} ${args}

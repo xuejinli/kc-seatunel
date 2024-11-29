@@ -19,6 +19,7 @@ package org.apache.seatunnel.e2e.common.container.spark;
 
 import org.apache.seatunnel.e2e.common.container.AbstractTestContainer;
 import org.apache.seatunnel.e2e.common.container.ContainerExtendedFactory;
+import org.apache.seatunnel.e2e.common.util.ContainerUtil;
 
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
@@ -30,8 +31,10 @@ import org.testcontainers.utility.DockerLoggerFactory;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -87,6 +90,11 @@ public abstract class AbstractTestSparkContainer extends AbstractTestContainer {
     }
 
     @Override
+    protected String getCancelJobCommand() {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @Override
     protected String getRestoreCommand() {
         throw new UnsupportedOperationException("Not implemented");
     }
@@ -104,18 +112,29 @@ public abstract class AbstractTestSparkContainer extends AbstractTestContainer {
     @Override
     public Container.ExecResult executeJob(String confFile)
             throws IOException, InterruptedException {
-        return executeJob(confFile, null);
+        return executeJob(confFile, Collections.emptyList());
     }
 
     @Override
     public Container.ExecResult executeJob(String confFile, List<String> variables)
             throws IOException, InterruptedException {
         log.info("test in container: {}", identifier());
-        return executeJob(master, confFile, variables);
+        return executeJob(master, confFile, null, variables);
     }
 
     @Override
     public String getServerLogs() {
         return master.getLogs();
+    }
+
+    @Override
+    public void copyFileToContainer(String path, String targetPath) {
+        ContainerUtil.copyFileIntoContainers(
+                ContainerUtil.getResourcesFile(path).toPath(), targetPath, master);
+    }
+
+    @Override
+    public void copyAbsolutePathToContainer(String path, String targetPath) {
+        ContainerUtil.copyFileIntoContainers(Paths.get(path), targetPath, master);
     }
 }

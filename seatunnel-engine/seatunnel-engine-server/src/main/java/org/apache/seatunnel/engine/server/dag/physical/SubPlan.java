@@ -308,7 +308,14 @@ public class SubPlan {
             RetryUtils.retryWithException(
                     () -> {
                         jobMaster.savePipelineMetricsToHistory(getPipelineLocation());
-                        jobMaster.removeMetricsContext(getPipelineLocation(), pipelineStatus);
+                        try {
+                            jobMaster.removeMetricsContext(getPipelineLocation(), pipelineStatus);
+                        } catch (Throwable e) {
+                            log.error(
+                                    "Remove metrics context for pipeline {} failed, with exception: {}",
+                                    pipelineFullName,
+                                    ExceptionUtils.getMessage(e));
+                        }
                         notifyCheckpointManagerPipelineEnd(pipelineStatus);
                         jobMaster.releasePipelineResource(this);
                         return null;
@@ -618,7 +625,7 @@ public class SubPlan {
                 break;
             case SCHEDULED:
                 try {
-                    ResourceUtils.applyResourceForPipeline(jobMaster.getResourceManager(), this);
+                    ResourceUtils.applyResourceForPipeline(jobMaster, this);
                     log.debug(
                             "slotProfiles: {}, PipelineLocation: {}",
                             slotProfiles,
@@ -666,6 +673,7 @@ public class SubPlan {
             case CANCELED:
                 if (checkNeedRestore(state) && prepareRestorePipeline()) {
                     jobMaster.releasePipelineResource(this);
+                    jobMaster.preApplyResources(this);
                     restorePipeline();
                     return;
                 }

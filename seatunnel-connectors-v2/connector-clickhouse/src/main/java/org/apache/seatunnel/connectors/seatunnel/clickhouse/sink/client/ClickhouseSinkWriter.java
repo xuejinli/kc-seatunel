@@ -28,7 +28,8 @@ import org.apache.seatunnel.connectors.seatunnel.clickhouse.sink.client.executor
 import org.apache.seatunnel.connectors.seatunnel.clickhouse.sink.client.executor.JdbcBatchStatementExecutorBuilder;
 import org.apache.seatunnel.connectors.seatunnel.clickhouse.state.CKCommitInfo;
 import org.apache.seatunnel.connectors.seatunnel.clickhouse.state.ClickhouseSinkState;
-import org.apache.seatunnel.connectors.seatunnel.clickhouse.tool.IntHolder;
+import org.apache.seatunnel.connectors.seatunnel.clickhouse.util.ClickhouseProxy;
+import org.apache.seatunnel.connectors.seatunnel.clickhouse.util.IntHolder;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -210,8 +211,9 @@ public class ClickhouseSinkWriter
             return false;
         }
         String configKey = "allow_experimental_lightweight_delete";
-        try (Statement stmt = clickhouseConnection.createStatement()) {
-            ResultSet resultSet = stmt.executeQuery("SHOW SETTINGS ILIKE '%" + configKey + "%'");
+        try (Statement stmt = clickhouseConnection.createStatement();
+                ResultSet resultSet =
+                        stmt.executeQuery("SHOW SETTINGS ILIKE '%" + configKey + "%'")) {
             while (resultSet.next()) {
                 String name = resultSet.getString("name");
                 if (name.equalsIgnoreCase(configKey)) {

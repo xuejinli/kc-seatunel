@@ -39,9 +39,24 @@ public class UserVariableIT extends TestSuiteBase {
         variables.add("strTemplate=" + list);
         variables.add("nameType=string");
         variables.add("nameVal=abc");
-        variables.add("sourceTableName=sql");
+        variables.add("pluginInputIdentifier=sql");
         Container.ExecResult execResult =
                 container.executeJob("/fake_to_console.variables.conf", variables);
+        Assertions.assertEquals(0, execResult.getExitCode(), execResult.getStderr());
+    }
+
+    @TestTemplate
+    public void userVariableWithDefaultValueTest(TestContainer container)
+            throws IOException, InterruptedException {
+        List<String> variables = new ArrayList<>();
+        String list = "[abc,def]";
+        variables.add("strTemplate=" + list);
+        variables.add("ageType=int");
+        variables.add("nameVal=abc");
+        variables.add("pluginInputIdentifier=sql");
+        Container.ExecResult execResult =
+                container.executeJob(
+                        "/fake_to_console_with_default_value.variables.conf", variables);
         Assertions.assertEquals(0, execResult.getExitCode(), execResult.getStderr());
     }
 }

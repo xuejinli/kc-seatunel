@@ -1,7 +1,6 @@
 ---
-
 sidebar_position: 4
--------------------
+---
 
 # 以Local模式运行作业
 
@@ -27,6 +26,16 @@ Local模式下每个任务都会启动一个独立的进程，任务运行完成
 ```shell
 $SEATUNNEL_HOME/bin/seatunnel.sh --config $SEATUNNEL_HOME/config/v2.batch.config.template -e local
 ```
+
+### 配置本地模式的JVM参数
+
+本地模式支持两种设置JVM参数的方式：
+
+1. 添加JVM参数到`$SEATUNNEL_HOME/config/jvm_client_options`文件中。
+
+   修改`$SEATUNNEL_HOME/config/jvm_client_options`文件中的JVM参数。 请注意，该文件中的JVM参数会应用到所有使用`seatunnel.sh`提交的作业。包括Local模式和集群模式。
+
+2. 在启动Local模式时添加JVM参数。例如，`$SEATUNNEL_HOME/bin/seatunnel.sh --config $SEATUNNEL_HOME/config/v2.batch.config.template -m local -DJvmOption="-Xms2G -Xmx2G"`
 
 ## 作业运维
 

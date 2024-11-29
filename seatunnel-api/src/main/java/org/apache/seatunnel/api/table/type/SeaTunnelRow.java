@@ -18,7 +18,9 @@
 package org.apache.seatunnel.api.table.type;
 
 import java.io.Serializable;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -28,9 +30,11 @@ public final class SeaTunnelRow implements Serializable {
     /** Table identifier. */
     private String tableId = "";
     /** The kind of change that a row describes in a changelog. */
-    private RowKind kind = RowKind.INSERT;
+    private RowKind rowKind = RowKind.INSERT;
     /** The array to store the actual internal format values. */
     private final Object[] fields;
+
+    private Map<String, Object> options;
 
     private volatile int size;
 
@@ -50,8 +54,12 @@ public final class SeaTunnelRow implements Serializable {
         this.tableId = tableId;
     }
 
-    public void setRowKind(RowKind kind) {
-        this.kind = kind;
+    public void setRowKind(RowKind rowKind) {
+        this.rowKind = rowKind;
+    }
+
+    public void setOptions(Map<String, Object> options) {
+        this.options = options;
     }
 
     public int getArity() {
@@ -63,7 +71,14 @@ public final class SeaTunnelRow implements Serializable {
     }
 
     public RowKind getRowKind() {
-        return this.kind;
+        return this.rowKind;
+    }
+
+    public Map<String, Object> getOptions() {
+        if (options == null) {
+            options = new HashMap<>();
+        }
+        return options;
     }
 
     public Object[] getFields() {
@@ -142,7 +157,12 @@ public final class SeaTunnelRow implements Serializable {
             case TIMESTAMP:
                 return 48;
             case FLOAT_VECTOR:
-                return getArrayNotNullSize((Object[]) v) * 4;
+            case FLOAT16_VECTOR:
+            case BFLOAT16_VECTOR:
+            case BINARY_VECTOR:
+                return ((ByteBuffer) v).capacity();
+            case SPARSE_FLOAT_VECTOR:
+                return ((Map<?, ?>) v).entrySet().size() * 8;
             case ARRAY:
                 SeaTunnelDataType elementType = ((ArrayType) dataType).getElementType();
                 if (elementType instanceof DecimalType) {
@@ -289,6 +309,9 @@ public final class SeaTunnelRow implements Serializable {
                     size += getBytesForValue(entry.getKey()) + getBytesForValue(entry.getValue());
                 }
                 return size;
+            case "HeapByteBuffer":
+            case "ByteBuffer":
+                return ((ByteBuffer) v).capacity();
             case "SeaTunnelRow":
                 int rowSize = 0;
                 SeaTunnelRow row = (SeaTunnelRow) v;
@@ -320,13 +343,13 @@ public final class SeaTunnelRow implements Serializable {
         }
         SeaTunnelRow that = (SeaTunnelRow) o;
         return Objects.equals(tableId, that.tableId)
-                && kind == that.kind
+                && rowKind == that.rowKind
                 && Arrays.deepEquals(fields, that.fields);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(tableId, kind);
+        int result = Objects.hash(tableId, rowKind);
         result = 31 * result + Arrays.deepHashCode(fields);
         return result;
     }
@@ -337,7 +360,7 @@ public final class SeaTunnelRow implements Serializable {
                 + "tableId="
                 + tableId
                 + ", kind="
-                + kind.shortString()
+                + rowKind.shortString()
                 + ", fields="
                 + Arrays.toString(fields)
                 + '}';

@@ -28,6 +28,7 @@ connector-cdc-mongodb
 connector-cdc-sqlserver
 connector-cdc-postgres
 connector-cdc-oracle
+connector-cdc-tidb
 connector-clickhouse
 connector-datahub
 connector-dingtalk
@@ -86,4 +87,9 @@ connector-rocketmq
 connector-tdengine
 connector-web3j
 connector-milvus
---end--
+connector-activemq
+connector-prometheus
+connector-sls
+connector-qdrant
+connector-typesense
+connector-cdc-opengauss
