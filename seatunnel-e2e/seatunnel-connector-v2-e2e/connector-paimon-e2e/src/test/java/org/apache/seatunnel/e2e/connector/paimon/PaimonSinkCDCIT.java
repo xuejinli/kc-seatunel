@@ -41,8 +41,10 @@ import org.apache.paimon.reader.RecordReader;
 import org.apache.paimon.table.FileStoreTable;
 import org.apache.paimon.table.Table;
 import org.apache.paimon.table.source.ReadBuilder;
+import org.apache.paimon.table.source.ScanMode;
 import org.apache.paimon.table.source.TableRead;
 import org.apache.paimon.table.source.TableScan;
+import org.apache.paimon.table.source.snapshot.SnapshotReader;
 import org.apache.paimon.types.DataField;
 import org.apache.paimon.types.DateType;
 import org.apache.paimon.types.TimestampType;
@@ -601,14 +603,14 @@ public class PaimonSinkCDCIT extends TestSuiteBase implements TestResource {
                                 throw new SeaTunnelException(e);
                             }
                         }));
-        // stream job running 30 seconds
-        TimeUnit.SECONDS.sleep(30);
+        // stream job running 10 seconds
+        TimeUnit.SECONDS.sleep(10);
         // cancel stream job
         container.cancelJob(jobIds[1]);
         container.cancelJob(jobIds[2]);
         container.cancelJob(jobIds[0]);
         changeLogEnabled = true;
-        TimeUnit.SECONDS.sleep(10);
+        TimeUnit.SECONDS.sleep(30);
         // copy paimon to local
         container.executeExtraCommands(containerExtendedFactory);
         List<PaimonRecord> paimonRecords1 = loadPaimonData("seatunnel_namespace", "st_test_sink");
@@ -629,7 +631,8 @@ public class PaimonSinkCDCIT extends TestSuiteBase implements TestResource {
                         "[+I, 2, Bb, 90, +U]",
                         "[+I, 3, C, 100, -D]"),
                 actual1);
-        List<PaimonRecord> paimonRecords2 = loadPaimonData("seatunnel_namespace", "st_test_lookup");
+        List<PaimonRecord> paimonRecords2 =
+                loadPaimonChangeLog("seatunnel_namespace", "st_test_lookup");
         List<String> actual2 =
                 paimonRecords2.stream()
                         .map(PaimonRecord::toChangeLogFull)
@@ -733,6 +736,51 @@ public class PaimonSinkCDCIT extends TestSuiteBase implements TestResource {
         } catch (IOException | ArchiveException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private List<PaimonRecord> loadPaimonChangeLog(String dbName, String tbName) throws Exception {
+        FileStoreTable table = (FileStoreTable) getTable(dbName, tbName);
+        ReadBuilder readBuilder = table.newReadBuilder();
+        SnapshotReader.Plan plan = table.newSnapshotReader().withMode(ScanMode.ALL).read();
+        TableRead tableRead = readBuilder.newRead();
+        List<PaimonRecord> result = new ArrayList<>();
+        log.info(
+                "====================================Paimon data===========================================");
+        log.info(
+                "==========================================================================================");
+        log.info(
+                "==========================================================================================");
+        try (RecordReader<InternalRow> reader = tableRead.createReader(plan)) {
+            reader.forEachRemaining(
+                    row -> {
+                        PaimonRecord paimonRecord =
+                                new PaimonRecord(
+                                        row.getRowKind(),
+                                        row.getLong(0),
+                                        row.getString(1).toString());
+                        if (table.schema().fieldNames().contains("score")) {
+                            paimonRecord.setScore(row.getInt(2));
+                        }
+                        if (table.schema().fieldNames().contains("op")) {
+                            paimonRecord.setOp(row.getString(3).toString());
+                        }
+                        result.add(paimonRecord);
+                        log.info(
+                                "rowKind:"
+                                        + row.getRowKind().shortString()
+                                        + ", key_id:"
+                                        + row.getLong(0)
+                                        + ", name:"
+                                        + row.getString(1));
+                    });
+        }
+        log.info(
+                "==========================================================================================");
+        log.info(
+                "==========================================================================================");
+        log.info(
+                "==========================================================================================");
+        return result;
     }
 
     private List<PaimonRecord> loadPaimonData(String dbName, String tbName) throws Exception {
